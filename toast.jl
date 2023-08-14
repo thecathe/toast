@@ -1,5 +1,6 @@
 module TOAST
 
+using Test
 import Base.show
 import Base.string
 import Base.iterate
@@ -248,22 +249,24 @@ module ClockConstraints
 
     evaluate(clocks::Clocks,constraint::Geq) = δExpr(:δGeq, :(>=), ClockValue(value_of!(clocks, constraint.clock)), constraint.value)
     evaluate(clocks::Clocks,constraint::Eq) = δExpr(:δEq, :(==), ClockValue(value_of!(clocks, constraint.clock)), constraint.value)
-    evaluate(clocks::Clocks,constraint::DiagGeq) = δExpr(:δDiagGeq, :(>=), δExpr(:δ, :-, ClockValue(value_of!(clocks, constraint.gtr)), ClockValue(value_of!(clocks, constraint.lsr))), constraint.value) 
-    evaluate(clocks::Clocks,constraint::DiagEq) = δExpr(:δDiagEq, :(==), δExpr(:δ, :-, ClockValue(value_of!(clocks, constraint.gtr)), ClockValue(value_of!(clocks, constraint.lsr))), constraint.value) 
+    evaluate(clocks::Clocks,constraint::DiagGeq) = δExpr(:δGeq, :(>=), δExpr(:δDiag, :-, ClockValue(value_of!(clocks, constraint.gtr)), ClockValue(value_of!(clocks, constraint.lsr))), constraint.value) 
+    evaluate(clocks::Clocks,constraint::DiagEq) = δExpr(:δEq, :(==), δExpr(:δDiag, :-, ClockValue(value_of!(clocks, constraint.gtr)), ClockValue(value_of!(clocks, constraint.lsr))), constraint.value) 
 
     function Base.show(expr::δExpr, io::IO = stdout) 
         string_expr = string(expr)
-        fix_expr!(expr)
-        print(io, string_expr, " == ", eval(expr))
+        print(io, string_expr, " == ", eval!(expr))
         # print(io, string_expr, " == ", eval(fix_expr(expr)))
+    end
+
+    function eval!(expr::δExpr) 
+        fix_expr!(expr)
+        return eval(expr)
     end
 
     function fix_expr!(expr::δExpr)
         if expr.head == :δAnd
-            # expr = δExpr(expr.args)
             expr.head = :(&&)
             deleteat!(expr.args, 1)
-            # return δExpr(:&&, [expr.args[i] for i in length(expr.args) if (i!=1) ])
         else
             expr.head = :call
         end
@@ -279,20 +282,18 @@ module ClockConstraints
         head = expr.head
         if head == :δAnd
             return string("(", string(expr.args[2]), ") ∧ (", string(expr.args[3]), ")")
-        elseif head == :δ
-            return string(expr.args[1])
+        # elseif head == :δ
+        #     return string(expr.args[1])
         elseif head == :δNot
             return string("¬(", string(expr.args[2]),")")
         elseif head == :δGeq
             return string(string(expr.args[2]), "≥", string(expr.args[3]))
         elseif head == :δEq
             return string(string(expr.args[2]), "=", string(expr.args[3]))
-        elseif head == :δDiagGeq
-            return string(string(expr.args[2]), "-", string(expr.args[3]), "≥", string(expr.args[4]))
-        elseif head == :δEq
-            return string(string(expr.args[2]), "-", string(expr.args[3]), "=", string(expr.args[4]))
+        elseif head == :δDiag
+            return string(string(expr.args[2]), "-", string(expr.args[3]))
         else
-            error("unknown δExpr: ", dump(expr))
+            error("unknown δExpr.head (", string(head), "): ", dump(expr))
         end
     end
 
@@ -468,5 +469,27 @@ println()
 show(evaluate(Clocks([("a",1)]), And(Eq("a",0),Eq("b",0)))) # false 
 println()
 println()
+
+show(evaluate(Clocks([("a",3)]),Not(Geq("b",2)))) # true
+println()
+println()
+
+show(evaluate(Clocks([("a",1)]), DiagEq("a","b",3))) # false 
+println()
+println()
+
+show(evaluate(Clocks([("a",7),("b",4)]), DiagEq("a","b",3))) # true 
+println()
+println()
+
+# @test !eval!(evaluate(Clocks([("a",1)]), Eq("a",2)))
+# @test !eval!(evaluate(Clocks([("b",1)]), Eq("a",1)))
+# @test eval!(evaluate(Clocks([("b",1)]), Eq("a",0)))
+# @test !eval!(evaluate(Clocks([("a",1)]), Geq("a",2)))
+# @test eval!(evaluate(Clocks([("a",1),("b",2)]), And(Eq("a",1),Eq("b",2))))
+# @test !eval!(evaluate(Clocks([("a",1)]), And(Eq("a",0),Eq("b",0))))
+# @test eval!(evaluate(Clocks([("a",3)]),Not(Geq("b",2))))
+# @test !eval!(evaluate(Clocks([("a",1)]), DiagEq("a","b",3)))
+# @test eval!(evaluate(Clocks([("a",7),("b",4)]), DiagEq("a","b",3)))
 
 end
