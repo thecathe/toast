@@ -71,8 +71,10 @@ module LogicalClocks
         if isempty(res)
             show(string("value_of! ", label, " was not found!\n"))
             push!(clocks, Clock(label, 0))
+            return ClockValue(0)
+        else 
+            return ClockValue(first(res))
         end
-        return ClockValue(0)
     end
 
     # does not initialise
@@ -82,7 +84,7 @@ module LogicalClocks
         # @assert !isempty(res) "No clock labelled '$(label)' in:\n$(show(clocks))"
         # ensure only one value is returned
         @assert length(res) <= 1 "More than one clock labelled '$(label)' in:\n$(show(clocks))"
-        return (isempty(res)) ? [] : ClockValue(first(res))
+        return res
     end 
 
 
