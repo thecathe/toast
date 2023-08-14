@@ -124,8 +124,6 @@ Base.iterate(clocks::Clocks, state::Int)  = (state >= length(clocks) ? nothing :
 const Resets = Array{Label}
 const Valuations = Array{ClockValue}
 const Queue = Array{Msg}
-# const Labels = Array{Label}
-
 
 function labels(clocks::Clocks)
     return Array{Label}([c.label for c in clocks])
@@ -217,6 +215,10 @@ function string(δ::And)
     return string("(", string(δ.lhs), ") ∧ (", string(δ.rhs), ")")
 end
 
+function time_step!(clocks::Clocks,time::TimeValue)
+    foreach(c -> c.value += time, clocks)
+end
+
 test_clocks = Clocks([("a",0),("b",1),("c",2),("d",3),("e",4),("f",5)])
 show(test_clocks)
 println()
@@ -237,10 +239,6 @@ println()
 println()
 
 
-
-function time_step!(clocks::Clocks,time::TimeValue)
-    foreach(c -> c.value += time, clocks)
-end
 
 time_step!(test_clocks,TimeValue(3))
 show(test_clocks)
