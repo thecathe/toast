@@ -1,5 +1,10 @@
 import Base.show
 import Base.string
+import Base.iterate
+import Base.getindex
+import Base.length
+import Base.isempty
+import Base.convert
 
 
 const Label = String
@@ -12,6 +17,12 @@ mutable struct Clock
 end
 
 abstract type Constraint end
+
+mutable struct δ 
+    child::Constraint
+    δ(child) = new(child)
+end
+
 struct True <: Constraint
     True() = new(true::Bool)
 end
@@ -39,15 +50,18 @@ struct DiagEq <: Constraint
 end
 # struct Not{Constraint} end
 struct And <: Constraint 
-    lhs::Constraint
-    rhs::Constraint
-    And(lhs,rhs,num) = new(lhs,rhs, num)
+    lhs::δ
+    rhs::δ
+    And(lhs,rhs) = new(lhs,rhs)
 end
 
+function Not!(constraint::δ)
+    constraint.child=Not(constraint.child)
+end
 
 struct Not <: Constraint 
-    child::Constraint
-    Not(child::Constraint) = new(child)
+    child::δ
+    Not(child) = new(child)
 end
 # Not(c::Constraint) = convert(Neg, c)
 # convert(::Type{Neg}, x::Constraint) where {Neg<:Constraint} = Constraint(x)::Constraint
@@ -88,7 +102,25 @@ struct Call <: SessionType end
 
 const Choice = Array{Interaction} <: SessionType
 
-const Clocks = Array{Clock}
+# const Clocks = Array{Clock}
+mutable struct Clocks 
+    children::Array{Clock}
+    Clocks(children) = new(children)
+end
+
+Base.convert(::Type{δ}, constraint::T) where {T<:Constraint} = δ(constraint)
+
+Base.convert(::Type{Clock}, tup::T) where {T<:Tuple{String,Int}} = Clock(tup[1],tup[2])::Clock
+# Base.convert(::Type{Clocks}, vec::T) where {T<:Vector{Clock}} = Clocks([c::Clock for c in vec])::Clocks
+
+Base.length(clocks::Clocks) = length(clocks.children)
+Base.isempty(clocks::Clocks) = isempty(clocks.children)
+Base.getindex(clocks::Clocks, index::Int) = clocks.children[index]
+
+# iterate(clocks::Clocks, index::Int) ->
+Base.iterate(clocks::Clocks) = (isempty(clocks)) ? nothing : (clocks[1], Int(1))
+Base.iterate(clocks::Clocks, state::Int)  = (state >= length(clocks) ? nothing : (clocks[state+1], state+1))
+
 const Resets = Array{Label}
 const Valuations = Array{ClockValue}
 const Queue = Array{Msg}
@@ -124,15 +156,15 @@ struct Cfg
     queue::Queue
 end
 
-function show(label::Label, io::IO = stdout)
+function Base.show(label::Label, io::IO = stdout)
     print(io, label)
 end
 
-function show(val::ClockValue, io::IO = stdout)
+function Base.show(val::ClockValue, io::IO = stdout)
     print(io, "Clock value: ", val)
 end
 
-function show(clock::Clock, io::IO = stdout)
+function Base.show(clock::Clock, io::IO = stdout)
     print(io, "Clock ", clock.label, ": ", clock.value)
 end
 
@@ -148,6 +180,13 @@ end
 
 function show(δ::Constraint, io::IO = stdout)
     print(io, string(δ))
+end
+
+function string(constraint::δ)
+    return string(constraint.child)
+end
+function show(constraint::δ, io::IO = stdout)
+    print(io, string(constraint))
 end
 
 function string(::True)
@@ -175,21 +214,27 @@ function string(δ::Not)
 end
 
 function string(δ::And)
-    return string("(", string(δ.lhs), ") ∧ (", string(δ.lhs), ")")
+    return string("(", string(δ.lhs), ") ∧ (", string(δ.rhs), ")")
 end
 
-test_clocks = Clocks([Clock("a",0),Clock("b",1),Clock("c",2),Clock("d",3),Clock("e",4),Clock("f",5)])
+test_clocks = Clocks([("a",0),("b",1),("c",2),("d",3),("e",4),("f",5)])
 show(test_clocks)
+println()
+println()
 
 show(value_of(test_clocks,Label("c")))
+println()
 println()
 
 test_resets = Resets(["b","d","f"])
 show(test_resets)
 println()
+println()
 
 reset_clocks!(test_clocks,test_resets)
 show(test_clocks)
+println()
+println()
 
 
 
@@ -200,15 +245,23 @@ end
 time_step!(test_clocks,TimeValue(3))
 show(test_clocks)
 println()
+println()
 
-constraint_a = Geq(Label("a"),3)
+
+constraint_a = δ(Geq("a",3))
 show(constraint_a)
 println()
-
-
-show(Not(constraint_a))
 println()
 
 
-# show(Geq(Label("b"),4))
-# println()
+show(Not!(constraint_a))
+println()
+println()
+
+constraint_b = δ(DiagEq("b", "c", 5))
+show(constraint_b)
+println()
+println()
+
+show(And(constraint_a,constraint_b))
+println()
