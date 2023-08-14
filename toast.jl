@@ -70,7 +70,7 @@ module LogicalClocks
     function value_of!(clocks::Clocks,label::Label)
         res = value_of(clocks, label)
         if isempty(res)
-            show(string("value_of! ", label, " was not found: initialising to 0.\n"))
+            # show(string("value_of! ", label, " was not found: initialising to 0.\n"))
             push!(clocks, Clock(label, 0))
             return ClockValue(0)
         else 
@@ -189,6 +189,7 @@ module ClockConstraints
     function Base.string(constraint::δ)
         return string(constraint.child)
     end
+
     function Base.show(constraint::δ, io::IO = stdout)
         print(io, string(constraint))
     end
