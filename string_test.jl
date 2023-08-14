@@ -1,4 +1,5 @@
 import Base.show
+import Base.string
 
 
 const Label = String
@@ -11,27 +12,45 @@ mutable struct Clock
 end
 
 abstract type Constraint end
-struct True <: Constraint end
+struct True <: Constraint
+    True() = new(true::Bool)
+end
 struct Geq <: Constraint 
-    clock::Clock
+    clock::Label
     num::ConstraintValue
+    Geq(clock,num) = new(clock, num)
 end
 struct Eq <: Constraint 
-    clock::Clock
+    clock::Label
     num::ConstraintValue
+    Eq(clock,num) = new(clock, num)
 end
 struct DiagGeq <: Constraint 
-    gtr::Clock
-    lsr::Clock
+    gtr::Label
+    lsr::Label
     num::ConstraintValue
+    DiagGeq(gtr,lsr,num) = new(gtr,lsr, num)
 end
 struct DiagEq <: Constraint 
-    gtr::Clock
-    lsr::Clock
+    gtr::Label
+    lsr::Label
     num::ConstraintValue
+    DiagEq(gtr,lsr,num) = new(gtr,lsr, num)
+end
+# struct Not{Constraint} end
+struct And <: Constraint 
+    lhs::Constraint
+    rhs::Constraint
+    And(lhs,rhs,num) = new(lhs,rhs, num)
 end
 
 
+struct Not <: Constraint 
+    child::Constraint
+    Not(child::Constraint) = new(child)
+end
+# Not(c::Constraint) = convert(Neg, c)
+# convert(::Type{Neg}, x::Constraint) where {Neg<:Constraint} = Constraint(x)::Constraint
 
 abstract type SessionType end
 
@@ -105,6 +124,10 @@ struct Cfg
     queue::Queue
 end
 
+function show(label::Label, io::IO = stdout)
+    print(io, label)
+end
+
 function show(val::ClockValue, io::IO = stdout)
     print(io, "Clock value: ", val)
 end
@@ -123,6 +146,38 @@ function show(clocks::Clocks, io::IO = stdout)
     println("]")
 end
 
+function show(δ::Constraint, io::IO = stdout)
+    print(io, string(δ))
+end
+
+function string(::True)
+    return string(true)
+end
+
+function string(δ::Geq)
+    return string(string(δ.clock), "≥", string(δ.num))
+end
+
+function string(δ::Eq)
+    return string(string(δ.clock), "=", string(δ.num))
+end
+
+function string(δ::DiagGeq)
+    return string(string(δ.gtr), "-", string(δ.lsr), "≥", string(δ.num))
+end
+
+function string(δ::DiagEq)
+    return string(string(δ.gtr), "-", string(δ.lsr), "=", string(δ.num))
+end
+
+function string(δ::Not)
+    return string("¬(", string(δ.child),")")
+end
+
+function string(δ::And)
+    return string("(", string(δ.lhs), ") ∧ (", string(δ.lhs), ")")
+end
+
 test_clocks = Clocks([Clock("a",0),Clock("b",1),Clock("c",2),Clock("d",3),Clock("e",4),Clock("f",5)])
 show(test_clocks)
 
@@ -136,6 +191,8 @@ println()
 reset_clocks!(test_clocks,test_resets)
 show(test_clocks)
 
+
+
 function time_step!(clocks::Clocks,time::TimeValue)
     foreach(c -> c.value += time, clocks)
 end
@@ -144,3 +201,14 @@ time_step!(test_clocks,TimeValue(3))
 show(test_clocks)
 println()
 
+constraint_a = Geq(Label("a"),3)
+show(constraint_a)
+println()
+
+
+show(Not(constraint_a))
+println()
+
+
+# show(Geq(Label("b"),4))
+# println()
