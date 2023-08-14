@@ -68,7 +68,7 @@ struct Call <: SessionType end
 const Choice = Array{Interaction} <: SessionType
 
 const Clocks = Array{Clock}
-const Resets = Array{Char}
+const Resets = Array{Label}
 const Valuations = Array{ClockValue}
 const Queue = Array{Msg}
 # const Labels = Array{Label}
@@ -92,13 +92,13 @@ function Value(clocks::Clocks,label::Label)
     # end
     @assert !isempty(res) "No clock labelled '$(label)' in:\n$(show(clocks))"
     @assert length(res) == 1 "More than one clock labelled '$(label)' in:\n$(show(clocks))"
-    return res
+    return ClockValue(first(res))
 end 
     
 
 function ResetClocks!(clocks::Clocks, resets::Resets)
     # delete clocks to reset
-    deleteat!(clocks,indexin(Labels(clocks), resets))
+    deleteat!(clocks,[(c in resets) ? true : false for c in Labels(clocks)])
     # insert
     foreach(r -> push!(clocks,Clock(r,0)), resets)
 end
@@ -107,6 +107,10 @@ struct Cfg
     valuations::Clocks
     type::SessionType
     queue::Queue
+end
+
+function show(val::ClockValue, io::IO = stdout)
+    print(io, "Clock value: ", val)
 end
 
 function show(clock::Clock, io::IO = stdout)
@@ -127,11 +131,13 @@ test_clocks = Clocks([Clock("a",0),Clock("b",1),Clock("c",2),Clock("d",3),Clock(
 show(test_clocks)
 
 show(Value(test_clocks,Label("c")))
+println()
 
-# test_resets = Resets(["b","d","f"])
-# show(test_resets)
+test_resets = Resets(["b","d","f"])
+show(test_resets)
+println()
 
-# ResetClocks!(test_clocks,test_resets)
-# show(test_resets)
+ResetClocks!(test_clocks,test_resets)
+show(test_clocks)
 
 
