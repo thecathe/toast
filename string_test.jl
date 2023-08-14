@@ -2,8 +2,10 @@ import Base.show
 
 
 const Label = String
-const ClockValue = Real
-struct Clock
+const ClockValue = UInt8
+const TimeValue = UInt8 
+const ConstraintValue = UInt8
+mutable struct Clock
     label::Label
     value::ClockValue
 end
@@ -12,21 +14,21 @@ abstract type Constraint end
 struct True <: Constraint end
 struct Geq <: Constraint 
     clock::Clock
-    num::Real
+    num::ConstraintValue
 end
 struct Eq <: Constraint 
     clock::Clock
-    num::Real
+    num::ConstraintValue
 end
 struct DiagGeq <: Constraint 
     gtr::Clock
     lsr::Clock
-    num::Real
+    num::ConstraintValue
 end
 struct DiagEq <: Constraint 
     gtr::Clock
     lsr::Clock
-    num::Real
+    num::ConstraintValue
 end
 
 
@@ -74,33 +76,27 @@ const Queue = Array{Msg}
 # const Labels = Array{Label}
 
 
-function Labels(clocks::Clocks)
+function labels(clocks::Clocks)
     return Array{Label}([c.label for c in clocks])
 end 
 
-function Values(clocks::Clocks)
+function values(clocks::Clocks)
     return Array{ClockValue}([c.value for c in clocks])
 end 
 
-function Value(clocks::Clocks,label::Label)
-    res = Values(Clocks([clocks[c] for c in indexin(Array{Label}([label]),Labels(clocks)) if !isnothing(c)]))
-    # res = Valuations([])
-    # for c in indexin(Array{Label}([label]), Labels(clocks))
-    #     if !isnothing(c)
-    #         push!(res,clocks[c])
-    #     end
-    # end
+function value_of(clocks::Clocks,label::Label)
+    # res contains all values returned for given clock label
+    res = values(Clocks([clocks[c] for c in indexin(Array{Label}([label]),labels(clocks)) if !isnothing(c)]))
+    # ensure only one value is returned
     @assert !isempty(res) "No clock labelled '$(label)' in:\n$(show(clocks))"
     @assert length(res) == 1 "More than one clock labelled '$(label)' in:\n$(show(clocks))"
     return ClockValue(first(res))
 end 
     
 
-function ResetClocks!(clocks::Clocks, resets::Resets)
-    # delete clocks to reset
-    deleteat!(clocks,[(c in resets) ? true : false for c in Labels(clocks)])
-    # insert
-    foreach(r -> push!(clocks,Clock(r,0)), resets)
+function reset_clocks!(clocks::Clocks, resets::Resets)
+    # set each clock value to 0 if in resets
+    foreach(c -> c.value = (c.label in resets) ? 0 : c.value, clocks)
 end
 
 struct Cfg
@@ -130,14 +126,21 @@ end
 test_clocks = Clocks([Clock("a",0),Clock("b",1),Clock("c",2),Clock("d",3),Clock("e",4),Clock("f",5)])
 show(test_clocks)
 
-show(Value(test_clocks,Label("c")))
+show(value_of(test_clocks,Label("c")))
 println()
 
 test_resets = Resets(["b","d","f"])
 show(test_resets)
 println()
 
-ResetClocks!(test_clocks,test_resets)
+reset_clocks!(test_clocks,test_resets)
 show(test_clocks)
 
+function time_step!(clocks::Clocks,time::TimeValue)
+    foreach(c -> c.value += time, clocks)
+end
+
+time_step!(test_clocks,TimeValue(3))
+show(test_clocks)
+println()
 
