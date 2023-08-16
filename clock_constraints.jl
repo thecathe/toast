@@ -42,35 +42,38 @@ module ClockConstraints
 
     export δ
 
-    # const δExpr = Expr
+    const δExpr = Expr
 
     struct δ <: Constraint 
+        head::Symbol
         args::Array{Any}
-        function δ(args) 
-            supported = [:tt, :not, :and, :eq, :geq, :deq, :dgeq]
-            @assert typeof(first(args))==Symbol "δ must start with a symbol in: '$(string(supported))'"
-            
-            head=first(args)
-            @assert head in supported "δ must start with a symbol in: '$(string(supported))'"
-            deleteat!(args,1)
+        expr::δExpr
+        function δ(head,args...) 
+            supported = [:tt, :not, :and, :eq, :geq, :deq, :dgeq]            
+            @assert head in supported "δ must start ($(head)) with a symbol in: '$(string(supported))'"
 
-            # :and does not use :call
-            if head==:and
-                @assert length(args) == 2
-                Expr(:&&, Constraints(args)...)
-            elseif head==:tt 
-                @assert length(args) == 0
-                Expr(:&&, true)
+            if head==:tt 
+                @assert length(args) == 0 "δ head ($(head)) expects 0 more arguments, not $(length(args)): '$(string(args))'"
+                expr = δExpr(:&&, true)
             elseif head==:not
-                @assert length(args) == 1
-                Expr(:call, :!, args[1])
+                @assert length(args) == 1 "δ head ($(head)) expects 1 more arguments, not $(length(args)): '$(string(args))'"
+                expr = δExpr(:call, [:!, args[1]])
+            elseif head==:and
+                @assert length(args) == 2 "δ head ($(head)) expects 2 more arguments, not $(length(args)): '$(string(args))'"
+                @assert typeof(args[1]) == δ "δ head ($(head)) (#1) expects δ types, not: '$(typeof(args[1]))'"
+                @assert typeof(args[2]) == δ "δ head ($(head)) (#2) expects δ types, not: '$(typeof(args[2]))'"
+                expr = δExpr(:&&, [args[1], args[2]]...)
+            elseif head in [:eq, :geq]
+                @assert length(args) == 2 "δ head ($(head)) expects 2 more arguments, not $(length(args)): '$(string(args))'"
+                expr = δExpr(:call, [get_call_op(head), Label(args[1]), Num(args[2])])
             elseif head in [:deq, :dgeq]
-                @assert length(args) == 3
-                Expr(:call, get_call_op(head), Expr(:call, :-, Label(args[1]), Label(args[2])), Num(args[3]))
+                @assert length(args) == 3 "δ head ($(head)) expects 3 more arguments, not $(length(args)): '$(string(args))'"
+                expr = δExpr(:call, [get_call_op(head), δExpr(:call, :-, Label(args[1]), Label(args[2])), Num(args[3])])
             else
-                @assert length(args) == 2
-                Expr(:call, get_call_op(head), Label(args[1]), Num(args[2]))
+                @error "δ, unknown head: $(head)"
             end
+
+            new(head,[args...],expr)
         end
 
         function get_call_op(head::Symbol)
@@ -86,31 +89,106 @@ module ClockConstraints
         end
     end
     Base.show(d::δ, io::Core.IO = stdout) = print(io, string(d))
-    Base.string(d::δ) = string(d.child)
+
+    function Base.string(d::δ)
+        head = d.head
+
+        if head==:tt
+            string("true")
+        elseif head==:not
+            string("¬(", string(d.args[1]), ")")
+        elseif head==:and
+            string("(", string(d.args[1]), ") ∧ (", string(d.args[2]), ")")
+        elseif head==:eq
+            string(string(d.args[1]), "=", string(d.args[2]))
+        elseif head==:geq
+            string(string(d.args[1]), "≥", string(d.args[2]))
+        elseif head==:deq
+            string(string(d.args[1]), "-", string(d.args[2]), "=", string(d.args[3]))
+        elseif head==:dgeq
+            string(string(d.args[1]), "-", string(d.args[2]), "≥", string(d.args[3]))
+        else
+            string("unknown head: ", string(d.head))
+        end
+    end
+
+    # for sorting out δ args
+    # Base.convert(::Type{Array{Any}}, t::T) where {T<:Tuple} = [t...]
+
+    show(δ(:and, δ(:not, δ(:tt)), δ(:tt)))
+    println()
+    println()
+
+    a = δ(:eq, "x", 3)
+    show(a)
+    println()
+    println()
+
+    b = δ(:not, δ(:eq, "x", 3))
+    show(b)
+    println()
+    println()
+
+    c = δ(:and, δ(:eq, "x", 3), δ(:geq, "y", 4))
+    show(c)
+    println()
+    println()
+
+    d = δ(:deq, "x", "y", 3)
+    show(d)
+    println()
+    println()
 
 
-    δ(s::Symbol) = δ([s])
-    δ(s::Symbol,d::Expr) = δ([s,d])
-    δ(s::Symbol,a::Expr,b::Expr) = δ([s,a,b])
-    δ(s::Symbol,x::Label,n::Num) = δ([s,x,n])
-    δ(s::Symbol,x::Label,y::Label,n::Num) = δ([s,x,y,n])
+    # Base.string(d::δExpr) = string(d.head, d.args...)
+
+    # function Base.string(s::Symbol) 
+    #     @assert s==:tt
+    #     string("true")
+    # end
+
+    # function Base.string(s::Symbol, d::δExpr) 
+    #     @assert s==:not
+    #     string("¬", string(d))
+    # end
+
+    # function Base.string(s::Symbol, a::δExpr, b::δExpr) 
+    #     @assert s==:and 
+    #     string(string(a), " ∧ ", string(b))
+    # end
+
+    # function Base.string(s::Symbol, x::Label, n::Num) 
+    #     @assert s in [:eq, :geq]
+    #     if s == :eq
+    #         string(string(x), "=", string(n))
+    #     else
+    #         string(string(x), "≥", string(n))
+    #     end
+    # end
+
+    # function Base.string(s::Symbol, x::Label, y::Label) 
+    #     @assert s in [:deq, :dgeq]
+    #     if s == :eq
+    #         string(string(x), "=", string(n))
+    #     else
+    #         string(string(x), "≥", string(n))
+    #     end
+    # end
+
+    # δ(s::Symbol) = δ(s)
+    # δ(s::Symbol,d::Expr) = δ(s,d)
+    # δ(s::Symbol,a::Expr,b::Expr) = δ(s,[a,b])
+    # δ(s::Symbol,x::Label,n::Num) = δ(s,[x,n])
+    # δ(s::Symbol,x::Label,y::Label,n::Num) = δ(s,[x,y,n])
 
 
 
-    δ(:eq, "x", 3)
-    δ(:not, δ(:eq, "x", 3))
-    δ(:and, δ(:eq, "x", 3), δ(:geq, "y", 4))
-    δ(:deq, "x", "y", 3)
+    # δ(:eq, "x", 3)
+    # δ(:not, δ(:eq, "x", 3))
+    # δ(:and, δ(:eq, "x", 3), δ(:geq, "y", 4))
+    # δ(:deq, "x", "y", 3)
 
     
-    show(δ(:eq, "x", 3))
-    println()
-    show(δ(:not, δ(:eq, "x", 3)))
-    println()
-    show(δ(:and, δ(:eq, "x", 3), δ(:geq, "y", 4)))
-    println()
-    show(δ(:deq, "x", "y", 3))
-    println()
 
     
     # show(eval(δ(:eq, "x", 3)))
