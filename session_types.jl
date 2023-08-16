@@ -112,5 +112,19 @@ module SessionTypes
     Base.show(s::End, io::Core.IO = stdout) = print(io, string(s))
     Base.string(s::End) = "end"
 
+    struct Def <: SessionType
+        identity::String
+        child::T where {T<:SessionType}
+        Def(identity, child) = new(identity, child)
+    end
+    Base.show(s::Def, io::Core.IO = stdout) = print(io, string(s))
+    Base.string(s::Def) = string("μα\^$(s.identity).", string(s.child))
+
+    struct Call <: SessionType
+        identity::String
+        Call(identity) = new(identity)
+    end
+    Base.show(s::Call, io::Core.IO = stdout) = print(io, string(s))
+    Base.string(s::Call) = string("α\^$(s.identity)")
 
 end
