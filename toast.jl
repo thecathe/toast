@@ -14,9 +14,10 @@ module TOAST
     using .General
         
 
-    show_logical_clock_tests=true::Bool
-    show_session_type_tests=false::Bool
-    show_configuration_tests=false::Bool
+    show_logical_clock_tests=false
+    show_clock_constraints_tests=true
+    show_session_type_tests=false
+    show_configuration_tests=false
 
     include("logical_clocks.jl")
     using .LogicalClocks
@@ -62,6 +63,17 @@ module TOAST
         println()
         
     end
+
+
+    include("clock_constraints.jl")
+    using.ClockConstraints
+
+    if show_clock_constraints_tests
+
+        
+
+    end
+
 
 
     include("session_types.jl")

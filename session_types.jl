@@ -7,6 +7,7 @@ module SessionTypes
 
     using ..General
     using ..LogicalClocks
+    using ..ClockConstraints
 
     abstract type SessionType end
 
