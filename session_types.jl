@@ -62,7 +62,6 @@ module SessionTypes
 
             new(direction,msg,δ,λ,S)
         end
-        depth::UInt8
     end
     Base.show(s::Interaction, io::Core.IO = stdout) = print(io, string(s))
     Base.string(s::Interaction) = string((s.direction == :send) ? "!" : "?", " ", string(s.msg), " (", string(s.δ), ", ", string(s.λ), ").", string(s.S))
@@ -82,23 +81,15 @@ module SessionTypes
 
     struct S <: SessionType
         child::T where {T<:SessionType}
-        S(child, depth=0) = new(child, depth)
-        depth::UInt8
+        S(child) = new(child)
     end
-    # Base.show(s::S, io::Core.IO = stdout) = print(io, string(s))
-    function Base.show(s::S, io::Core.IO = stdout) 
-        # set each childs depth
-        # set_depth(s, 0)
-        # print
-        print(io, string(s))
-    end
+    Base.show(s::S, io::Core.IO = stdout) = print(io, string(s))
     Base.string(s::S) = string(s.child)
 
 
     struct Choice <: SessionType
         children::Array{Interaction}
         Choice(children) = new(children)
-        depth::UInt8
     end
     Base.show(s::Choice, io::Core.IO = stdout) = print(io, string(s))
     function Base.string(s::Choice) 
@@ -106,7 +97,6 @@ module SessionTypes
             string("{ ", join([string(c) for c in s.children], ", "), " }")
         else
             string("{\n ", join([string(" ", string(c)) for c in s.children], ",\n "), "\n}")
-            # string(s.depth, "{\n", join([string(repeat(" ", s.depth), string(c)) for c in s.children], ",\n"), "\n}")
         end
     end         
     
@@ -118,28 +108,9 @@ module SessionTypes
 
     struct End <: SessionType 
         End() = new()
-        depth::UInt8
     end
     Base.show(s::End, io::Core.IO = stdout) = print(io, string(s))
     Base.string(s::End) = "end"
-    
-    function set_depth(s::S, new_depth=0::UInt)
-        s.depth = new_depth
-        set_depth(s.child, new_depth + 1)
-    end
 
-    function set_depth(s::Interaction, parent_depth::UInt8)
-        s.depth = parent_depth + 1
-        set_depth(s.S, parent_depth)
-    end
-    
-    function set_depth(s::Choice, parent_depth::UInt8)
-        s.depth = parent_depth + 1
-        foreach(c -> set_depth(c, parent_depth), s.children)
-    end
-    
-    function set_depth(s::End, parent_depth::UInt8)
-        s.depth = parent_depth + 1
-    end
 
 end
