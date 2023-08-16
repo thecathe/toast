@@ -13,6 +13,7 @@ module TOAST
 
     using .General
         
+    show_all_tests=true
 
     show_logical_clock_tests=false
     show_clock_constraints_tests=false
@@ -24,43 +25,43 @@ module TOAST
     include("logical_clocks.jl")
     using .LogicalClocks
 
-    if show_logical_clock_tests
+    if show_logical_clock_tests || show_all_tests
 
         clocks = Clocks([("a",1),("b",2),("c",3)])
 
-        show(clocks)
+        show(string(clocks,true))
         println()
         println()
         
-        show(value!(clocks,"a"))
+        show(string(value!(clocks,"a"),true))
         println()
         println()
         
-        show(value!(clocks,"z"))
+        show(string(value!(clocks,"z"),true))
         println()
         println()
         
-        show(clocks)
+        show(string(clocks,true))
         println()
         println()
 
         reset!(clocks,[])
-        show(clocks)
+        show(string(clocks,true))
         println()
         println()
         
         reset!(clocks,["a","b"])
-        show(clocks)
+        show(string(clocks,true))
         println()
         println()
         
         time_step!(clocks, 3)
-        show(clocks)
+        show(string(clocks,true))
         println()
         println()
         
         reset!(clocks,["a","b"])
-        show(clocks)
+        show(string(clocks,true))
         println()
         println()
         
@@ -71,7 +72,7 @@ module TOAST
     include("clock_constraints.jl")
     using.ClockConstraints
 
-    if show_clock_constraints_tests
+    if show_clock_constraints_tests || show_all_tests
 
         show(δ(:and, δ(:not, δ(:tt)), δ(:tt)))
         println()
@@ -101,7 +102,10 @@ module TOAST
         e = δ(:and, δ(:not, δ(:and, δ(:eq, "x", 3), δ(:geq, "y", 4))), δ(:and, δ(:eq, "x", 3), δ(:geq, "y", 4)))   
         show(e)
         println()
+        println()
+
         show(flatten(e))
+        println()
         println()
 
     end
@@ -111,74 +115,74 @@ module TOAST
     include("session_types.jl")
     using .SessionTypes
 
-    if show_session_type_tests
+    if show_session_type_tests || show_all_tests
 
-        show(S(Interaction(:send, Msg("a", Data(Int)), C(), [] )) )
-        println()
-        println()
-
-        show(S(Interaction(:send, Msg("a", Data(Int)), C(), [], Interaction(:recv, Msg("b", Data(String)), C(), [], End()))) )
+        show(S(Interaction(:send, Msg("a", Data(Int)), δ(:tt), [] )) )
         println()
         println()
 
-        show(S(Interaction(:send, Msg("a", Data(Int)), C(), [], Interaction(:recv, Msg("b", Data(String)), C(), []))) )
+        show(S(Interaction(:send, Msg("a", Data(Int)), δ(:tt), [], Interaction(:recv, Msg("b", Data(String)), δ(:tt), [], End()))) )
         println()
         println()
 
-        show(S((:send, Msg("a", Data(Int)), C(), [] )) )
+        show(S(Interaction(:send, Msg("a", Data(Int)), δ(:tt), [], Interaction(:recv, Msg("b", Data(String)), δ(:tt), []))) )
         println()
         println()
 
-        show(S((:send, Msg("a", Data(Int)), C(), [], (:recv, Msg("b", Data(String)), C(), [], End()))) )
+        show(S((:send, Msg("a", Data(Int)), δ(:tt), [] )) )
         println()
         println()
 
-        show(S((:send, Msg("a", Data(Int)), C(), [], (:recv, Msg("b", Data(String)), C(), [] ))) )
+        show(S((:send, Msg("a", Data(Int)), δ(:tt), [], (:recv, Msg("b", Data(String)), δ(:tt), [], End()))) )
         println()
         println()
 
-        show(S(Choice([ (:send, Msg("a", Data(Int)), C(), []) ])))
+        show(S((:send, Msg("a", Data(Int)), δ(:tt), [], (:recv, Msg("b", Data(String)), δ(:tt), [] ))) )
+        println()
+        println()
+
+        show(S(Choice([ (:send, Msg("a", Data(Int)), δ(:tt), []) ])))
         println()
         println()
 
         show(S(Choice([ 
-            (:send, Msg("a", Data(Int)), C(), [], (:recv, Msg("b", Data(String)), C(), [], End())) 
+            (:send, Msg("a", Data(Int)), δ(:tt), [], (:recv, Msg("b", Data(String)), δ(:tt), [], End())) 
             ])))
         println()
         println()
 
         show(S(Choice([ 
-            (:send, Msg("a", Data(Int)), C(), [], (:recv, Msg("b", Data(String)), C(), [])) 
+            (:send, Msg("a", Data(Int)), δ(:tt), [], (:recv, Msg("b", Data(String)), δ(:tt), [])) 
             ])))
         println()
         println()
 
         show(S(Choice([ 
-            (:send, Msg("a", Data(Int)), C(), []), 
-            (:send, Msg("c", Data(Int)), C(), []) 
+            (:send, Msg("a", Data(Int)), δ(:tt), []), 
+            (:send, Msg("c", Data(Int)),δ(:tt), []) 
             ])))
         println()
         println()
 
         show(S(Choice([ 
-            (:send, Msg("a", Data(Int)), C(), []), 
-            (:recv, Msg("b", Data(String)), C(), [], (:send, Msg("c", Data(Int)), C(), [])) 
+            (:send, Msg("a", Data(Int)), δ(:tt), []), 
+            (:recv, Msg("b", Data(String)), δ(:tt), [], (:send, Msg("c", Data(Int)), δ(:tt), [])) 
             ])))
         println()
         println()
 
         show(S(Choice([ 
-            (:send, Msg("a", Data(Int)), C(), []), 
-            (:recv, Msg("b", Data(String)), C(), [], (:send, Msg("c", Data(Int)), C(), [])),
-            (:send, Msg("d", Data(Int)), C(), [], Choice([
-                    (:send, Msg("e", Data(Int)), C(), []),
-                    (:send, Msg("f", Data(Int)), C(), [], (:send, Msg("g", Data(Int)), C(), []))
+            (:send, Msg("a", Data(Int)), δ(:tt), []), 
+            (:recv, Msg("b", Data(String)), δ(:tt), [], (:send, Msg("c", Data(Int)), δ(:tt), [])),
+            (:send, Msg("d", Data(Int)), δ(:tt), [], Choice([
+                    (:send, Msg("e", Data(Int)), δ(:tt), []),
+                    (:send, Msg("f", Data(Int)), δ(:tt), [], (:send, Msg("g", Data(Int)), δ(:tt), []))
                 ])) 
             ])))
         println()
         println()
 
-        show(S(Def("a", (:send, Msg("a", Data(Int)), C(), [], (:send, Msg("a", Data(Int)), C(), [] ) ))) )
+        show(S(Def("a", (:send, Msg("a", Data(Int)), δ(:tt), [], (:send, Msg("a", Data(Int)), δ(:tt), [] ) ))) )
         println()
         println()
 
@@ -186,11 +190,11 @@ module TOAST
         println()
         println()
 
-        show(S(Def("a", (:send, Msg("a", Data(Int)), C(), [], Call("a") ))) )
+        show(S(Def("a", (:send, Msg("a", Data(Int)), δ(:tt), [], Call("a") ))) )
         println()
         println()
 
-        show(S((:send, Msg("a", Data(Int)), C(), [], Def("a", (:send, Msg("a", Data(Int)), C(), [], Call("a")  ) ))) )
+        show(S((:send, Msg("a", Data(Int)), δ(:tt), [], Def("a", (:send, Msg("a", Data(Int)), δ(:tt), [], Call("a")  ) ))) )
         println()
         println()
     end
@@ -200,7 +204,7 @@ module TOAST
     include("configurations.jl")
     using .Configurations
 
-    if show_configuration_tests
+    if show_configuration_tests || show_all_tests
 
     end
 

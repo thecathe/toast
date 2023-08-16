@@ -47,19 +47,19 @@ module SessionTypes
     
     struct Msgs
         children::Array{Msg}
-        Clocks(children) = new(children)
+        Msgs(children) = new(children)
     end
-    Base.show(m::Msg, io::Core.IO = stdout) = print(io, string(m))
-    Base.string(m::Msg) = string(join([string(x) for x in m], ", "))
+    Base.show(m::Msgs, io::Core.IO = stdout) = print(io, string(m))
+    Base.string(m::Msgs) = string(join([string(x) for x in m], ", "))
 
-    Base.push!(m::Msg, x::Clock) = push!(m.children, x)
+    Base.push!(m::Msgs, x::Msg) = push!(m.children, x)
 
-    Base.length(m::Msg) = length(m.children)
-    Base.isempty(m::Msg) = isempty(m.children)
-    Base.getindex(m::Msg, i::Int) = getindex(m.children, i)
+    Base.length(m::Msgs) = length(m.children)
+    Base.isempty(m::Msgs) = isempty(m.children)
+    Base.getindex(m::Msgs, i::Int) = getindex(m.children, i)
 
-    Base.iterate(m::Msg) = isempty(c) ? nothing : (m[1], Int(1))
-    Base.iterate(m::Msg, i::Int) = (i >= length(c)) ? nothing : (m[i+1], i+1)
+    Base.iterate(m::Msgs) = isempty(c) ? nothing : (m[1], Int(1))
+    Base.iterate(m::Msgs, i::Int) = (i >= length(c)) ? nothing : (m[i+1], i+1)
 
 
 
@@ -79,7 +79,7 @@ module SessionTypes
         end
     end
     Base.show(s::Interaction, io::Core.IO = stdout) = print(io, string(s))
-    Base.string(s::Interaction) = string((s.direction == :send) ? "!" : "?", " ", string(s.msg), " (", string(s.δ), ", ", string(s.λ), ").", string(s.S))
+    Base.string(s::Interaction, verbose::Bool = false) = string((s.direction == :send) ? "!" : "?", " ", string(s.msg), " (", string(s.δ), ", ", string(s.λ), ").", verbose ? string(s.S) : string("S"))
 
     # convert within Choice
     Base.convert(::Type{Interaction}, i::T) where {T<:Tuple{Symbol, Msg, Constraint, Array{Any}}} = Interaction(i[1], i[2], i[3], (isempty(i[4]) ? Array{Label}[] : Array{Label}(i[4]) ))
@@ -107,11 +107,11 @@ module SessionTypes
         Choice(children) = new(children)
     end
     Base.show(s::Choice, io::Core.IO = stdout) = print(io, string(s))
-    function Base.string(s::Choice) 
-        if length(s) <= 1
-            string("{ ", join([string(c) for c in s.children], ", "), " }")
-        else
+    function Base.string(s::Choice, verbose::Bool = false) 
+        if verbose && length(s) > 1
             string("{\n ", join([string(" ", string(c)) for c in s.children], ",\n "), "\n}")
+        else
+            string("{ ", join([string(c) for c in s.children], ", "), " }")
         end
     end         
     
@@ -129,11 +129,11 @@ module SessionTypes
 
     struct Def <: SessionType
         identity::String
-        child::T where {T<:SessionType}
-        Def(identity, child) = new(identity, child)
+        S::T where {T<:SessionType}
+        Def(identity, S) = new(identity, S)
     end
     Base.show(s::Def, io::Core.IO = stdout) = print(io, string(s))
-    Base.string(s::Def) = string("μα[$(s.identity)].", string(s.child))
+    Base.string(s::Def, verbose::Bool = false) = string("μα[$(s.identity)].", verbose ? string(s.S) : string("S"))
 
     # convert when tail is Def
     Base.convert(::Type{Interaction}, i::T) where {T<:Tuple{Symbol, Msg, Constraint, Array{Any}, Def}} = Interaction(i[1], i[2], i[3], (isempty(i[4]) ? Array{Label}[] : Array{Label}(i[4]) ), i[5])
