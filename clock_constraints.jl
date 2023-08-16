@@ -22,13 +22,13 @@ module ClockConstraints
     export Constraints
 
     mutable struct Constraints <: Constraint
-        children::Array{Expr}
+        children::Array{Constraint}
         function Constraints(children)
             new(children)
         end
     end
     Base.show(ds::Constraints, io::Core.IO = stdout) = print(io, string(ds))
-    Base.string(ds::Constraints) = string(join([string(d) for d in ds], ", "))
+    Base.string(ds::Constraints) = string(join([string(d) for d in ds], " ∧ "))
     
     Base.push!(ds::Constraints, d::Constraint) = push!(ds.children, d)
 
@@ -96,7 +96,7 @@ module ClockConstraints
         if head==:tt
             string("true")
         elseif head==:not
-            string("¬(", string(d.args[1]), ")")
+            string("¬", string(d.args[1]))
         elseif head==:and
             string("(", string(d.args[1]), ") ∧ (", string(d.args[2]), ")")
         elseif head==:eq
@@ -112,118 +112,30 @@ module ClockConstraints
         end
     end
 
-    # for sorting out δ args
-    # Base.convert(::Type{Array{Any}}, t::T) where {T<:Tuple} = [t...]
-
-    show(δ(:and, δ(:not, δ(:tt)), δ(:tt)))
-    println()
-    println()
-
-    a = δ(:eq, "x", 3)
-    show(a)
-    println()
-    println()
-
-    b = δ(:not, δ(:eq, "x", 3))
-    show(b)
-    println()
-    println()
-
-    c = δ(:and, δ(:eq, "x", 3), δ(:geq, "y", 4))
-    show(c)
-    println()
-    println()
-
-    d = δ(:deq, "x", "y", 3)
-    show(d)
-    println()
-    println()
-
-
-    # Base.string(d::δExpr) = string(d.head, d.args...)
-
-    # function Base.string(s::Symbol) 
-    #     @assert s==:tt
-    #     string("true")
-    # end
-
-    # function Base.string(s::Symbol, d::δExpr) 
-    #     @assert s==:not
-    #     string("¬", string(d))
-    # end
-
-    # function Base.string(s::Symbol, a::δExpr, b::δExpr) 
-    #     @assert s==:and 
-    #     string(string(a), " ∧ ", string(b))
-    # end
-
-    # function Base.string(s::Symbol, x::Label, n::Num) 
-    #     @assert s in [:eq, :geq]
-    #     if s == :eq
-    #         string(string(x), "=", string(n))
-    #     else
-    #         string(string(x), "≥", string(n))
-    #     end
-    # end
-
-    # function Base.string(s::Symbol, x::Label, y::Label) 
-    #     @assert s in [:deq, :dgeq]
-    #     if s == :eq
-    #         string(string(x), "=", string(n))
-    #     else
-    #         string(string(x), "≥", string(n))
-    #     end
-    # end
-
-    # δ(s::Symbol) = δ(s)
-    # δ(s::Symbol,d::Expr) = δ(s,d)
-    # δ(s::Symbol,a::Expr,b::Expr) = δ(s,[a,b])
-    # δ(s::Symbol,x::Label,n::Num) = δ(s,[x,n])
-    # δ(s::Symbol,x::Label,y::Label,n::Num) = δ(s,[x,y,n])
-
-
-
-    # δ(:eq, "x", 3)
-    # δ(:not, δ(:eq, "x", 3))
-    # δ(:and, δ(:eq, "x", 3), δ(:geq, "y", 4))
-    # δ(:deq, "x", "y", 3)
-
     
-
-    
-    # show(eval(δ(:eq, "x", 3)))
-    # println()
-    # show(eval(δ(:not, δ(:eq, "x", 3))))
-    # println()
-    # show(eval(δ(:and, δ(:eq, "x", 3), δ(:geq, "y", 4))))
-    # println()
-    # show(eval(δ(:deq, "x", "y", 3)))
-    # println()
-    # println()
-
-
-    # # Expr(:eq, x, n)
-
-    # # Expr(:eq, x::Label, n::ConstraintConstant) <: Constraint = 
-    # Base.convert(::Type{Expr}, d::T) where {T<:Tuple{Symbol,Label,Num}} = δExpr(d[1],d[2],d[3])
-    
-    # test = δ( (:eq, "a", 3) )
-    # show(test)
-
-
-    # Base.eval(d::δ) = eval(d.child)
-    # function Base.eval(d::δExpr) 
-
-    # end
-
-    # δExpr(:eq, x::Label, n::Num) = 
-
-
-
-
+    export flatten
 
     # flatten constraint tree into conjunctive list
-    function flatten(d::δ)
-        return Constraints([])
+    function flatten(d::δ, neg::Bool = false) 
+        if d.head==:and 
+            if neg
+                Constraints([flatten(δ(:not,δ(d.args[1].head,d.args[1].args...)),neg),flatten(δ(:not,δ(d.args[2].head,d.args[2].args...)),neg)]) 
+            else 
+                Constraints([flatten(δ(d.args[1].head,d.args[1].args...),neg),flatten(δ(d.args[2].head,d.args[2].args...),neg)]) 
+            end
+        elseif d.head==:not
+            if neg
+                Constraints([flatten(δ(:not,δ(d.args[1].head,d.args[1].args...)),false)...])
+            else 
+                Constraints([flatten(δ(d.args[1].head,d.args[1].args...),true)...])
+            end
+        else
+            if neg
+                Constraints([δ(:not,d)])
+            else 
+                Constraints([d])
+            end
+        end
     end
+
 end
