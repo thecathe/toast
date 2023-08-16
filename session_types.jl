@@ -4,15 +4,11 @@ module SessionTypes
     import Base.show
     import Base.string
 
-    import ..Clocks.Constraint
+
+    using ..General
+    using ..LogicalClocks
 
     abstract type SessionType end
-
-    const Label = String 
-    const Labels = Array{Label}
-    Base.convert(::Type{Array{Label}}, l::T) where {T<:Vector{Any}} = Array{Label}(l)
-
-    Base.string(l::Labels) = isempty(l) ? string("∅") : string("{", join(l), "}")
 
     # messages 
     export Msg, Data, Delegation

@@ -1,14 +1,66 @@
 module TOAST
 
-    show_clock_tests=false::Bool
-    show_session_type_tests=true::Bool
+    module General
+        
+        export Label, Labels
+        const Label = String 
+        const Labels = Array{Label}
+        Base.show(l::Labels, io::Core.IO = stdout) = print(io, string(l))
+        Base.string(l::Labels) = isempty(l) ? string("∅") : string("{", join(l), "}")
+        
+        Base.convert(::Type{Array{Label}}, l::T) where {T<:Vector{Any}} = Array{Label}(l)
+    end
+
+    using .General
+        
+
+    show_logical_clock_tests=true::Bool
+    show_session_type_tests=false::Bool
     show_configuration_tests=false::Bool
 
-    include("clocks.jl")
-    using .Clocks
+    include("logical_clocks.jl")
+    using .LogicalClocks
 
-    if show_clock_tests
+    if show_logical_clock_tests
 
+        clocks = Clocks([("a",1),("b",2),("c",3)])
+
+        show(clocks)
+        println()
+        println()
+        
+        show(value!(clocks,"a"))
+        println()
+        println()
+        
+        show(value!(clocks,"z"))
+        println()
+        println()
+        
+        show(clocks)
+        println()
+        println()
+
+        reset!(clocks,[])
+        show(clocks)
+        println()
+        println()
+        
+        reset!(clocks,["a","b"])
+        show(clocks)
+        println()
+        println()
+        
+        time_step!(clocks, 3)
+        show(clocks)
+        println()
+        println()
+        
+        reset!(clocks,["a","b"])
+        show(clocks)
+        println()
+        println()
+        
     end
 
 
