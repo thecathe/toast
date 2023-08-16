@@ -12,7 +12,7 @@ module SessionTypes
     abstract type SessionType end
 
     # messages 
-    export Msg, Data, Delegation
+    export Msgs, Msg, Data, Delegation
 
     abstract type Payload end
     struct Delegation <: Payload 
@@ -44,9 +44,27 @@ module SessionTypes
     Base.show(m::Msg, io::Core.IO = stdout) = print(io, string(m))
     Base.string(m::Msg) = string(m.label, "<", string(m.payload), ">")
 
+    
+    struct Msgs
+        children::Array{Msg}
+        Clocks(children) = new(children)
+    end
+    Base.show(m::Msg, io::Core.IO = stdout) = print(io, string(m))
+    Base.string(m::Msg) = string(join([string(x) for x in m], ", "))
+
+    Base.push!(m::Msg, x::Clock) = push!(m.children, x)
+
+    Base.length(m::Msg) = length(m.children)
+    Base.isempty(m::Msg) = isempty(m.children)
+    Base.getindex(m::Msg, i::Int) = getindex(m.children, i)
+
+    Base.iterate(m::Msg) = isempty(c) ? nothing : (m[1], Int(1))
+    Base.iterate(m::Msg, i::Int) = (i >= length(c)) ? nothing : (m[i+1], i+1)
+
+
 
     # session types
-    export S, Choice, Interaction, End, Def, Call
+    export SessionType, S, Choice, Interaction, End, Def, Call
 
     struct Interaction <: SessionType
         direction::Symbol

@@ -19,6 +19,8 @@ module TOAST
     show_session_type_tests=false
     show_configuration_tests=false
 
+
+
     include("logical_clocks.jl")
     using .LogicalClocks
 
@@ -63,6 +65,7 @@ module TOAST
         println()
         
     end
+
 
 
     include("clock_constraints.jl")
@@ -192,6 +195,8 @@ module TOAST
         println()
     end
 
+
+    
     include("configurations.jl")
     using .Configurations
 
