@@ -15,7 +15,7 @@ module TOAST
         
 
     show_logical_clock_tests=false
-    show_clock_constraints_tests=true
+    show_clock_constraints_tests=false
     show_session_type_tests=false
     show_configuration_tests=false
 
