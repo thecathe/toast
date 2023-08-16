@@ -70,7 +70,36 @@ module TOAST
 
     if show_clock_constraints_tests
 
-        
+        show(δ(:and, δ(:not, δ(:tt)), δ(:tt)))
+        println()
+        println()
+
+        a = δ(:eq, "x", 3)
+        show(a)
+        println()
+        println()
+
+        b = δ(:not, δ(:eq, "x", 3))
+        show(b)
+        println()
+        println()
+
+        c = δ(:and, δ(:eq, "x", 3), δ(:geq, "y", 4))
+        show(c)
+        println()
+        println()
+
+        d = δ(:deq, "x", "y", 3)
+        show(d)
+        println()
+        println()
+
+
+        e = δ(:and, δ(:not, δ(:and, δ(:eq, "x", 3), δ(:geq, "y", 4))), δ(:and, δ(:eq, "x", 3), δ(:geq, "y", 4)))   
+        show(e)
+        println()
+        show(flatten(e))
+        println()
 
     end
 
