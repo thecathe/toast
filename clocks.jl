@@ -2,6 +2,7 @@ module Clocks
 
     import Base.show
     import Base.string
+    import Base.convert
 
     export Constraint, C
 

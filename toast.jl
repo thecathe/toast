@@ -7,7 +7,71 @@ module TOAST
     using .SessionTypes
 
     # show(Msg("test", Data(3)))
+    # show(Msg("test", Data(String)))
 
-    show(S(Choice([ (:send, Msg("test", Data(3)), C(), []) ])))
+    show(S(Interaction(:send, Msg("a", Data(Int)), C(), [] )) )
+    println()
+    println()
+
+    show(S(Interaction(:send, Msg("a", Data(Int)), C(), [], Interaction(:recv, Msg("b", Data(String)), C(), [], End()))) )
+    println()
+    println()
+
+    show(S(Interaction(:send, Msg("a", Data(Int)), C(), [], Interaction(:recv, Msg("b", Data(String)), C(), []))) )
+    println()
+    println()
+
+    show(S((:send, Msg("a", Data(Int)), C(), [] )) )
+    println()
+    println()
+
+    show(S((:send, Msg("a", Data(Int)), C(), [], (:recv, Msg("b", Data(String)), C(), [], End()))) )
+    println()
+    println()
+
+    show(S((:send, Msg("a", Data(Int)), C(), [], (:recv, Msg("b", Data(String)), C(), [] ))) )
+    println()
+    println()
+
+    show(S(Choice([ (:send, Msg("a", Data(Int)), C(), []) ])))
+    println()
+    println()
+
+    show(S(Choice([ 
+        (:send, Msg("a", Data(Int)), C(), [], (:recv, Msg("b", Data(String)), C(), [], End())) 
+        ])))
+    println()
+    println()
+
+    show(S(Choice([ 
+        (:send, Msg("a", Data(Int)), C(), [], (:recv, Msg("b", Data(String)), C(), [])) 
+        ])))
+    println()
+    println()
+
+    show(S(Choice([ 
+        (:send, Msg("a", Data(Int)), C(), []), 
+        (:send, Msg("c", Data(Int)), C(), []) 
+        ])))
+    println()
+    println()
+
+    show(S(Choice([ 
+        (:send, Msg("a", Data(Int)), C(), []), 
+        (:recv, Msg("b", Data(String)), C(), [], (:send, Msg("c", Data(Int)), C(), [])) 
+        ])))
+    println()
+    println()
+
+    show(S(Choice([ 
+        (:send, Msg("a", Data(Int)), C(), []), 
+        (:recv, Msg("b", Data(String)), C(), [], (:send, Msg("c", Data(Int)), C(), [])),
+        (:send, Msg("d", Data(Int)), C(), [], Choice([
+                (:send, Msg("e", Data(Int)), C(), []),
+                (:send, Msg("f", Data(Int)), C(), [], (:send, Msg("g", Data(Int)), C(), []))
+            ])) 
+        ])))
+    println()
+    println()
 
 end
