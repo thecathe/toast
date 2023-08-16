@@ -74,4 +74,20 @@ module TOAST
     println()
     println()
 
+    show(S(Def("a", (:send, Msg("a", Data(Int)), C(), [], (:send, Msg("a", Data(Int)), C(), [] ) ))) )
+    println()
+    println()
+
+    show(S(Def("a",  Call("a") )) )
+    println()
+    println()
+
+    show(S(Def("a", (:send, Msg("a", Data(Int)), C(), [], Call("a") ))) )
+    println()
+    println()
+
+    show(S((:send, Msg("a", Data(Int)), C(), [], Def("a", (:send, Msg("a", Data(Int)), C(), [], Call("a")  ) ))) )
+    println()
+    println()
+
 end

@@ -49,7 +49,7 @@ module SessionTypes
 
 
     # session types
-    export S, Choice, Interaction, End
+    export S, Choice, Interaction, End, Def, Call
 
     struct Interaction <: SessionType
         direction::Symbol
@@ -118,13 +118,27 @@ module SessionTypes
         Def(identity, child) = new(identity, child)
     end
     Base.show(s::Def, io::Core.IO = stdout) = print(io, string(s))
-    Base.string(s::Def) = string("μα\^$(s.identity).", string(s.child))
+    Base.string(s::Def) = string("μα[$(s.identity)].", string(s.child))
+
+    # convert when tail is Def
+    Base.convert(::Type{Interaction}, i::T) where {T<:Tuple{Symbol, Msg, Constraint, Array{Any}, Def}} = Interaction(i[1], i[2], i[3], (isempty(i[4]) ? Array{Label}[] : Array{Label}(i[4]) ), i[5])
+
+    # convert within S with tail
+    Base.convert(::Type{SessionType}, i::T) where {T<:Tuple{Symbol, Msg, Constraint, Array{Any}, Def}} = Interaction(i[1], i[2], i[3], (isempty(i[4]) ? Array{Label}[] : Array{Label}(i[4]) ), i[5])
+
+
 
     struct Call <: SessionType
         identity::String
         Call(identity) = new(identity)
     end
     Base.show(s::Call, io::Core.IO = stdout) = print(io, string(s))
-    Base.string(s::Call) = string("α\^$(s.identity)")
+    Base.string(s::Call) = string("α[$(s.identity)]")
+
+    # convert when tail is Call
+    Base.convert(::Type{Interaction}, i::T) where {T<:Tuple{Symbol, Msg, Constraint, Array{Any}, Call}} = Interaction(i[1], i[2], i[3], (isempty(i[4]) ? Array{Label}[] : Array{Label}(i[4]) ), i[5])
+
+    # convert within S with tail
+    Base.convert(::Type{SessionType}, i::T) where {T<:Tuple{Symbol, Msg, Constraint, Array{Any}, Call}} = Interaction(i[1], i[2], i[3], (isempty(i[4]) ? Array{Label}[] : Array{Label}(i[4]) ), i[5])
 
 end
