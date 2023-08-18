@@ -106,5 +106,16 @@ module LogicalClocks
         v.system.value += t.value
         time_Step!(v.clocks,t)
     end
+    
+    # resets clocks with labels to 0
+    reset!(v::Valuations, l::Array{Any}) = reset!(v,Labels(l))
+    function reset!(v::Valuations, l::Labels) 
+        @assert v.system.label in l == false "Global-system clock '$(v.system.label)' cannot be reset to 0!"
+        # for each label a in l
+        # if a value already exists for a
+        # then set a to 0
+        # (use value! of clock to ensure that any new clocks are initialised to 0)
+        foreach(a -> if (value!(v.clocks,a) == (~,~,true))  getindex(v,findfirst(x -> x.label == l, v)).value = ClockValue(0) end, l)
+    end
 
 end
