@@ -145,7 +145,8 @@ module SessionTypes
 
     struct Call <: SessionType
         identity::String
-        Call(identity) = new(identity)
+        iteration::UInt8
+        Call(identity,iteration=0) = new(identity,iteration)
     end
     Base.show(s::Call, io::Core.IO = stdout) = print(io, string(s))
     Base.string(s::Call) = string("α[$(s.identity)]")
