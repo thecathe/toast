@@ -8,6 +8,8 @@ module Evaluate
     using ..ClockConstraints
     using ..ClockValuations
 
+    export Eval
+
     # evaluate constraint against clocks
     struct Eval
         v::Valuations

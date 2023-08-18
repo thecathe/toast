@@ -1,5 +1,14 @@
 module TOAST
 
+    show_all_tests=false
+
+    show_logical_clock_tests=false
+    show_clock_constraints_tests=false
+    show_session_type_tests=false
+    show_clock_valuations_tests=true
+    show_evaluate_tests=true
+    show_configuration_tests=false
+
     module General
 
         import Base.show
@@ -44,14 +53,6 @@ module TOAST
 
     using .General
         
-    show_all_tests=false
-
-    show_logical_clock_tests=false
-    show_clock_constraints_tests=false
-    show_session_type_tests=false
-    show_clock_valuations_tests=true
-    show_configuration_tests=false
-
     function printlines() 
         println()
         println()
@@ -234,6 +235,16 @@ module TOAST
         printlines() 
 
     end
+
+    
+    include("evaluate.jl")
+    using .Evaluate
+
+    if show_evaluate_tests || show_all_tests
+        
+    end
+
+
     
     include("configurations.jl")
     using .Configurations
