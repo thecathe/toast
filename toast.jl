@@ -65,11 +65,11 @@ module TOAST
         println()
         println()
         
-        show(string(LogicalClocks.clock_value!(clocks,"a"),true))
+        show(string(value!(clocks,"a"),true))
         println()
         println()
         
-        show(string(LogicalClocks.clock_value!(clocks,"z"),true))
+        show(string(value!(clocks,"z"),true))
         println()
         println()
         
@@ -77,22 +77,22 @@ module TOAST
         println()
         println()
 
-        LogicalClocks.reset_clocks!(clocks,[])
+        reset!(clocks,[])
         show(string(clocks,true))
         println()
         println()
         
-        LogicalClocks.reset_clocks!(clocks,["a","b"])
+        reset!(clocks,["a","b"])
         show(string(clocks,true))
         println()
         println()
         
-        time_pass!(clocks, 3)
+        time_step!(clocks, 3)
         show(string(clocks,true))
         println()
         println()
         
-        LogicalClocks.reset_clocks!(clocks,["a","b"])
+        reset!(clocks,["a","b"])
         show(string(clocks,true))
         println()
         println()
@@ -250,22 +250,22 @@ module TOAST
         println()
         println()
 
-        time_step!(a,1)
-        show(a)
+        # time_step!(a,1)
+        show(TimeStep!(a,1))
         println()
         println()
 
-        reset!(a,["b","c"])
-        show(a)
+        # reset!(a,["b","c"])
+        show(Reset!(a,["b","c","y"]))
         println()
         println()
 
-        show(ClockValuations.value!(a,"z"))
+        show(Value!(a,"z"))
         println()
         println()
 
-        time_step!(a,3)
-        show(a)
+        # time_step!(a,3)
+        show(TimeStep!(a,3))
         println()
         println()
 
