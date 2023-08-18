@@ -68,7 +68,7 @@ module LogicalClocks
             return (ClockValue(first(values)), l, true)
         else
             push!(c, Clock(l, offset))
-            return (offset, l, false)
+            return (ClockValue(offset), l, false)
         end
     end
 

@@ -49,6 +49,8 @@ module TOAST
         Base.iterate(l::Labels) = isempty(l) ? nothing : (getindex(l,1), Int(1))
         Base.iterate(l::Labels, i::Int) = (i >= length(l)) ? nothing : (getindex(l,i+1), i+1)
 
+        export Num
+        const Num = T where {T<:Number}
     end
 
     using .General
@@ -241,7 +243,43 @@ module TOAST
     using .Evaluate
 
     if show_evaluate_tests || show_all_tests
-        
+
+        clocks = Clocks([("a",1),("b",2),("c",3)])
+        v = Valuations(clocks)
+
+        a = δ(:eq, "x", 3)
+        # b = δ(:not, a)
+        # c = δ(:and, a, δ(:geq, "y", 4))
+        b = δ(:not, δ(:eq, "x", 3))
+        c = δ(:and, δ(:eq, "x", 3), δ(:geq, "y", 4))
+        d = δ(:deq, "x", "y", 3)
+        e = δ(:and, δ(:not, δ(:and, δ(:eq, "w", 3), δ(:geq, "x", 4))), δ(:and, δ(:eq, "y", 3), δ(:geq, "z", 4)))   
+
+
+        show(Eval(v,a))
+        printlines()
+        show(Eval(v,b))
+        printlines()
+        show(Eval(v,c))
+        printlines()
+        show(Eval(v,d))
+        printlines()
+        show(Eval(v,e))
+        printlines()
+
+
+        # show(a)
+        # printlines()
+
+        # show(b)
+        # printlines()
+
+        # show(c)
+        # printlines()
+
+        # show(d)
+        # printlines()
+
     end
 
 

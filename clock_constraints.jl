@@ -17,7 +17,6 @@ module ClockConstraints
 
     abstract type Constraint end
 
-    const Num = T where {T<:Number}
 
     export Constraints
 
@@ -148,7 +147,7 @@ module ClockConstraints
             elseif d.head in [:eq,:geq]
                 @assert length(d.args) == 2 "get_labels expected '($(d.head))' to only have (2) arguments, not ($(length(d.args))): $(string(d.args))"
                 push!(label_builder, Labels([(d.args[1])])...)
-            elseif d.head in [:geq,:dgeq]
+            elseif d.head in [:deq,:dgeq]
                 @assert length(d.args) == 3 "get_labels expected '($(d.head))' to only have (3) arguments, not ($(length(d.args))): $(string(d.args))"
                 push!(label_builder, Labels([(d.args[1]),(d.args[2])])...)
             else
@@ -162,9 +161,14 @@ module ClockConstraints
 
     # return list of relevant clocks in constraint
     struct ConstrainedClocks
-        δ::Constraints
+        δ::δ
+        flattened::Constraints
         labels::Labels
-        ConstrainedClocks(δ::Constraints) = new(δ,Labels([c for c in get_labels(δ)],true))
+        function ConstrainedClocks(δ::δ) 
+            # @assert typeof(δ)==Constraints 
+            _flattened = flatten(δ)
+            new(δ,_flattened,Labels([c for c in get_labels(_flattened)],true))
+        end
     end
 
 
