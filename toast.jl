@@ -250,12 +250,10 @@ module TOAST
         println()
         println()
 
-        # time_step!(a,1)
         show(TimeStep!(a,1))
         println()
         println()
 
-        # reset!(a,["b","c"])
         show(Reset!(a,["b","c","y"]))
         println()
         println()
@@ -264,7 +262,6 @@ module TOAST
         println()
         println()
 
-        # time_step!(a,3)
         show(TimeStep!(a,3))
         println()
         println()
