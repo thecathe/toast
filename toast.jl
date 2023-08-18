@@ -18,6 +18,7 @@ module TOAST
     show_logical_clock_tests=false
     show_clock_constraints_tests=false
     show_session_type_tests=false
+    show_clock_valuations_tests=false
     show_configuration_tests=false
 
 
@@ -199,7 +200,13 @@ module TOAST
         println()
     end
 
+ 
+    include("clock_valuations.jl")
+    using .ClockValuations
 
+    if show_clock_valuations_tests || show_all_tests
+
+    end
     
     include("configurations.jl")
     using .Configurations
