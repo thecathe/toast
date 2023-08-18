@@ -30,7 +30,7 @@ module ClockValuations
     end
     Base.show(v::Valuations, io::Core.IO = stdout) = print(io, string(v))
     Base.show(v::Valuations, verbose::Bool, io::Core.IO = stdout) = print(io, string(v,verbose))
-    Base.string(v::Valuations, verbose::Bool = false) = string(join(Labels([string(v.system), Labels([string(c) for c in v.clocks])...]), ", "))
+    Base.string(v::Valuations, verbose::Bool = true) = string(join(Labels([string(v.system), Labels([string(c) for c in v.clocks])...]), ", "))
 
 
     Base.length(v::Valuations) = length(v.clocks)
@@ -87,7 +87,6 @@ module ClockValuations
             # if a value already exists for a
             # then set a to 0
             # (use value! of clock to ensure that any new clocks are initialised to 0)
-            # foreach(a -> if (LogicalClocks.clock_value!(v.clocks,a,v.system.value) == (~,~,true))  getindex(v,findfirst(x -> x.label == a, v)).value = ClockValue(0) end, l)
             for a in l
                 if value!(v.clocks,a,0)[3]
                     for x in v

@@ -97,11 +97,7 @@ module Evaluate
         children::Evaluations
         result::Bool
         function Eval(v,d)
-            # make sure all clocks are initialised
             _constrained::Labels = ConstrainedClocks(d).labels
-            # foreach(l -> value!(v.clocks,l,v.system.value), _constrained.children)
-            # _labels = labels(v.clocks)
-            # @assert !(false in [l in _labels for l in _constrained.children])
 
             # store result in children
             _children = Evaluations([δEval(v,c) for c in flatten(d)])
@@ -115,11 +111,7 @@ module Evaluate
             new(v,d,_constrained,_children,_result)
         end
     end
-    # Base.show(d::Eval, io::Core.IO = stdout) = print(io, string(d))
-    function Base.show(d::Eval, io::Core.IO = stdout) 
-        print(io, string(d))
-        # println(io, string(string(d.v), " ⊧ ", string(d.δ), " = ", string(d.result)))
-    end
+    Base.show(d::Eval, io::Core.IO = stdout)  = print(io, string(d))
     Base.string(d::Eval) = string(string(Clocks([(value!(d.v.clocks, l)[1:2]) for l in d.clocks])), " ⊨ ", string(d.δ), " = ", string(d.result))
 
 end

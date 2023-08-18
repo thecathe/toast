@@ -45,9 +45,7 @@ module LogicalClocks
         Clocks(children) = new(children)
     end
     Base.show(c::Clocks, io::Core.IO = stdout) = print(io, string(c))
-    function Base.string(c::Clocks, verbose::Bool = true) 
-        verbose ? string(join([string(x) for x in c], ", ")) : string("Clocks($(length(c)))")
-    end
+    Base.string(c::Clocks) = string(join([string(x) for x in c], ", "))
 
     Base.push!(c::Clocks, x::Clock) = push!(c.children, x)
 
@@ -77,7 +75,8 @@ module LogicalClocks
 
     # show value correctly
     Base.show(val::Tuple{ClockValue,Label,Bool},io::Core.IO = stdout) = print(io, string(val))
-    Base.string(val::Tuple{ClockValue,Label,Bool}, verbose::Bool = false) = string(string(Clock(val[2],val[1])), val[3] && verbose ? "" : " *fresh*")
+    Base.show(val::Tuple{ClockValue,Label,Bool}, verbose::Bool ,io::Core.IO = stdout) = print(io, string(val,verbose))
+    Base.string(val::Tuple{ClockValue,Label,Bool}, verbose::Bool = true) = string(string(Clock(val[2],val[1])), val[3] && verbose ? "" : " *fresh*")
 
     # resets clocks with labels to 0
     reset!(c::Clocks, l::T) where {T<:Array{Any}} = reset!(c,Labels(l))
