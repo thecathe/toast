@@ -4,10 +4,11 @@ module Configurations
     import Base.string
     import Base.convert
     
+    using ..General
     using ..LogicalClocks
     using ..ClockConstraints
     using ..SessionTypes
-
+    using ..ClockValuations
 
 
     # configurations
@@ -55,5 +56,7 @@ module Configurations
     function Base.string(c::System, verbose::Bool = false)
         string("(", join([string(c.lhs,verbose),string(c.rhs,verbose)]," ∣ "), ")")
     end
+
+    # 
 
 end
