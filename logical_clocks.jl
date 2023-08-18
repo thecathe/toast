@@ -80,7 +80,8 @@ module LogicalClocks
     Base.string(val::Tuple{ClockValue,Label,Bool}, verbose::Bool = false) = string(string(Clock(val[2],val[1])), val[3] && verbose ? "" : " *fresh*")
 
     # resets clocks with labels to 0
-    reset!(c::Clocks, l::Array{Any}) = reset!(c,Labels(l))
+    reset!(c::Clocks, l::T) where {T<:Array{Any}} = reset!(c,Labels(l))
+    reset!(c::Clocks, l::T) where {T<:Array{String}} = reset!(c,Labels(l))
     reset!(c::Clocks, l::Labels) = foreach(a -> if (value!(c,a) == (~,~,true))  getindex(c,findfirst(x -> x.label == l, c)).value = ClockValue(0) end, l)
 
     # passes time over clocks

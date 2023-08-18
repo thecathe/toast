@@ -165,10 +165,9 @@ module ClockConstraints
         δ::δ
         flattened::Constraints
         labels::Labels
-        function ConstrainedClocks(δ::δ) 
-            # @assert typeof(δ)==Constraints 
-            _flattened = flatten(δ)
-            new(δ,_flattened,Labels([Label(c) for c in get_labels(_flattened)],true))
+        function ConstrainedClocks(d) 
+            _flattened = flatten(d)
+            new(d,_flattened,Labels([Label(c) for c in get_labels(_flattened)],true))
         end
     end
 

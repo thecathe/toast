@@ -1,6 +1,6 @@
 module TOAST
 
-    show_all_tests=false
+    show_all_tests=true
 
     show_logical_clock_tests=false
     show_clock_constraints_tests=false
@@ -69,32 +69,32 @@ module TOAST
 
         clocks = Clocks([("a",1),("b",2),("c",3)])
 
-        show(string(clocks,true))
+        show(string(clocks))
         printlines()
         
-        show(string(value!(clocks,"a"),true))
+        show(value!(clocks,"a"))
         printlines()
         
-        show(string(value!(clocks,"z"),true))
+        show(value!(clocks,"z"))
         printlines()
         
-        show(string(clocks,true))
+        show(clocks)
         printlines()
 
         reset!(clocks,[])
-        show(string(clocks,true))
+        show(clocks)
         printlines()
         
         reset!(clocks,["a","b"])
-        show(string(clocks,true))
+        show(clocks)
         printlines()
         
         time_step!(clocks, 3)
-        show(string(clocks,true))
+        show(clocks)
         printlines()
         
         reset!(clocks,["a","b"])
-        show(string(clocks,true))
+        show(clocks)
         printlines()
         
     end
@@ -135,7 +135,7 @@ module TOAST
         show(f)
         printlines()
 
-        g = ConstrainedClocks(f)
+        g = ConstrainedClocks(e)
         show(g)
         printlines()
 

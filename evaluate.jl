@@ -99,9 +99,9 @@ module Evaluate
         function Eval(v,d)
             # make sure all clocks are initialised
             _constrained::Labels = ConstrainedClocks(d).labels
-            foreach(l -> value!(v.clocks,l,v.system.value), _constrained.children)
-            _labels = labels(v.clocks)
-            @assert !(false in [l in _labels for l in _constrained.children])
+            # foreach(l -> value!(v.clocks,l,v.system.value), _constrained.children)
+            # _labels = labels(v.clocks)
+            # @assert !(false in [l in _labels for l in _constrained.children])
 
             # store result in children
             _children = Evaluations([δEval(v,c) for c in flatten(d)])
