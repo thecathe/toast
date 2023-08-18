@@ -170,6 +170,6 @@ module ClockConstraints
 
 
     Base.show(t::T, io::Core.IO = stdout) where {T<:ConstrainedClocks} = print(io, string(t))
-    Base.string(c::ConstrainedClocks) = string(string(c.δ), " contains clocks: ", string(c.labels))
+    Base.string(c::ConstrainedClocks) = string(string(c.δ), " contrained clocks: ", string(c.labels))
 
 end
