@@ -21,25 +21,6 @@ module ClockConstraints
 
     export Constraints
 
-    mutable struct Constraints <: Constraint
-        children::Array{Constraint}
-        function Constraints(children)
-            new(children)
-        end
-    end
-    Base.show(ds::Constraints, io::Core.IO = stdout) = print(io, string(ds))
-    Base.string(ds::Constraints) = string(join([string(d) for d in ds], " ∧ "))
-    
-    Base.push!(ds::Constraints, d::Constraint) = push!(ds.children, d)
-
-    Base.length(ds::Constraints) = length(ds.children)
-    Base.isempty(ds::Constraints) = isempty(ds.children)
-    Base.getindex(ds::Constraints, i::Int) = getindex(ds.children, i)
-
-    Base.iterate(ds::Constraints) = isempty(ds) ? nothing : (ds[1], Int(1))
-    Base.iterate(ds::Constraints, i::Int) = (i >= length(ds)) ? nothing : (ds[i+1], i+1)
-    
-
     export δ
 
     const δExpr = Expr
@@ -90,13 +71,13 @@ module ClockConstraints
     end
     Base.show(d::δ, io::Core.IO = stdout) = print(io, string(d))
 
+
     function Base.string(d::δ)
         head = d.head
-
         if head==:tt
             string("true")
         elseif head==:not
-            string("¬", string(d.args[1]))
+            string("¬(", string(d.args[1]), ")")
         elseif head==:and
             string("(", string(d.args[1]), ") ∧ (", string(d.args[2]), ")")
         elseif head==:eq
@@ -111,17 +92,36 @@ module ClockConstraints
             string("unknown head: ", string(d.head))
         end
     end
+    
+    
+    mutable struct Constraints <: Constraint
+        children::Array{δ}
+        function Constraints(children)
+            new(children)
+        end
+    end
+    Base.show(ds::Constraints, io::Core.IO = stdout) = print(io, string(ds))
+    Base.string(ds::Constraints) = string(join([string("(",string(d),")") for d in ds], " ∧ "))
+    
+    Base.push!(ds::Constraints, d::Constraint) = push!(ds.children, d)
+
+    Base.length(ds::Constraints) = length(ds.children)
+    Base.isempty(ds::Constraints) = isempty(ds.children)
+    Base.getindex(ds::Constraints, i::Int) = getindex(ds.children, i)
+
+    Base.iterate(ds::Constraints) = isempty(ds) ? nothing : (getindex(ds,1), Int(1))
+    Base.iterate(ds::Constraints, i::Int) = (i >= length(ds)) ? nothing : (getindex(ds,i+1), i+1)
 
     
-    export flatten
+    export flatten, constrained_clocks
 
     # flatten constraint tree into conjunctive list
     function flatten(d::δ, neg::Bool = false) 
         if d.head==:and 
             if neg
-                Constraints([flatten(δ(:not,δ(d.args[1].head,d.args[1].args...)),neg),flatten(δ(:not,δ(d.args[2].head,d.args[2].args...)),neg)]) 
+                Constraints([flatten(δ(:not,δ(d.args[1].head,d.args[1].args...)),neg)...,flatten(δ(:not,δ(d.args[2].head,d.args[2].args...)),neg)...]) 
             else 
-                Constraints([flatten(δ(d.args[1].head,d.args[1].args...),neg),flatten(δ(d.args[2].head,d.args[2].args...),neg)]) 
+                Constraints([flatten(δ(d.args[1].head,d.args[1].args...),neg)...,flatten(δ(d.args[2].head,d.args[2].args...),neg)...]) 
             end
         elseif d.head==:not
             if neg
@@ -137,5 +137,39 @@ module ClockConstraints
             end
         end
     end
+
+    # get labels in single flattened constraint
+    function get_labels(c::Constraints)
+        label_builder = Labels([])
+        for d in c.children
+            if d.head==:not
+                @assert length(d.args) == 1 "get_labels expected '($(d.head))' to only have (1) argument, not ($(length(d.args))): $(string(d.args))"
+                push!(label_builder, get_labels(Constraints([d.args[1]]))...)
+            elseif d.head in [:eq,:geq]
+                @assert length(d.args) == 2 "get_labels expected '($(d.head))' to only have (2) arguments, not ($(length(d.args))): $(string(d.args))"
+                push!(label_builder, Labels([(d.args[1])])...)
+            elseif d.head in [:geq,:dgeq]
+                @assert length(d.args) == 3 "get_labels expected '($(d.head))' to only have (3) arguments, not ($(length(d.args))): $(string(d.args))"
+                push!(label_builder, Labels([(d.args[1]),(d.args[2])])...)
+            else
+                @error "get_labels did not expect '($(d.head))', with args ($(length(d.args))): $(string(d.args))"
+            end
+        end
+        return label_builder
+    end
+
+    export ConstrainedClocks
+
+    # return list of relevant clocks in constraint
+    struct ConstrainedClocks
+        δ::Constraints
+        labels::Labels
+        ConstrainedClocks(δ::Constraints) = new(δ,Labels([c for c in get_labels(δ)],true))
+    end
+
+
+
+    Base.show(t::T, io::Core.IO = stdout) where {T<:ConstrainedClocks} = print(io, string(t))
+    Base.string(c::ConstrainedClocks) = string(string(c.δ), " contains clocks: ", string(c.labels))
 
 end
