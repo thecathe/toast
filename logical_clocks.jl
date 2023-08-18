@@ -14,7 +14,7 @@ module LogicalClocks
     using ..General
 
     export Clocks, Clock, ClockValue, TimeValue
-    export value!, reset!, time_step!
+    export clock_value!, reset_clocks!, time_pass!, labels
 
     const ClockValue = UInt8
     struct TimeValue 
@@ -59,7 +59,7 @@ module LogicalClocks
     labels(c::Clocks) = Labels([x.label for x in c.children])
     
     # returns value of clock, instansiating to offset if not existing
-    function value!(c::Clocks, l::Label, offset = ClockValue(0)::ClockValue)
+    function clock_value!(c::Clocks, l::Label, offset = ClockValue(0)::ClockValue)
         if l in labels(c)
             values = findall(x -> x.label == l, c.children)
             @assert length(values) == 1 "More than one clock named '$(l)' in: $(show(c))."
@@ -75,11 +75,11 @@ module LogicalClocks
     Base.string(val::Tuple{ClockValue,Label,Bool}, verbose::Bool = false) = string(string(Clock(val[2],val[1])), val[3] && verbose ? "" : " *fresh*")
 
     # resets clocks with labels to 0
-    reset!(c::Clocks, l::Array{Any}) = reset!(c,Labels(l))
-    reset!(c::Clocks, l::Labels) = foreach(a -> if (value!(c,a) == (~,~,true))  getindex(c,findfirst(x -> x.label == l, c)).value = ClockValue(0) end, l)
+    reset_clocks!(c::Clocks, l::Array{Any}) = reset_clocks!(c,Labels(l))
+    reset_clocks!(c::Clocks, l::Labels) = foreach(a -> if (clock_value!(c,a) == (~,~,true))  getindex(c,findfirst(x -> x.label == l, c)).value = ClockValue(0) end, l)
 
     # passes time over clocks
-    time_step!(c::Clocks, t::T) where {T<:Integer} = time_step!(c,TimeValue(t))
-    time_step!(c::Clocks, t::TimeValue) = foreach(x -> x.value += t.value, c)
+    time_pass!(c::Clocks, t::T) where {T<:Integer} = time_pass!(c,TimeValue(t))
+    time_pass!(c::Clocks, t::TimeValue) = foreach(x -> x.value += t.value, c)
 
 end
