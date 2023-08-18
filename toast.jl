@@ -131,7 +131,7 @@ module TOAST
         println()
 
 
-        e = δ(:and, δ(:not, δ(:and, δ(:eq, "x", 3), δ(:geq, "y", 4))), δ(:and, δ(:eq, "x", 3), δ(:geq, "y", 4)))   
+        e = δ(:and, δ(:not, δ(:and, δ(:eq, "w", 3), δ(:geq, "x", 4))), δ(:and, δ(:eq, "y", 3), δ(:geq, "z", 4)))   
         show(e)
         println()
         println()
