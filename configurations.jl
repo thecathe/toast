@@ -15,7 +15,7 @@ module Configurations
     abstract type Configuration end
 
     struct Local <: Configuration
-        clocks::Clocks
+        valuations::Valuations
         type::T where {T<:SessionType}
         function Local(clocks,type)
             @assert typeof(type) == S "initially type ($(typeof(type))) must be $(string(typeof(S)))"
@@ -29,7 +29,7 @@ module Configurations
 
 
     struct Social <: Configuration
-        clocks::Clocks
+        valuations::Valuations
         type::T where {T<:SessionType}
         queue::Msgs
         function Social(clocks,type,queue)
@@ -43,7 +43,7 @@ module Configurations
     end
 
     # from social to local configurations
-    Base.convert(::Type{Local}, c::T) where {T<:Social} = Local(c.clocks,c.type)
+    Base.convert(::Type{Local}, c::T) where {T<:Social} = Local(c.valuations,c.type)
 
     
     struct System <: Configuration

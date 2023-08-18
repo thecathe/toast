@@ -13,7 +13,7 @@ module LogicalClocks
     
     using ..General
 
-    export Clocks, Clock
+    export Clocks, Clock, ClockValue
     export value!, reset!, time_step!
 
     const ClockValue = UInt8
@@ -82,6 +82,8 @@ module LogicalClocks
     time_step!(c::Clocks, t::T) where {T<:Integer} = time_step!(c,TimeValue(t))
     time_step!(c::Clocks, t::TimeValue) = foreach(x -> x.value += t.value, c)
 
+    
+    export Valuations
     
     # valuations
     mutable struct Valuations
