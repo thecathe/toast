@@ -10,7 +10,7 @@ module ClockValuations
         clocks::Clocks
         system::Clock
         function Valuations(clocks,system=Clock("g",0)) 
-            @assert system.label in labels(clocks) == false "Global-system clock '$(v.system.label)' cannot be in local clocks: $(string(clocks))"
+            @assert system.label in labels(clocks) == false "Global-system clock '$(system.label)' cannot be in local clocks: $(string(clocks))"
             
             new(clocks,system)
         end
