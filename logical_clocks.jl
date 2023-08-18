@@ -37,14 +37,15 @@ module LogicalClocks
     Base.show(c::Clock, verbose::Bool = false) = print(string(c,verbose))
     Base.string(c::Clock) = string("[", c.label, ": ", c.value, "]")
 
-    Base.convert(::Type{Clock}, c::T) where {T<:Tuple{String, Int}} = Clock(c[1], c[2])
+    Base.convert(::Type{Clock}, c::T) where {T<:Tuple{String, Num}} = Clock(c[1], c[2])
+    Base.convert(::Type{Clock}, c::T) where {T<:Tuple{Num, String}} = Clock(c[2], c[1])
 
     struct Clocks
         children::Array{Clock}
         Clocks(children) = new(children)
     end
     Base.show(c::Clocks, io::Core.IO = stdout) = print(io, string(c))
-    function Base.string(c::Clocks, verbose::Bool = false) 
+    function Base.string(c::Clocks, verbose::Bool = true) 
         verbose ? string(join([string(x) for x in c], ", ")) : string("Clocks($(length(c)))")
     end
 
@@ -63,9 +64,11 @@ module LogicalClocks
     value!(c::Clocks,l::String,offset::T) where {T<:Number} = value!(c,Label(l),ClockValue(offset))
     function value!(c::Clocks, l::Label, offset::ClockValue = ClockValue(0))
         if l in labels(c)
-            values = findall(x -> x.label == l, c.children)
-            @assert length(values) == 1 "More than one clock named '$(l)' in: $(show(c))."
-            return (ClockValue(first(values)), l, true)
+            for x in c.children
+                if x.label == l
+                    return (ClockValue(x.value), l, true)
+                end
+            end
         else
             push!(c, Clock(l, offset))
             return (ClockValue(offset), l, false)

@@ -32,12 +32,12 @@ module Evaluate
                 _expr = δExpr(:&&, Inf)
             elseif head==:not
                 @assert length(args) == 1 "δEval head ($(head)) expects 1 more arguments, not $(length(args)): '$(string(args))'"
-                _expr = δExpr(:call, [:!, Eval(v,args[1]).child[1].expr]...)
+                _expr = δExpr(:call, [:!, Eval(v,args[1]).children[1].expr]...)
             elseif head==:and
                 @assert length(args) == 2 "δEval head ($(head)) expects 2 more arguments, not $(length(args)): '$(string(args))'"
                 @assert typeof(args[1]) == δ "δEval head ($(head)) (#1) expects δ types, not: '$(typeof(args[1]))'"
                 @assert typeof(args[2]) == δ "δEval head ($(head)) (#2) expects δ types, not: '$(typeof(args[2]))'"
-                _expr = δExpr(:&&, [Eval(v,args[1]).child[1].expr, Eval(v,args[2]).child[1].expr]...)
+                _expr = δExpr(:&&, [Eval(v,args[1]).children[1].expr, Eval(v,args[2]).children[1].expr]...)
             elseif head in [:eq, :geq]
                 @assert length(args) == 2 "δEval head ($(head)) expects 2 more arguments, not $(length(args)): '$(string(args))'"
                 _expr = δExpr(:call, [get_call_op(head), Num(value!(v.clocks,args[1])[1]), Num(args[2])]...)
@@ -47,14 +47,6 @@ module Evaluate
             else
                 @error "δEval, unknown head: $(head)"
             end
-
-            # show(head)
-            # println()
-            # println()
-            # show(args)
-            # println()
-            # println()
-            # show(_expr)
 
             new(head,[args...],_expr)
         end
@@ -73,7 +65,7 @@ module Evaluate
     end
     Base.show(d::δEval, io::Core.IO = stdout) = print(io, string(d))
     # Base.string(d::δEval) = string(string(d.expr), " = ")
-    Base.string(d::δEval) = string("(", string(d.expr), ") = ", string(eval(d.expr)))
+    Base.string(d::δEval) = string(if d.head!=:not "(" end, string(d.expr), if d.head!=:not ")" end, " = ", string(eval(d.expr)))
 
 
     mutable struct Evaluations 
@@ -101,44 +93,33 @@ module Evaluate
     struct Eval
         v::Valuations
         δ::δ
-        child::Evaluations
+        clocks::Labels
+        children::Evaluations
         result::Bool
         function Eval(v,d)
             # make sure all clocks are initialised
-            # _constrained::Labels = ConstrainedClocks(flatten(_d)).labels
             _constrained::Labels = ConstrainedClocks(d).labels
-            foreach(l -> value!(v.clocks,l), _constrained)
+            foreach(l -> value!(v.clocks,l,v.system.value), _constrained.children)
             _labels = labels(v.clocks)
-            @assert !(false in [l in _labels for l in _constrained])
+            @assert !(false in [l in _labels for l in _constrained.children])
 
-            _exprs = [δEval(v,c) for c in flatten(d)]
-
-            # show(string(string("_exprs: "), string(_exprs)))
-            # println()
-            # println()
+            # store result in children
+            _children = Evaluations([δEval(v,c) for c in flatten(d)])
             
-            # store result in child
-            _child = Evaluations(_exprs)
-            
-            # show(string(string("_child: "), string(_child)))
-            # println()
-            # println()
-            # _child = Evaluations([e.expr for e in _exprs])
-
-            if length(_child) == 1
-                _result = occursin("true", string(eval(_child[1]))) ? true : false
+            if length(_children) == 1
+                _result = occursin("true", string(eval(_children[1]))) ? true : false
             else
-                _result = ("false" in [string(eval(d.expr)) for d in _child]) ? false : true
+                _result = ("false" in [string(eval(d.expr)) for d in _children]) ? false : true
             end
 
-            new(v,d,_child,_result)
+            new(v,d,_constrained,_children,_result)
         end
     end
     # Base.show(d::Eval, io::Core.IO = stdout) = print(io, string(d))
     function Base.show(d::Eval, io::Core.IO = stdout) 
-        println(io, string(d))
-        println(io, string(string(d.v), " ⊧ ", string(d.δ), " = ", string(d.result)))
+        print(io, string(d))
+        # println(io, string(string(d.v), " ⊧ ", string(d.δ), " = ", string(d.result)))
     end
-    Base.string(d::Eval) = string(string(d.result), " = (", string(d.child), ")")
+    Base.string(d::Eval) = string(string(Clocks([(value!(d.v.clocks, l)[1:2]) for l in d.clocks])), " ⊨ ", string(d.δ), " = ", string(d.result))
 
 end

@@ -69,6 +69,7 @@ module ClockConstraints
         end
     end
     Base.show(d::δ, io::Core.IO = stdout) = print(io, string(d))
+    Base.string(d::δ) = string(if d.head!=:not "(" end, string(d.expr), if d.head!=:not ")" end)
 
 
     function Base.string(d::δ)
@@ -78,7 +79,7 @@ module ClockConstraints
         elseif head==:not
             string("¬(", string(d.args[1]), ")")
         elseif head==:and
-            string("(", string(d.args[1]), ") ∧ (", string(d.args[2]), ")")
+            string("", string(d.args[1]), " ∧ ", string(d.args[2]), "")
         elseif head==:eq
             string(string(d.args[1]), "=", string(d.args[2]))
         elseif head==:geq
@@ -100,7 +101,7 @@ module ClockConstraints
         end
     end
     Base.show(ds::Constraints, io::Core.IO = stdout) = print(io, string(ds))
-    Base.string(ds::Constraints) = string(join([string("(",string(d),")") for d in ds], " ∧ "))
+    Base.string(ds::Constraints) = string(join([string("",string(d),"") for d in ds], " ∧ "))
     
     Base.push!(ds::Constraints, d::Constraint) = push!(ds.children, d)
 
@@ -124,9 +125,9 @@ module ClockConstraints
             end
         elseif d.head==:not
             if neg
-                Constraints([flatten(δ(:not,δ(d.args[1].head,d.args[1].args...)),false)...])
+                Constraints([flatten(δ(:not,δ(d.args[1].head,d.args[1].args...)),!neg)...])
             else 
-                Constraints([flatten(δ(d.args[1].head,d.args[1].args...),true)...])
+                Constraints([flatten(δ(d.args[1].head,d.args[1].args...),!neg)...])
             end
         else
             if neg
@@ -167,7 +168,7 @@ module ClockConstraints
         function ConstrainedClocks(δ::δ) 
             # @assert typeof(δ)==Constraints 
             _flattened = flatten(δ)
-            new(δ,_flattened,Labels([c for c in get_labels(_flattened)],true))
+            new(δ,_flattened,Labels([Label(c) for c in get_labels(_flattened)],true))
         end
     end
 

@@ -65,6 +65,7 @@ module TOAST
     using .LogicalClocks
 
     if show_logical_clock_tests || show_all_tests
+        println("logical clock tests:")
 
         clocks = Clocks([("a",1),("b",2),("c",3)])
 
@@ -104,6 +105,7 @@ module TOAST
     using.ClockConstraints
 
     if show_clock_constraints_tests || show_all_tests
+        println("clock constraints tests:")
 
         show(δ(:and, δ(:not, δ(:tt)), δ(:tt)))
         printlines()
@@ -145,6 +147,7 @@ module TOAST
     using .SessionTypes
 
     if show_session_type_tests || show_all_tests
+        println("session type tests:")
 
         show(S(Interaction(:send, Msg("a", Data(Int)), δ(:tt), [] )) )
         printlines()
@@ -217,6 +220,7 @@ module TOAST
     using .ClockValuations
 
     if show_clock_valuations_tests || show_all_tests
+        println("clock valuation tests:")
 
         clocks = Clocks([("a",1),("b",2),("c",3)])
         
@@ -243,30 +247,77 @@ module TOAST
     using .Evaluate
 
     if show_evaluate_tests || show_all_tests
+        println("evaluate tests:")
 
         clocks = Clocks([("a",1),("b",2),("c",3)])
         v = Valuations(clocks)
 
+        # show(v)
+        # printlines()
+
         a = δ(:eq, "x", 3)
         # b = δ(:not, a)
         # c = δ(:and, a, δ(:geq, "y", 4))
-        b = δ(:not, δ(:eq, "x", 3))
-        c = δ(:and, δ(:eq, "x", 3), δ(:geq, "y", 4))
-        d = δ(:deq, "x", "y", 3)
-        e = δ(:and, δ(:not, δ(:and, δ(:eq, "w", 3), δ(:geq, "x", 4))), δ(:and, δ(:eq, "y", 3), δ(:geq, "z", 4)))   
+        b = δ(:not, δ(:eq, "a", 3))
+        c = δ(:and, δ(:eq, "a", 1), δ(:geq, "c", 2))
+        d = δ(:deq, "c", "y", 3)
+        e = δ(:and, δ(:not, δ(:and, δ(:eq, "b", 1), δ(:geq, "x", 4))), δ(:and, δ(:eq, "a", 3), δ(:geq, "z", 4)))   
 
 
+        show(v)
+        println()
         show(Eval(v,a))
         printlines()
+
+        show(v)
+        println()
         show(Eval(v,b))
         printlines()
+        
+        show(v)
+        println()
         show(Eval(v,c))
         printlines()
+        
+        show(v)
+        println()
         show(Eval(v,d))
         printlines()
+        
+        show(v)
+        println()
         show(Eval(v,e))
         printlines()
 
+        printlines()
+        show(TimeStep!(v,3))
+        printlines()
+        printlines() 
+
+        show(v)
+        println()
+        show(Eval(v,a))
+        printlines()
+
+        show(v)
+        println()
+        show(Eval(v,b))
+        printlines()
+        
+        show(v)
+        println()
+        show(Eval(v,c))
+        printlines()
+        
+        show(v)
+        println()
+        show(Eval(v,d))
+        printlines()
+        
+        show(v)
+        println()
+        show(Eval(v,e))
+        printlines()
 
         # show(a)
         # printlines()
@@ -288,6 +339,7 @@ module TOAST
     using .Configurations
 
     if show_configuration_tests || show_all_tests
+        println("configuration tests:")
 
     end
 
