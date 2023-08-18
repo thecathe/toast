@@ -1,5 +1,7 @@
 module ClockValuations
 
+    using ..General
+    using ..LogicalClocks
     
     export Valuations, time_step!, value!, reset!
     
@@ -7,7 +9,11 @@ module ClockValuations
     mutable struct Valuations
         clocks::Clocks
         system::Clock
-        Valuations(clocks,system=Clock("g",0)) = new(clocks,system)
+        function Valuations(clocks,system=Clock("g",0)) 
+            @assert system.label in labels(clocks) == false "Global-system clock '$(v.system.label)' cannot be in local clocks: $(string(clocks))"
+            
+            new(clocks,system)
+        end
     end
 
     # return value of valuation, using offset of global clock if necesary
