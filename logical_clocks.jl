@@ -83,7 +83,7 @@ module LogicalClocks
     time_step!(c::Clocks, t::TimeValue) = foreach(x -> x.value += t.value, c)
 
     
-    export Valuations
+    export Valuations, time_step!, value!, reset!
     
     # valuations
     mutable struct Valuations
