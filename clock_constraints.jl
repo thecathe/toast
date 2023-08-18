@@ -21,7 +21,7 @@ module ClockConstraints
 
     export Constraints
 
-    export δ
+    export δ, δExpr
 
     const δExpr = Expr
 
@@ -35,7 +35,7 @@ module ClockConstraints
 
             if head==:tt 
                 @assert length(args) == 0 "δ head ($(head)) expects 0 more arguments, not $(length(args)): '$(string(args))'"
-                expr = δExpr(:&&, true)
+                expr = δExpr(:&&, Inf)
             elseif head==:not
                 @assert length(args) == 1 "δ head ($(head)) expects 1 more arguments, not $(length(args)): '$(string(args))'"
                 expr = δExpr(:call, [:!, args[1]])
