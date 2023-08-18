@@ -4,13 +4,15 @@ module ClockValuations
     using ..LogicalClocks
     using ..ClockConstraints
     
-    export Valuations, time_step!, value!, reset!
+    export Valuations, time_step!, value!, reset!, global_clock
+
+    const global_clock = Label("𝒢")
     
     # valuations
     mutable struct Valuations
         clocks::Clocks
         system::Clock
-        function Valuations(clocks,system=Clock("g",0)) 
+        function Valuations(clocks,system=Clock(global_clock,0)) 
             @assert system.label in labels(clocks) == false "Global-system clock '$(system.label)' cannot be in local clocks: $(string(clocks))"
             
             new(clocks,system)
