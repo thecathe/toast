@@ -1,22 +1,53 @@
 module TOAST
 
     module General
+
+        import Base.show
+        import Base.string
+        import Base.convert
+        import Base.getindex
+        import Base.iterate
+        import Base.push!
+        import Base.length
+        import Base.isempty
         
         export Label, Labels
         const Label = String 
-        const Labels = Array{Label}
+        # const Labels = Array{Label}
+        struct Labels
+            children::Array{Label}
+            distinct::Bool
+            function Labels(children,distinct=false) 
+                if distinct
+                    return new(unique(children),distinct)
+                else
+                    return new(children,distinct)
+                end
+            end
+        end
+
         Base.show(l::Labels, io::Core.IO = stdout) = print(io, string(l))
-        Base.string(l::Labels) = isempty(l) ? string("∅") : string("{", join(l), "}")
+        Base.string(l::Labels) = isempty(l) ? string("∅") : string("{", join(l, ", "), "}")
         
         Base.convert(::Type{Array{Label}}, l::T) where {T<:Vector{Any}} = Array{Label}(l)
+        
+        Base.push!(l::Labels, a::Label) = push!(l.children, a)
+
+        Base.length(l::Labels) = length(l.children)
+        Base.isempty(l::Labels) = isempty(l.children)
+        Base.getindex(l::Labels, i::Int) = getindex(l.children, i)
+
+        Base.iterate(l::Labels) = isempty(l) ? nothing : (getindex(l,1), Int(1))
+        Base.iterate(l::Labels, i::Int) = (i >= length(l)) ? nothing : (getindex(l,i+1), i+1)
+
     end
 
     using .General
         
-    show_all_tests=true
+    show_all_tests=false
 
     show_logical_clock_tests=false
-    show_clock_constraints_tests=false
+    show_clock_constraints_tests=true
     show_session_type_tests=false
     show_clock_valuations_tests=false
     show_configuration_tests=false
@@ -105,7 +136,13 @@ module TOAST
         println()
         println()
 
-        show(flatten(e))
+        f = flatten(e)
+        show(f)
+        println()
+        println()
+
+        g = ConstrainedClocks(f)
+        show(g)
         println()
         println()
 
