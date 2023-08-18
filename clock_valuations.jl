@@ -90,7 +90,6 @@ module ClockValuations
             # foreach(a -> if (LogicalClocks.clock_value!(v.clocks,a,v.system.value) == (~,~,true))  getindex(v,findfirst(x -> x.label == a, v)).value = ClockValue(0) end, l)
             for a in l
                 if value!(v.clocks,a,0)[3]
-                    # getindex(v,findfirst(x -> x.label == a, v.clocks)).value = ClockValue(0)
                     for x in v
                         if x.label == a
                             x.value = ClockValue(0)
@@ -107,6 +106,23 @@ module ClockValuations
 
 
     # evaluate constraint against clocks
+    struct Eval
+        v::Valuations
+        δ::Constraints
+        child::Expr
+        function Eval(v,δ)
+            # make sure all clocks are initialised
+            _constrained::Labels = ConstrainedClocks(δ)
+            foreach(l -> value!(v,l), _constrained)
+            _labels = labels(v)
+            @assert foreach(l -> l in _labels, _constrained)
+
+            # TODO: make new Expr, replacing clock labels with values
+            # store result in child
+
+            new(v,δ,~)
+        end
+    end
 
 
 end
