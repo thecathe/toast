@@ -63,17 +63,19 @@ module ClockValuations
 
 
     struct TimeStep!
+        old::Clock
         v::Valuations
         t::TimeValue
         function TimeStep!(v,t)
+            _old = Clock(global_clock,v.system.value)
             _t = TimeValue(t)
             v.system.value += _t.value
             time_step!(v.clocks,_t)
-            new(v,_t)
+            new(_old,v,_t)
         end
     end
     Base.show(t::TimeStep!,io::Core.IO = stdout) = print(io, string(t))
-    Base.string(t::TimeStep!) = string(string(t.t) , " -> ", string(t.v))
+    Base.string(t::TimeStep!) = string(string(t.old) , " -($(string(t.t)))> ", string(t.v))
     
     struct Reset!
         v::Valuations
