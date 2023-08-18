@@ -107,6 +107,7 @@ module SessionTypes
         Choice(children) = new(children)
     end
     Base.show(s::Choice, io::Core.IO = stdout) = print(io, string(s))
+    Base.show(s::Choice, verbose::Bool, io::Core.IO = stdout) = print(io, string(s,verbose))
     function Base.string(s::Choice, verbose::Bool = false) 
         if verbose && length(s) > 1
             string("{\n ", join([string(" ", string(c)) for c in s.children], ",\n "), "\n}")
@@ -133,6 +134,7 @@ module SessionTypes
         Def(identity, S) = new(identity, S)
     end
     Base.show(s::Def, io::Core.IO = stdout) = print(io, string(s))
+    Base.show(s::Def, verbose::Bool, io::Core.IO = stdout) = print(io, string(s,verbose))
     Base.string(s::Def, verbose::Bool = false) = string("μα[$(s.identity)].", verbose ? string(s.S) : string("S"))
 
     # convert when tail is Def
