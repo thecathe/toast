@@ -2,6 +2,7 @@ module ClockValuations
 
     using ..General
     using ..LogicalClocks
+    using ..ClockConstraints
     
     export Valuations, time_step!, value!, reset!
     
@@ -41,5 +42,8 @@ module ClockValuations
         # (use value! of clock to ensure that any new clocks are initialised to 0)
         foreach(a -> if (value!(v.clocks,a) == (~,~,true))  getindex(v,findfirst(x -> x.label == l, v)).value = ClockValue(0) end, l)
     end
+
+    # evaluate constraint against clocks
+
 
 end
