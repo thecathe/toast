@@ -8,6 +8,10 @@ module Configurations
     using ..ClockConstraints
     using ..SessionTypes
 
+
+
+    # configurations
+
     abstract type Configuration end
 
     struct Local <: Configuration

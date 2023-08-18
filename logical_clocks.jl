@@ -82,4 +82,27 @@ module LogicalClocks
     time_step!(c::Clocks, t::T) where {T<:Integer} = time_step!(c,TimeValue(t))
     time_step!(c::Clocks, t::TimeValue) = foreach(x -> x.value += t.value, c)
 
+    
+    # valuations
+    mutable struct Valuations
+        clocks::Clocks
+        system::Clock
+        Valuations(clocks,system=Clock("g",0)) = new(clocks,system)
+    end
+
+    # return value of valuation, using offset of global clock if necesary
+    function value!(v::Valuations,l::Label)
+        if l == v.system.label
+            return (v.system.value, l, true)
+        else
+            return value!(v.clocks,l,v.system.value)
+        end
+    end
+
+    time_step!(v::Valuations, t::T) where {T<:Integer} = time_step!(v,TimeValue(t))
+    function time_step!(v::Valuations,t::TimeValue)
+        v.system.value += t.value
+        time_Step!(v.clocks,t)
+    end
+
 end
