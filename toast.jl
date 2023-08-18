@@ -52,7 +52,11 @@ module TOAST
     show_clock_valuations_tests=true
     show_configuration_tests=false
 
-
+    function printlines() 
+        println()
+        println()
+        # println()
+    end
 
     include("logical_clocks.jl")
     using .LogicalClocks
@@ -62,40 +66,32 @@ module TOAST
         clocks = Clocks([("a",1),("b",2),("c",3)])
 
         show(string(clocks,true))
-        println()
-        println()
+        printlines()
         
         show(string(value!(clocks,"a"),true))
-        println()
-        println()
+        printlines()
         
         show(string(value!(clocks,"z"),true))
-        println()
-        println()
+        printlines()
         
         show(string(clocks,true))
-        println()
-        println()
+        printlines()
 
         reset!(clocks,[])
         show(string(clocks,true))
-        println()
-        println()
+        printlines()
         
         reset!(clocks,["a","b"])
         show(string(clocks,true))
-        println()
-        println()
+        printlines()
         
         time_step!(clocks, 3)
         show(string(clocks,true))
-        println()
-        println()
+        printlines()
         
         reset!(clocks,["a","b"])
         show(string(clocks,true))
-        println()
-        println()
+        printlines()
         
     end
 
@@ -107,44 +103,36 @@ module TOAST
     if show_clock_constraints_tests || show_all_tests
 
         show(δ(:and, δ(:not, δ(:tt)), δ(:tt)))
-        println()
-        println()
+        printlines()
 
         a = δ(:eq, "x", 3)
         show(a)
-        println()
-        println()
+        printlines()
 
         b = δ(:not, δ(:eq, "x", 3))
         show(b)
-        println()
-        println()
+        printlines()
 
         c = δ(:and, δ(:eq, "x", 3), δ(:geq, "y", 4))
         show(c)
-        println()
-        println()
+        printlines()
 
         d = δ(:deq, "x", "y", 3)
         show(d)
-        println()
-        println()
+        printlines()
 
 
         e = δ(:and, δ(:not, δ(:and, δ(:eq, "w", 3), δ(:geq, "x", 4))), δ(:and, δ(:eq, "y", 3), δ(:geq, "z", 4)))   
         show(e)
-        println()
-        println()
+        printlines()
 
         f = flatten(e)
         show(f)
-        println()
-        println()
+        printlines()
 
         g = ConstrainedClocks(f)
         show(g)
-        println()
-        println()
+        printlines()
 
     end
 
@@ -156,58 +144,47 @@ module TOAST
     if show_session_type_tests || show_all_tests
 
         show(S(Interaction(:send, Msg("a", Data(Int)), δ(:tt), [] )) )
-        println()
-        println()
+        printlines()
 
         show(S(Interaction(:send, Msg("a", Data(Int)), δ(:tt), [], Interaction(:recv, Msg("b", Data(String)), δ(:tt), [], End()))) )
-        println()
-        println()
+        printlines()
 
         show(S(Interaction(:send, Msg("a", Data(Int)), δ(:tt), [], Interaction(:recv, Msg("b", Data(String)), δ(:tt), []))) )
-        println()
-        println()
+        printlines()
 
         show(S((:send, Msg("a", Data(Int)), δ(:tt), [] )) )
-        println()
-        println()
+        printlines()
 
         show(S((:send, Msg("a", Data(Int)), δ(:tt), [], (:recv, Msg("b", Data(String)), δ(:tt), [], End()))) )
-        println()
-        println()
+        printlines()
 
         show(S((:send, Msg("a", Data(Int)), δ(:tt), [], (:recv, Msg("b", Data(String)), δ(:tt), [] ))) )
-        println()
-        println()
+        printlines()
 
         show(S(Choice([ (:send, Msg("a", Data(Int)), δ(:tt), []) ])))
-        println()
-        println()
+        printlines()
 
         show(S(Choice([ 
             (:send, Msg("a", Data(Int)), δ(:tt), [], (:recv, Msg("b", Data(String)), δ(:tt), [], End())) 
             ])))
-        println()
-        println()
+        printlines()
 
         show(S(Choice([ 
             (:send, Msg("a", Data(Int)), δ(:tt), [], (:recv, Msg("b", Data(String)), δ(:tt), [])) 
             ])))
-        println()
-        println()
+        printlines()
 
         show(S(Choice([ 
             (:send, Msg("a", Data(Int)), δ(:tt), []), 
             (:send, Msg("c", Data(Int)),δ(:tt), []) 
             ])))
-        println()
-        println()
+        printlines()
 
         show(S(Choice([ 
             (:send, Msg("a", Data(Int)), δ(:tt), []), 
             (:recv, Msg("b", Data(String)), δ(:tt), [], (:send, Msg("c", Data(Int)), δ(:tt), [])) 
             ])))
-        println()
-        println()
+        printlines()
 
         show(S(Choice([ 
             (:send, Msg("a", Data(Int)), δ(:tt), []), 
@@ -217,24 +194,19 @@ module TOAST
                     (:send, Msg("f", Data(Int)), δ(:tt), [], (:send, Msg("g", Data(Int)), δ(:tt), []))
                 ])) 
             ])))
-        println()
-        println()
+        printlines()
 
         show(S(Def("a", (:send, Msg("a", Data(Int)), δ(:tt), [], (:send, Msg("a", Data(Int)), δ(:tt), [] ) ))) )
-        println()
-        println()
+        printlines()
 
         show(S(Def("a",  Call("a") )) )
-        println()
-        println()
+        printlines()
 
         show(S(Def("a", (:send, Msg("a", Data(Int)), δ(:tt), [], Call("a") ))) )
-        println()
-        println()
+        printlines()
 
         show(S((:send, Msg("a", Data(Int)), δ(:tt), [], Def("a", (:send, Msg("a", Data(Int)), δ(:tt), [], Call("a")  ) ))) )
-        println()
-        println()
+        printlines()
     end
 
  
@@ -247,24 +219,19 @@ module TOAST
         
         a = Valuations(clocks)
         show(a)
-        println()
-        println()
+        printlines() 
 
         show(TimeStep!(a,1))
-        println()
-        println()
+        printlines() 
 
         show(Reset!(a,["b","c","y"]))
-        println()
-        println()
+        printlines() 
 
         show(Value!(a,"z"))
-        println()
-        println()
+        printlines() 
 
         show(TimeStep!(a,3))
-        println()
-        println()
+        printlines() 
 
     end
     
