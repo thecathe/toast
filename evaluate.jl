@@ -134,7 +134,11 @@ module Evaluate
             new(v,d,_child,_result)
         end
     end
-    Base.show(d::Eval, io::Core.IO = stdout) = print(io, string(d))
+    # Base.show(d::Eval, io::Core.IO = stdout) = print(io, string(d))
+    function Base.show(d::Eval, io::Core.IO = stdout) 
+        println(io, string(d))
+        println(io, string(string(d.v), " ⊧ ", string(d.δ), " = ", string(d.result)))
+    end
     Base.string(d::Eval) = string(string(d.result), " = (", string(d.child), ")")
 
 end
