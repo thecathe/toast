@@ -13,7 +13,7 @@ module LogicalClocks
     
     using ..General
 
-    export Clocks, Clock, ClockValue
+    export Clocks, Clock, ClockValue, TimeValue
     export value!, reset!, time_step!
 
     const ClockValue = UInt8
