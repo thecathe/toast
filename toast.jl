@@ -1,12 +1,12 @@
 module TOAST
 
-    show_all_tests=true
+    show_all_tests=false
 
     show_logical_clock_tests=false
     show_clock_constraints_tests=false
     show_session_type_tests=false
-    show_clock_valuations_tests=true
-    show_evaluate_tests=true
+    show_clock_valuations_tests=false
+    show_evaluate_tests=false
     show_configuration_tests=false
 
     module General
@@ -26,6 +26,7 @@ module TOAST
         struct Labels
             children::Array{Label}
             distinct::Bool
+            Labels(distinct=false) = new(Array{Label}([]),distinct)
             function Labels(children,distinct=false) 
                 if distinct
                     return new(unique(children),distinct)
