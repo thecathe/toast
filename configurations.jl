@@ -24,10 +24,8 @@ module Configurations
             new(valuations,type)
         end
     end
-    Base.show(c::Local, io::Core.IO = stdout) = string(io, c)
-    function Base.string(c::Local, verbose::Bool = false)
-        string("(", join([string(c.clocks, verbose),string(c.type, verbose)],", "), ")")
-    end
+    Base.show(c::Local, io::Core.IO = stdout) = print(io, string(c))
+    Base.string(c::Local)= string("(", join([string(c.valuations),string(c.type)],", "), ")")
     
 
     struct Social <: Configuration
@@ -39,10 +37,9 @@ module Configurations
             new(clocks,type,queue)
         end
     end
-    Base.show(c::Social, io::Core.IO = stdout) = string(io, c)
-    function Base.string(c::Local, verbose::Bool = false)
-        string("(", join([string(c.clocks, verbose),string(c.type, verbose),string(c.queue, verbose)],", "), ")")
-    end
+    Base.show(c::Social, io::Core.IO = stdout) = print(io, string(c))
+    Base.string(c::Social)= string("(", join([string(c.valuations),string(c.type),string(c.queue)],", "), ")")
+    
 
     # from social to local configurations
     Base.convert(::Type{Local}, c::T) where {T<:Social} = Local(c.valuations,c.type)
@@ -82,11 +79,12 @@ module Configurations
             new(~,~,Action(interaction),state)
         end
     end
+    Base.show(l::LocalStep, io::Core.IO = stdout) = print(io,string(l))
+    Base.string(l::LocalStep) = string(string(l.succ), "\n\n", string(l.action), "\n\n", string(l.state))
 
     _c = Clocks([("a",1)])
     _v = Valuations(_c)
     _s = S(Choice([(:send, Msg("a", Int), δ(:not,δ(:geq,"x",3)),[], Def("a", (:send, Msg("b", String), δ(:tt), [], Call("a")))),(:recv, Msg("c", Bool), δ(:geq,"y",3),[])]))
-    _l = Local(_v,_s)
 
 
 
@@ -96,12 +94,37 @@ module Configurations
         children::Array{LocalStep}
         function LocalSteps(state::Configuration) 
             val=state.valuations
+            t=state.type
+
+            if typeof(t)==Choice
+
+            elseif type(t)==Interaction
+                
+            elseif type(t)==Def
+                
+            elseif type(t)==Call
+                
+            elseif type(t)==End
+                
+            end
+
             new(state,[])
         end
     end
+    Base.show(l::LocalSteps, io::Core.IO = stdout) = print(io,string(l))
+    Base.string(l::LocalSteps) = string(join([string(s) for s in l.children],"\n"))
 
+    Base.string(l::Array{LocalStep}) = string(join([string(s) for s in l],"\n"))
+
+    _l = Local(_v,_s)
     show(_l)
-    show(_step = LocalSteps(_l))
+    println()
+    println()
+
+    _step = LocalSteps(_l)
+    show(_step)
+    println()
+    println()
 
     # struct LocalStep
 
