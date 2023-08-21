@@ -1,6 +1,268 @@
 module Transitions
 
+    import Base.show
+    import Base.string
+    import Base.iterate
+    import Base.length
+    import Base.getindex
+    import Base.isempty
     
+
+    # import InteractiveUtils.subtypes
+
+    using ..General
+    using ..Configurations
+    using ..Evaluate
+    using ..SessionTypes
+    using ..ClockValuations
+
+    export isEnabled
+    
+    struct IsEnabled
+        enabled::Bool
+        actions::Array{Action}
+        val::Valuations
+        typ::S
+        function IsEnabled(c::T,kind::Symbol=:comm) where {T<:Configuration}
+            val=c.valuations
+            t=c.type
+
+            @assert kind in [:send,:recv] "IsEnabled, kind ($(string(kind))) not expected, expects: $(string([:send,:recv]))"
+
+            if t.kind in [:interaction,:choice]
+                # consistent
+                if t.kind==:interaction
+                    _type = S(Choice([t.child]))
+                elseif t.kind==:choice
+                    _type = t
+                else
+                    @error "IsEnabled, kind ($(t.kind)) not expected"
+                end
+
+                @assert kind in [:send,:recv] "IsEnabled, kind ($(string(kind))) not expected, expects: $(string([:send,:recv]))"
+
+                _actions = Array{Action}([])
+                for i in _type.child.children
+                    if (kind==:comm || kind==i.direction) && Eval(val,i.δ).result
+                        push!(_actions,Action(i))
+                    end
+                end
+
+                _enabled = !isempty(_actions)
+
+                new(_enabled,_actions,val,_type)
+
+            else
+                @error "IsEnabled, kind ($(t.kind)) not expected"
+            end
+        end
+    end
+
+
+
+    abstract type LabelledStep end
+
+    export LocalStep, LocalSteps
+
+    struct LocalStep <: LabelledStep
+        kind::Symbol
+        action::Action
+        function LocalStep(kind::Symbol,action::Action) 
+            @assert kind in [:send, :recv, :unfold, :call, :wait, :enque]
+            new(kind,action)
+        end
+    end
+    Base.show(s::LocalStep, io::Core.IO = stdout) = print(io, string(s))
+    Base.string(s::LocalStep) = string(string(s.action))
+
+    struct LocalSteps 
+        kind::Symbol
+        state::Local
+        steps::Array{LocalStep}
+        valid::Bool
+        function LocalSteps(kind::Symbol,state::Local)
+            @assert kind in [:send, :recv, :unfold, :call, :wait, :enque]
+
+            _local_steps = Array{LocalStep}([])
+            if kind in [:send,:recv]
+                # check for any enabled actions
+                _res = IsEnabled(state,kind)
+                if _res.enabled
+                    # add each to local steps
+                    for r in _res.actions
+                        push!(_local_steps,LocalStep(kind,r))
+                    end
+                    new(kind,state,_local_steps,true)
+                else
+                    # no actions of specified kind
+                    new(kind,state,[],false)
+                end
+            else
+                @error "LocalSteps: doesnt handle kind ($(string(kind)))"
+            end
+        end
+    end
+    Base.show(s::LocalSteps, io::Core.IO = stdout) = print(io, string(s))
+    Base.string(s::LocalSteps) = string( isempty(s) ? "∅" : string(join([string(x) for x in s.steps], "\n")))
+
+    Base.length(s::LocalSteps) = length(s.steps)
+    Base.isempty(s::LocalSteps) = isempty(s.steps)
+    Base.getindex(s::LocalSteps, i::Int) = getindex(s.steps, i)
+
+    Base.iterate(s::LocalSteps) = isempty(s) ? nothing : (getindex(s,1), Int(1))
+    Base.iterate(s::LocalSteps, i::Int) = (i >= length(s)) ? nothing : (getindex(s,i+1), i+1)
+
+    
+
+    export EnabledActions
+
+    struct EnabledActions
+        send::LocalSteps
+        recv::LocalSteps
+        function EnabledActions(state::Local)
+            send = LocalSteps(:send,state)
+            recv = LocalSteps(:recv,state)
+            new(send,recv)
+        end
+    end
+    function Base.show(s::EnabledActions, io::Core.IO = stdout) 
+        print(io, string("send: ", string(s.send), "\nrecv: ", string(s.recv)))
+    end
+    function Base.string(s::EnabledActions) 
+        string(string(s.send),string(s.recv))
+    end
+
+
+    export SocialStep, SocialSteps
+
+    struct SocialStep <: LabelledStep
+        action::LocalSteps
+        kind::Symbol
+        function SocialStep(kind::Symbol,state::Social)
+            new(LocalSteps(kind,state),kind)
+        end
+    end
+    Base.show(s::SocialStep, io::Core.IO = stdout) = print(io, string(s))
+    Base.string(s::SocialStep) = string(string(s.action))
+
+    struct SocialSteps
+        kind::Symbol
+        state::Local
+        steps::Array{SocialStep}
+        valid::Bool
+        function SocialSteps(kind::Symbol,state::Social)
+            _social_steps = Array{SocialStep}([])
+            _local_steps = LocalSteps(kind,state)
+            if _local_steps.valid
+                new(kind,state,_social_steps,true)
+            else
+                @error "SocialSteps, local not valid: $(string(_local_steps))"
+            end            
+        end
+    end
+    Base.show(s::SocialSteps, io::Core.IO = stdout) = print(io, string(s))
+    Base.string(s::SocialSteps) = string(string(s.kind), ": ", string(join([string(x) for x in s.steps], "\n")))
+
+
+
+    export SystemStep, SystemSteps
+
+    struct SystemStep <: LabelledStep
+        kind::Symbol
+        lhs::SocialStep
+        rhs::SocialStep
+        function SystemStep(kind::Symbol,lhs::Social,rhs::Social)
+            @assert kind in [:send,:dequ,:wait]
+
+            # _actions = system_actions(lhs.kind,rhs.kind)
+            # @assert _actions[2] "SystemStep: $(string(lhs)) and $(string(rhs)) are not complementary"
+
+            # kind = _actions[1]
+
+            # if kind==:time
+            #     _
+            # end
+
+            # new(lhs,rhs,kind)
+            new()
+        end
+
+        # function system_actions(lhs::Symbol,rhs::Symbol)
+        #     if lhs==:send && rhs==:enque
+        #         return (:tau, true)
+        #     elseif lhs==:enque && rhs==:send
+        #         return (:tau, true)
+        #     elseif lhs==:recv && rhs==:nothing
+        #         return (:tau, true)
+        #     elseif lhs==:nothing && rhs==:recv
+        #         return (:tau, true)
+        #     elseif lhs==:wait && rhs==:wait
+        #         return (:time, true)
+        #     else
+        #         @error "dual_actions($(string(lhs)), $(string(rhs))) unhandled"
+        #     end
+        #     return (~, false)
+        # end
+    end
+    Base.show(s::SystemStep, io::Core.IO = stdout) = print(io, string(s))
+    Base.string(s::SystemStep) = string(string(s.kind), ": ", string(s.lhs), " | ", string(s.rhs))
+
+
+    struct SystemSteps
+        state::System
+        steps::Array{SystemStep}
+        function SystemSteps(state::System)
+
+            _lhs_send_futures = SystemStep(:send,state.lhs,state.rhs)
+            _rhs_send_futures = SystemStep(:send,state.rhs,state.lhs)
+            _sending_futures = Array{SystemStep}([_lhs_send_futures...,_rhs_send_futures...])
+            
+            _lhs_recv_futures = SystemStep(:dequ,state.lhs,state.rhs)
+            _rhs_recv_futures = SystemStep(:dequ,state.rhs,state.lhs)
+            _recving_futures = Array{SystemStep}([_lhs_recv_futures...,_rhs_recv_futures...])
+            
+            _lhs_wait_futures = SystemStep(:wait,state.lhs,state.rhs)
+            _rhs_wait_futures = SystemStep(:wait,state.rhs,state.lhs)
+            _waiting_futures = Array{SystemStep}([_lhs_wait_futures...,_rhs_wait_futures...])
+
+            _possible_steps = Array{SystemStep}([_sending_futures...,_recving_futures...,_waiting_futures...])
+
+            new(state,_possible_steps)
+        end
+    end
+    Base.show(s::SystemSteps, io::Core.IO = stdout) = print(io, string(s))
+    Base.string(s::SystemSteps) = string(string(s.state), ": ", string(join([string(x) for x in s.steps], "\n")))
+
+    export StepDriver
+
+    struct StepDriver
+        state::System
+        succ::SystemSteps
+        function StepDriver(state::System)
+            new(state,SystemSteps(state))
+        end
+    end
+    Base.show(s::SystemSteps, io::Core.IO = stdout) = print(io, string(s))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     # abstract type LabelledTransition end
 
     # # represents individual action

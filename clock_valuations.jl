@@ -9,8 +9,8 @@ module ClockValuations
 
     using ..General
     using ..LogicalClocks
-    # import ..LogicalClocks.time_step!
     using ..ClockConstraints
+
     
     
     # export Valuations, time_step!, value!, reset!, global_clock
@@ -66,6 +66,7 @@ module ClockValuations
         old::Clock
         v::Valuations
         t::TimeValue
+        # TimeStep!(c::T,t::TimeValue) where {T<:Tuple{Clocks,S}} = TimeStep!(c.clocks,t)
         function TimeStep!(v,t)
             _old = Clock(global_clock,v.system.value)
             _t = TimeValue(t)

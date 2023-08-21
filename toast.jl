@@ -1,6 +1,6 @@
 module TOAST
 
-    show_all_tests=true
+    show_all_tests=false
 
     show_logical_clock_tests=false
     show_clock_constraints_tests=false
@@ -365,8 +365,7 @@ module TOAST
         _l = Local(_v,_s)
 
         show(_l)
-        println()
-        println()
+        printlines()
 
     end
 
@@ -380,11 +379,55 @@ module TOAST
         _c = Clocks([("a",1)])
         _v = Valuations(_c)
         _s = S(Choice([(:send, Msg("a", Int), δ(:not,δ(:geq,"x",3)),[], Def("a", (:send, Msg("b", String), δ(:tt), [], Call("a")))),(:recv, Msg("c", Bool), δ(:geq,"y",3),[])]))
-        _l = Local(_v,_s)
+        l_a = Local(_v,_s)
         
-        show(_l)
+        show(l_a)
         println()
+
+        a = LocalSteps(:send,l_a)
+        show(a)
+        printlines()
+        printlines()
+
+
+        s_b = S(([(:send, Msg("e", Data(Int)),δ(:eq,"x",1), []  ),(:send, Msg("f", Data(String)),δ(:eq,"x",2), []  ),(:recv, Msg("g", Data(Int)),δ(:eq,"x",4), []  ),(:send, Msg("h", Data(String)),δ(:eq,"x",5), []  )]))
+        l_b = Local(_v,s_b)
+        show(l_b)
         println()
+        # printlines()
+
+        # show(LocalSteps(:send,l_b))
+        # show(LocalSteps(:recv,l_b))
+        show(EnabledActions(l_b))
+        printlines()
+
+        show(TimeStep!(l_b.valuations,1))
+        println()
+        # show(LocalSteps(:send,l_b))
+        # show(LocalSteps(:recv,l_b))
+        show(EnabledActions(l_b))
+        printlines()
+
+        show(TimeStep!(l_b.valuations,1))
+        println()
+        # show(LocalSteps(:send,l_b))
+        # show(LocalSteps(:recv,l_b))
+        show(EnabledActions(l_b))
+        printlines()
+
+        show(TimeStep!(l_b.valuations,1))
+        println()
+        # show(LocalSteps(:send,l_b))
+        # show(LocalSteps(:recv,l_b))
+        show(EnabledActions(l_b))
+        printlines()
+
+        show(TimeStep!(l_b.valuations,1))
+        println()
+        # show(LocalSteps(:send,l_b))
+        # show(LocalSteps(:recv,l_b))
+        show(EnabledActions(l_b))
+        printlines()
 
     end
 

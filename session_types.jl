@@ -71,15 +71,6 @@ module SessionTypes
     export SessionType, S, Choice, Interaction, End, Def, Call
 
 
-    mutable struct S <: SessionType
-        child::T where {T<:SessionType}
-        S(child) = new(child)
-        S(child...) = new(child...)
-    end
-    Base.show(s::S, io::Core.IO = stdout) = print(io, string(s))
-    Base.string(s::S) = string(s.child)
-
-
 
     mutable struct Interaction <: ActionType
         direction::Symbol
@@ -127,15 +118,20 @@ module SessionTypes
     struct Action
         direction::Symbol
         msg::Msg
-        label::Label
+        # label::Label
         post::Labels
         function Action(interaction::Interaction)
             _dir=interaction.direction
             _msg=interaction.msg
-            _label=string(string(_dir),string(_msg))
-            new(_dir,_msg,Label(_label),Labels(interaction.λ))
+            # _label=string(string(_dir),string(_msg))
+            new(_dir,_msg,Labels(interaction.λ))
         end
     end
+    Base.show(s::Action, io::Core.IO = stdout) = print(io, string(s))
+    Base.string(s::Action) = string("[", string(s.direction == :send ? "!" : s.direction == :recv ? "?" : "□"), " ", string(s.msg), "]")
+
+
+
 
     struct End <: SessionType 
         End() = new()
@@ -165,6 +161,7 @@ module SessionTypes
     # convert to msg
     Base.convert(::Type{Msg}, i::T) where {T<:Tuple{Label, Data}} = Msg(i[1],i[2])
     
+
 
     # allows for anonymous interaction types
     Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Tuple{Symbol, Msg, C, R} where {C<:Constraint, R<:Array{Any}}} = Interaction(i...)
@@ -196,7 +193,7 @@ module SessionTypes
 
     # allows for anonymous choices with anonymous interactions with nested tails
     Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Array{Tuple{Symbol, Msg, C, R, P}} where {C<:Constraint, R<:Array{Any}, P<:Tuple{Symbol, Msg, C, R}}} = Choice([i...])
-    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Array{Tuple{Symbol, Msg, C, R, P}} where {C<:Constraint, R<:Array{Any}, P<:Tuple{Symbol, Msg, C, End}}} = Choice([i...])
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Array{Tuple{Symbol, Msg, C, R, P}} where {C<:Constraint, R<:Array{Any}, P<:Tuple{Symbol, Msg, C, R, End}}} = Choice([i...])
 
     # allows for anonymous choices with anonymous interactions with non-nested tails
     Base.convert(::Type{E}, i::T) where E<:Choice where {T<:Array{Tuple{Symbol, Msg, C, R, End}} where {C<:Constraint, R<:Array{Any}}} = Choice([i...])
@@ -204,5 +201,45 @@ module SessionTypes
     Base.convert(::Type{E}, i::T) where E<:Choice where {T<:Array{Tuple{Symbol, Msg, C, R, Choice}} where {C<:Constraint, R<:Array{Any}}} = Choice([i...])
     Base.convert(::Type{E}, i::T) where E<:Choice where {T<:Array{Tuple{Symbol, Msg, C, R, Def}} where {C<:Constraint, R<:Array{Any}}} =  Choice([i...])
     Base.convert(::Type{E}, i::T) where E<:Choice where {T<:Array{Tuple{Symbol, Msg, C, R, Call}} where {C<:Constraint, R<:Array{Any}}} =  Choice([i...])
+
+
+    
+
+    import InteractiveUtils.subtypes
+
+    mutable struct S <: SessionType
+        child::T where {T<:SessionType}
+        kind::Symbol
+        S(c::T) where {T<:Interaction} = new(c,:interaction)
+        S(c::T) where {T<:Choice} = new(c,:choice)
+        S(c::T) where {T<:Def} = new(c,:def)
+        S(c::T) where {T<:Call} = new(c,:call)
+        S(c::T) where {T<:End} = new(c,:end)
+        
+        S(c::T) where {T<:Tuple{Symbol, Msg, C, R} where {C<:Constraint, R<:Array{Any}}} = new(c,:interaction)
+        S(c::T) where {T<:Tuple{Symbol, Msg, C, R, End} where {C<:Constraint, R<:Array{Any}}}  = new(c,:interaction)
+        S(c::T) where {T<:Tuple{Symbol, Msg, C, R, Interaction} where {C<:Constraint, R<:Array{Any}}}  = new(c,:interaction)
+        S(c::T) where {T<:Tuple{Symbol, Msg, C, R, Choice} where {C<:Constraint, R<:Array{Any}}} = new(c,:interaction)
+        S(c::T) where {T<:Tuple{Symbol, Msg, C, R, Def} where {C<:Constraint, R<:Array{Any}}} = new(c,:interaction)
+        S(c::T) where {T<:Tuple{Symbol, Msg, C, R, Call} where {C<:Constraint, R<:Array{Any}}} = new(c,:interaction)
+        
+        S(c::T) where {T<:Tuple{Symbol, Msg, C, R, P} where {C<:Constraint, R<:Array{Any}, P<:Tuple{Symbol, Msg, C, R}}}  = new(c,:interaction)
+        S(c::T) where {T<:Tuple{Symbol, Msg, C, R, P} where {C<:Constraint, R<:Array{Any}, P<:Tuple{Symbol, Msg, C, R, End}}}  = new(c,:interaction)
+
+        S(c::T) where {T<:Array{Interaction}} = new(c,:choice)
+        S(c::T) where {T<:Array{Tuple{Symbol, Msg, C, R}} where {C<:Constraint, R<:Array{Any}}} = new(c,:choice)
+        S(c::T) where {T<:Array{Tuple{Symbol, Msg, C, R, End}} where {C<:Constraint, R<:Array{Any}}} = new(c,:choice)
+        S(c::T) where {T<:Array{Tuple{Symbol, Msg, C, R, Interaction}} where {C<:Constraint, R<:Array{Any}}} = new(c,:choice)
+        S(c::T) where {T<:Array{Tuple{Symbol, Msg, C, R, Choice}} where {C<:Constraint, R<:Array{Any}}} = new(c,:choice)
+        S(c::T) where {T<:Array{Tuple{Symbol, Msg, C, R, Def}} where {C<:Constraint, R<:Array{Any}}} = new(c,:choice)
+        S(c::T) where {T<:Array{Tuple{Symbol, Msg, C, R, Call}} where {C<:Constraint, R<:Array{Any}}} = new(c,:choice)
+        
+        S(c::T) where {T<:Array{Tuple{Symbol, Msg, C, R, P}} where {C<:Constraint, R<:Array{Any}, P<:Tuple{Symbol, Msg, C, R}}}  = new(c,:choice)
+        S(c::T) where {T<:Array{Tuple{Symbol, Msg, C, R, P}} where {C<:Constraint, R<:Array{Any}, P<:Tuple{Symbol, Msg, C, R, End}}}  = new(c,:choice)
+    end
+    Base.show(s::S, io::Core.IO = stdout) = print(io, string(s))
+    Base.string(s::S) = string(s.child)
+
+
 
 end

@@ -12,13 +12,16 @@ module Configurations
     using ..ClockValuations
 
 
+    export Configuration, Local, Social, System
+
     # configurations
 
     abstract type Configuration end
 
     struct Local <: Configuration
         valuations::Valuations
-        type::T where {T<:SessionType}
+        # type::T where {T<:SessionType}
+        type::S
         function Local(valuations,type)
             @assert typeof(type) == S "initially type ($(typeof(type))) must be $(string(typeof(S)))"
             new(valuations,type)
@@ -30,7 +33,8 @@ module Configurations
 
     struct Social <: Configuration
         valuations::Valuations
-        type::T where {T<:SessionType}
+        # type::T where {T<:SessionType}
+        type::S
         queue::Msgs
         function Social(clocks,type,queue)
             @assert typeof(type) == S "initially type ($(typeof(type))) must be $(string(typeof(S)))"
@@ -49,17 +53,6 @@ module Configurations
     isend(c::Social) = (typeof(c.type) == End) ? true : false
 
 
-
-    _l = Local(_v,_s)
-    show(_l)
-    println()
-    println()
-
-    _step = LocalSteps(_l)
-    show(_step)
-    println()
-    println()
-    
     struct System <: Configuration
         lhs::Social
         rhs::Social
@@ -69,5 +62,18 @@ module Configurations
     function Base.string(c::System, verbose::Bool = false)
         string("(", join([string(c.lhs,verbose),string(c.rhs,verbose)]," ∣ "), ")")
     end
+
+    # construct system from array of 2 social
+    function Base.convert(::Type{System}, t::T) where {T<:Array{Social}} 
+        @assert length(t) == 2
+        System(t[1],t[2])
+    end
+
+    Base.convert(::Type{System}, t::T) where {T<:Tuple{Social,Social}} = System(t[1],t[2])
+    
+
+    # get system as children
+    Base.convert(::Type{Array{Social}}, t::System) = Array{Social}([t.lhs,t.rhs])
+
 
 end
