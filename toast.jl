@@ -1,6 +1,6 @@
 module TOAST
 
-    show_all_tests=false
+    show_all_tests=true
 
     show_logical_clock_tests=false
     show_clock_constraints_tests=false
