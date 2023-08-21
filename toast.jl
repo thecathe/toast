@@ -1,6 +1,6 @@
 module TOAST
 
-    show_all_tests=false
+    show_all_tests=true
 
     show_logical_clock_tests=false
     show_clock_constraints_tests=false
@@ -22,17 +22,20 @@ module TOAST
         import Base.isempty
         
         export Label, Labels
+
         const Label = String 
-        # const Labels = Array{Label}
-        struct Labels
+
+        abstract type LabelList end
+
+        struct Labels <: LabelList
             children::Array{Label}
             distinct::Bool
-            Labels(distinct=false) = new(Array{Label}([]),distinct)
-            function Labels(children,distinct=false) 
+            # Labels(distinct=false) = new(Array{Label}([]),distinct)
+            function Labels(children,distinct=true) 
                 if distinct
-                    return new(unique(children),distinct)
+                    return new(Array{Label}([unique(children)...]),distinct)
                 else
-                    return new(children,distinct)
+                    return new(Array{Label}([children...]),distinct)
                 end
             end
         end
@@ -40,7 +43,11 @@ module TOAST
         Base.show(l::Labels, io::Core.IO = stdout) = print(io, string(l))
         Base.string(l::Labels) = isempty(l) ? string("∅") : string("{", join(l, ", "), "}")
         
-        Base.convert(::Type{Array{Label}}, l::T) where {T<:Vector{Any}} = Array{Label}(l)
+        Base.convert(::Type{Labels}, l::T) where {T<:Array{S} where {S<:String}} = Labels([l...])
+        function Base.convert(::Type{Labels}, l::T) where {T<:Array{Any}}
+            @assert isempty(l) "Base.convert Labels, unknown non-empty: ($(typeof(l))) : $(string(l))"
+            return Labels([],true)
+        end
         
         Base.push!(l::Labels, a::Label) = push!(l.children, a)
 
@@ -194,14 +201,16 @@ module TOAST
             ])))
         printlines()
 
-        show(S(Choice([ 
-            (:send, Msg("a", Data(Int)), δ(:tt), []), 
-            (:recv, Msg("b", Data(String)), δ(:tt), [], (:send, Msg("c", Data(Int)), δ(:tt), [])),
-            (:send, Msg("d", Data(Int)), δ(:tt), [], Choice([
+        a = Choice([
                     (:send, Msg("e", Data(Int)), δ(:tt), []),
                     (:send, Msg("f", Data(Int)), δ(:tt), [], (:send, Msg("g", Data(Int)), δ(:tt), []))
-                ])) 
-            ])))
+                ])
+        b = S(Choice([ 
+            (:send, Msg("a", Data(Int)), δ(:tt), []), 
+            (:recv, Msg("b", Data(String)), δ(:tt), [], (:send, Msg("c", Data(Int)), δ(:tt), [])),
+            (:send, Msg("d", Data(Int)), δ(:tt), [], a) 
+            ]))
+        show(b)
         printlines()
 
         show(S(Def("a", (:send, Msg("a", Data(Int)), δ(:tt), [], (:send, Msg("a", Data(Int)), δ(:tt), [] ) ))) )
@@ -215,6 +224,13 @@ module TOAST
 
         show(S((:send, Msg("a", Data(Int)), δ(:tt), [], Def("a", (:send, Msg("a", Data(Int)), δ(:tt), [], Call("a")  ) ))) )
         printlines()
+
+        show(S(([Interaction(:send, Msg("e", Data(Int)),δ(:tt), []  ),Interaction(:send, Msg("f", Data(String)),δ(:tt), []  )])))
+        printlines()
+
+        show(S(([(:send, Msg("e", Data(Int)),δ(:tt), []  ),(:send, Msg("f", Data(String)),δ(:tt), []  )])))
+        printlines()
+
     end
 
  

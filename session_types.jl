@@ -70,11 +70,22 @@ module SessionTypes
     # session types
     export SessionType, S, Choice, Interaction, End, Def, Call
 
-    struct Interaction <: ActionType
+
+    mutable struct S <: SessionType
+        child::T where {T<:SessionType}
+        S(child) = new(child)
+        S(child...) = new(child...)
+    end
+    Base.show(s::S, io::Core.IO = stdout) = print(io, string(s))
+    Base.string(s::S) = string(s.child)
+
+
+
+    mutable struct Interaction <: ActionType
         direction::Symbol
         msg::Msg
         δ::δ
-        λ::Array{Label}
+        λ::Labels
         S::T where {T<:SessionType}
         function Interaction(direction,msg,δ,λ,S=End())
             @assert direction in [:send, :recv]
@@ -86,17 +97,11 @@ module SessionTypes
     Base.string(s::Interaction, verbose::Bool = false) = string((s.direction == :send) ? "!" : "?", " ", string(s.msg), " (", string(s.δ), ", ", string(s.λ), ").", verbose ? string(s.S) : string("S"))
 
 
-    struct S <: SessionType
-        child::T where {T<:SessionType}
-        S(child) = new(child)
-    end
-    Base.show(s::S, io::Core.IO = stdout) = print(io, string(s))
-    Base.string(s::S) = string(s.child)
 
 
-    struct Choice <: ActionType
+    mutable struct Choice <: ActionType
         children::Array{Interaction}
-        Choice(children) = new(children)
+        Choice(children) = new(Array{Interaction}(children))
     end
     Base.show(s::Choice, io::Core.IO = stdout) = print(io, string(s))
     Base.show(s::Choice, verbose::Bool, io::Core.IO = stdout) = print(io, string(s,verbose))
@@ -109,6 +114,12 @@ module SessionTypes
     end         
     
     Base.length(s::Choice) = length(s.children)
+    Base.isempty(s::Choice) = isempty(s.children)
+    Base.getindex(s::Choice, i::Int) = getindex(s.children, i)
+
+    Base.iterate(s::Choice) = isempty(s) ? nothing : (s[1], Int(1))
+    Base.iterate(s::Choice, i::Int) = (i >= length(s)) ? nothing : (s[i+1], i+1)
+
 
 
     export Action, ActionType 
@@ -117,11 +128,12 @@ module SessionTypes
         direction::Symbol
         msg::Msg
         label::Label
+        post::Labels
         function Action(interaction::Interaction)
             _dir=interaction.direction
             _msg=interaction.msg
             _label=string(string(_dir),string(_msg))
-            new(_dir,_msg,Label(_label))
+            new(_dir,_msg,Label(_label),Labels(interaction.λ))
         end
     end
 
@@ -131,7 +143,7 @@ module SessionTypes
     Base.show(s::End, io::Core.IO = stdout) = print(io, string(s))
     Base.string(s::End) = "end"
 
-    struct Def <: RecursionType
+    mutable struct Def <: RecursionType
         identity::String
         S::T where {T<:SessionType}
         Def(identity, S) = new(identity, S)
@@ -139,16 +151,6 @@ module SessionTypes
     Base.show(s::Def, io::Core.IO = stdout) = print(io, string(s))
     Base.show(s::Def, verbose::Bool, io::Core.IO = stdout) = print(io, string(s,verbose))
     Base.string(s::Def, verbose::Bool = false) = string("μα[$(s.identity)].", verbose ? string(s.S) : string("S"))
-
-    # convert when tail is Def
-    Base.convert(::Type{Interaction}, i::T) where {T<:Tuple{Symbol, Msg, Constraint, Array{Any}, Def}} = Interaction(i[1], i[2], i[3], (isempty(i[4]) ? Array{Label}[] : Array{Label}(i[4]) ), i[5])
-
-    # convert within S with tail
-    Base.convert(::Type{SessionType}, i::T) where {T<:Tuple{Symbol, Msg, Constraint, Array{Any}, Def}} = Interaction(i[1], i[2], i[3], (isempty(i[4]) ? Array{Label}[] : Array{Label}(i[4]) ), i[5])
-
-    Base.convert(::Type{SessionType}, i::T) where {T<:Array{Tuple{Symbol, Msg, Constraint, Array{Any}, SessionType}}} = Choice([(j[1], j[2], j[3], (isempty(j[4]) ? Array{Label}[] : Array{Label}(j[4]) ), j[5]) for j in i])
-    Base.convert(::Type{SessionType}, i::T) where {T<:Array{Tuple{Symbol, Msg, δ, Array{Any}, SessionType}}} = Choice([(j[1], j[2], j[3], (isempty(j[4]) ? Array{Label}[] : Array{Label}(j[4]) ), j[5]) for j in i])
-
 
 
     struct Call <: RecursionType
@@ -159,50 +161,48 @@ module SessionTypes
     Base.show(s::Call, io::Core.IO = stdout) = print(io, string(s))
     Base.string(s::Call) = string("α[$(s.identity)]")
 
-    # convert when tail is Call
-    Base.convert(::Type{Interaction}, i::T) where {T<:Tuple{Symbol, Msg, Constraint, Array{Any}, Call}} = Interaction(i[1], i[2], i[3], (isempty(i[4]) ? Array{Label}[] : Array{Label}(i[4]) ), i[5])
 
-    # convert within S with tail
-    Base.convert(::Type{SessionType}, i::T) where {T<:Tuple{Symbol, Msg, Constraint, Array{Any}, Call}} = Interaction(i[1], i[2], i[3], (isempty(i[4]) ? Array{Label}[] : Array{Label}(i[4]) ), i[5])
-
-    # convert within S with tail
-    Base.convert(::Type{SessionType}, i::T) where {T<:Tuple{Symbol, Msg, δ, Array{Any}, Call}} = Interaction(i[1], i[2], i[3], (isempty(i[4]) ? Array{Label}[] : Array{Label}(i[4]) ), i[5])
-
-
+    # convert to msg
+    Base.convert(::Type{Msg}, i::T) where {T<:Tuple{Label, Data}} = Msg(i[1],i[2])
     
-    # convert within Choice
-    Base.convert(::Type{Interaction}, i::T) where {T<:Tuple{Symbol, Msg, δ, Array{Any}}} = Interaction(i[1], i[2], i[3], (isempty(i[4]) ? Array{Label}[] : Array{Label}(i[4]) ))
+
+    # allows for anonymous interaction types
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Tuple{Symbol, Msg, C, R} where {C<:Constraint, R<:Array{Any}}} = Interaction(i...)
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Tuple{Symbol, Msg, C, R, End} where {C<:Constraint, R<:Array{Any}}} = Interaction(i...)
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Tuple{Symbol, Msg, C, R, Interaction} where {C<:Constraint, R<:Array{Any}}} = Interaction(i...)
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Tuple{Symbol, Msg, C, R, Choice} where {C<:Constraint, R<:Array{Any}}} = Interaction(i...)
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Tuple{Symbol, Msg, C, R, Def} where {C<:Constraint, R<:Array{Any}}} = Interaction(i...)
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Tuple{Symbol, Msg, C, R, Call} where {C<:Constraint, R<:Array{Any}}} = Interaction(i...)
+
+    # anonymous interactions with nested tails
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Tuple{Symbol, Msg, C, R, P} where {C<:Constraint, R<:Array{Any}, P<:Tuple{Symbol, Msg, C, R}}} = Interaction(i...)
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Tuple{Symbol, Msg, C, R, P} where {C<:Constraint, R<:Array{Any}, P<:Tuple{Symbol, Msg, C, R, End}}} = Interaction(i...)
     
-    # convert within Choice with tail
-    Base.convert(::Type{Interaction}, i::T) where {T<:Tuple{Symbol, Msg, δ, Array{Any}, Tuple}} = Interaction(i[1], i[2], i[3], (isempty(i[4]) ? Array{Label}[] : Array{Label}(i[4]) ), Interaction(i[5]...))
-    Base.convert(::Type{Interaction}, i::T) where {T<:Tuple{Symbol, Msg, δ, Array{Any}, Call}} = Interaction(i[1], i[2], i[3], (isempty(i[4]) ? Array{Label}[] : Array{Label}(i[4]) ), Interaction(i[5]...))
+    # anonymous interactions with non-nested tails
+    Base.convert(::Type{E}, i::T) where E<:Interaction where {T<:Tuple{Symbol, Msg, C, R, End} where {C<:Constraint, R<:Array{Any}}} = Interaction(i...)
+    Base.convert(::Type{E}, i::T) where E<:Interaction where {T<:Tuple{Symbol, Msg, C, R, Interaction} where {C<:Constraint, R<:Array{Any}}} = Interaction(i...)
+    Base.convert(::Type{E}, i::T) where E<:Interaction where {T<:Tuple{Symbol, Msg, C, R, Choice} where {C<:Constraint, R<:Array{Any}}} = Interaction(i...)
+    Base.convert(::Type{E}, i::T) where E<:Interaction where {T<:Tuple{Symbol, Msg, C, R, Def} where {C<:Constraint, R<:Array{Any}}} = Interaction(i...)
+    Base.convert(::Type{E}, i::T) where E<:Interaction where {T<:Tuple{Symbol, Msg, C, R, Call} where {C<:Constraint, R<:Array{Any}}} = Interaction(i...)
 
-    # convert within S
-    Base.convert(::Type{E}, i::T) where {T<:Tuple{Symbol, Msg, δ, Array{Any}}} where {E<:SessionType} = Interaction(i[1], i[2], i[3], (isempty(i[4]) ? Array{Label}[] : Array{Label}(i[4]) ))
+    # allows for anonymous choice declaration
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Array{Interaction}} = Choice([i...])
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Array{Tuple{Symbol, Msg, C, R}} where {C<:Constraint, R<:Array{Any}}} = Choice([i...])
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Array{Tuple{Symbol, Msg, C, R, End}} where {C<:Constraint, R<:Array{Any}}} = Choice([i...])
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Array{Tuple{Symbol, Msg, C, R, Interaction}} where {C<:Constraint, R<:Array{Any}}} = Choice([i...])
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Array{Tuple{Symbol, Msg, C, R, Choice}} where {C<:Constraint, R<:Array{Any}}} = Choice([i...])
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Array{Tuple{Symbol, Msg, C, R, Def}} where {C<:Constraint, R<:Array{Any}}} = Choice([i...])
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Array{Tuple{Symbol, Msg, C, R, Call}} where {C<:Constraint, R<:Array{Any}}} = Choice([i...])
 
-    # convert within S with tail
-    Base.convert(::Type{E}, i::T) where {T<:Tuple{Symbol, Msg, δ, Array{Any}, Tuple}} where {E<:SessionType} = Interaction(i[1], i[2], i[3], (isempty(i[4]) ? Array{Label}[] : Array{Label}(i[4]) ), Interaction(i[5]...))
-    Base.convert(::Type{E}, i::T) where {T<:Tuple{Symbol, Msg, δ, Array{Any}, Call}} where {E<:SessionType} = Interaction(i[1], i[2], i[3], (isempty(i[4]) ? Array{Label}[] : Array{Label}(i[4]) ), Interaction(i[5]...))
+    # allows for anonymous choices with anonymous interactions with nested tails
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Array{Tuple{Symbol, Msg, C, R, P}} where {C<:Constraint, R<:Array{Any}, P<:Tuple{Symbol, Msg, C, R}}} = Choice([i...])
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Array{Tuple{Symbol, Msg, C, R, P}} where {C<:Constraint, R<:Array{Any}, P<:Tuple{Symbol, Msg, C, End}}} = Choice([i...])
 
-
-
-    
-    # convert when tail is Choice
-    Base.convert(::Type{Interaction}, i::T) where {T<:Tuple{Symbol, Msg, δ, Array{Any}, Choice}} = Interaction(i[1], i[2], i[3], (isempty(i[4]) ? Array{Label}[] : Array{Label}(i[4]) ), i[5])
-
-    
-    # convert within Choice
-    Base.convert(::Type{Choice}, i::T) where {T<:Array{Tuple{Symbol, Msg, δ, Array{Any}}}} = Choice([(j[1], j[2], j[3], (isempty(j[4]) ? Array{Label}[] : Array{Label}(j[4]) )) for j in i])
-    
-    # convert within Choice with tail
-    Base.convert(::Type{Choice}, i::T) where {T<:Array{Tuple{Symbol, Msg, δ, Array{Any}, Tuple}}} = Choice([(j[1], j[2], j[3], (isempty(j[4]) ? Array{Label}[] : Array{Label}(j[4]) ), Interaction(j[5]...)) for j in i])
-    Base.convert(::Type{Choice}, i::T) where {T<:Array{Tuple{Symbol, Msg, δ, Array{Any}, Call}}} = Choice([(j[1], j[2], j[3], (isempty(j[4]) ? Array{Label}[] : Array{Label}(j[4]) ), Interaction(j[5]...)) for j in i])
-
-    # # convert within S
-    Base.convert(::Type{E}, i::T) where {T<:Array{Tuple{Symbol, Msg, δ, Array{Any}}}}  where {E<:SessionType} = Choice([(j[1], j[2], j[3], (isempty(j[4]) ? Array{Label}[] : Array{Label}(j[4]) )) for j in i])
-
-    # # convert within S with tail
-    Base.convert(::Type{E}, i::T) where {T<:Array{Tuple{Symbol, Msg, δ, Array{Any}, Tuple}}}   where {E<:SessionType}= Choice([(j[1], j[2], j[3], (isempty(j[4]) ? Array{Label}[] : Array{Label}(j[4]) ), Interaction(j[5]...)) for j in i])
-    Base.convert(::Type{E}, i::T) where {T<:Array{Tuple{Symbol, Msg, δ, Array{Any}, Call}}}   where {E<:SessionType}= Choice([(j[1], j[2], j[3], (isempty(j[4]) ? Array{Label}[] : Array{Label}(j[4]) ), Interaction(j[5]...)) for j in i])
+    # allows for anonymous choices with anonymous interactions with non-nested tails
+    Base.convert(::Type{E}, i::T) where E<:Choice where {T<:Array{Tuple{Symbol, Msg, C, R, End}} where {C<:Constraint, R<:Array{Any}}} = Choice([i...])
+    Base.convert(::Type{E}, i::T) where E<:Choice where {T<:Array{Tuple{Symbol, Msg, C, R, Interaction}} where {C<:Constraint, R<:Array{Any}}} = Choice([i...])
+    Base.convert(::Type{E}, i::T) where E<:Choice where {T<:Array{Tuple{Symbol, Msg, C, R, Choice}} where {C<:Constraint, R<:Array{Any}}} = Choice([i...])
+    Base.convert(::Type{E}, i::T) where E<:Choice where {T<:Array{Tuple{Symbol, Msg, C, R, Def}} where {C<:Constraint, R<:Array{Any}}} =  Choice([i...])
+    Base.convert(::Type{E}, i::T) where E<:Choice where {T<:Array{Tuple{Symbol, Msg, C, R, Call}} where {C<:Constraint, R<:Array{Any}}} =  Choice([i...])
 
 end
