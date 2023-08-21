@@ -7,7 +7,8 @@ module TOAST
     show_session_type_tests=false
     show_clock_valuations_tests=false
     show_evaluate_tests=false
-    show_configuration_tests=false
+    show_configuration_tests=true
+    show_transition_tests=true
 
     module General
 
@@ -342,6 +343,34 @@ module TOAST
     if show_configuration_tests || show_all_tests
         println("configuration tests:")
 
+        _c = Clocks([("a",1)])
+        _v = Valuations(_c)
+        _s = S(Choice([(:send, Msg("a", Int), δ(:not,δ(:geq,"x",3)),[], Def("a", (:send, Msg("b", String), δ(:tt), [], Call("a")))),(:recv, Msg("c", Bool), δ(:geq,"y",3),[])]))
+        _l = Local(_v,_s)
+
+        show(_l)
+        println()
+        println()
+
     end
+
+        
+    include("transitions.jl")
+    using .Transitions
+
+    if show_transition_tests || show_all_tests
+        println("transitions tests:")
+
+        _c = Clocks([("a",1)])
+        _v = Valuations(_c)
+        _s = S(Choice([(:send, Msg("a", Int), δ(:not,δ(:geq,"x",3)),[], Def("a", (:send, Msg("b", String), δ(:tt), [], Call("a")))),(:recv, Msg("c", Bool), δ(:geq,"y",3),[])]))
+        _l = Local(_v,_s)
+        
+        show(_l)
+        println()
+        println()
+
+    end
+
 
 end
