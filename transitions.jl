@@ -81,7 +81,7 @@ module Transitions
         steps::Array{LocalStep}
         valid::Bool
         function LocalSteps(kind::Symbol,state::Local)
-            @assert kind in [:send, :recv, :unfold, :call, :wait, :enque]
+            @assert kind in [:send, :recv, :unfold, :call, :wait, :enqu]
 
             _local_steps = Array{LocalStep}([])
             if kind in [:send,:recv]
@@ -139,6 +139,8 @@ module Transitions
         action::LocalSteps
         kind::Symbol
         function SocialStep(kind::Symbol,state::Social)
+            @assert kind in [:send,:recv,:enqu,:wait,:nothing]
+
             new(LocalSteps(kind,state),kind)
         end
     end
@@ -169,22 +171,22 @@ module Transitions
 
     struct SystemStep <: LabelledStep
         kind::Symbol
-        lhs::SocialStep
-        rhs::SocialStep
+        lhs::SocialSteps
+        rhs::SocialSteps
         function SystemStep(kind::Symbol,lhs::Social,rhs::Social)
             @assert kind in [:send,:dequ,:wait]
-
-            # _actions = system_actions(lhs.kind,rhs.kind)
-            # @assert _actions[2] "SystemStep: $(string(lhs)) and $(string(rhs)) are not complementary"
-
-            # kind = _actions[1]
-
-            # if kind==:time
-            #     _
-            # end
-
-            # new(lhs,rhs,kind)
-            new()
+            
+            if kind==:send
+                new(kind,SocialSteps(:send,lhs),SocialSteps(:enqu,rhs))
+            elseif kind==:dequ
+                new(kind,SocialSteps(:recv,lhs),SocialSteps(:nothing,rhs))
+            elseif kind==:wait
+                max_lhs = 0
+                max_rhs = 0
+                # new(kind,SocialSteps())
+            else
+                @error "SystemStep, unknown kind: $(kind)"
+            end
         end
 
         # function system_actions(lhs::Symbol,rhs::Symbol)
@@ -242,7 +244,8 @@ module Transitions
             new(state,SystemSteps(state))
         end
     end
-    Base.show(s::SystemSteps, io::Core.IO = stdout) = print(io, string(s))
+    Base.show(s::StepDriver, io::Core.IO = stdout) = print(io, string(s))
+    Base.string(s::StepDriver) = string("state:", string(s.state), "\n", string(s.succ))
 
 
 

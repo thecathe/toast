@@ -7,7 +7,7 @@ module TOAST
     show_session_type_tests=false
     show_clock_valuations_tests=false
     show_evaluate_tests=false
-    show_configuration_tests=true
+    show_configuration_tests=false
     show_transition_tests=true
 
     module General
@@ -376,58 +376,49 @@ module TOAST
     if show_transition_tests || show_all_tests
         println("transitions tests:")
 
-        _c = Clocks([("a",1)])
-        _v = Valuations(_c)
-        _s = S(Choice([(:send, Msg("a", Int), δ(:not,δ(:geq,"x",3)),[], Def("a", (:send, Msg("b", String), δ(:tt), [], Call("a")))),(:recv, Msg("c", Bool), δ(:geq,"y",3),[])]))
-        l_a = Local(_v,_s)
+        # _c = Clocks([("a",1)])
+        # _v = Valuations(_c)
+        # _s = S(Choice([(:send, Msg("a", Int), δ(:not,δ(:geq,"x",3)),[], Def("a", (:send, Msg("b", String), δ(:tt), [], Call("a")))),(:recv, Msg("c", Bool), δ(:geq,"y",3),[])]))
+        # l_a = Local(_v,_s)
         
-        show(l_a)
-        println()
+        # show(l_a)
+        # println()
 
-        a = LocalSteps(:send,l_a)
-        show(a)
-        printlines()
-        printlines()
+        # a = LocalSteps(:send,l_a)
+        # show(a)
+        # printlines()
+        # printlines()
 
 
         s_b = S(([(:send, Msg("e", Data(Int)),δ(:eq,"x",1), []  ),(:send, Msg("f", Data(String)),δ(:eq,"x",2), []  ),(:recv, Msg("g", Data(Int)),δ(:eq,"x",4), []  ),(:send, Msg("h", Data(String)),δ(:eq,"x",5), []  )]))
         l_b = Local(_v,s_b)
-        show(l_b)
-        println()
+
+        # show(l_b)
+        # println()
+        # show(EnabledActions(l_b))
         # printlines()
 
-        # show(LocalSteps(:send,l_b))
-        # show(LocalSteps(:recv,l_b))
-        show(EnabledActions(l_b))
-        printlines()
+        # show(TimeStep!(l_b.valuations,1))
+        # println()
+        # show(EnabledActions(l_b))
+        # printlines()
 
-        show(TimeStep!(l_b.valuations,1))
-        println()
-        # show(LocalSteps(:send,l_b))
-        # show(LocalSteps(:recv,l_b))
-        show(EnabledActions(l_b))
-        printlines()
+        # show(TimeStep!(l_b.valuations,1))
+        # println()
+        # show(EnabledActions(l_b))
+        # printlines()
 
-        show(TimeStep!(l_b.valuations,1))
-        println()
-        # show(LocalSteps(:send,l_b))
-        # show(LocalSteps(:recv,l_b))
-        show(EnabledActions(l_b))
-        printlines()
+        # show(TimeStep!(l_b.valuations,1))
+        # println()
+        # show(EnabledActions(l_b))
+        # printlines()
 
-        show(TimeStep!(l_b.valuations,1))
-        println()
-        # show(LocalSteps(:send,l_b))
-        # show(LocalSteps(:recv,l_b))
-        show(EnabledActions(l_b))
-        printlines()
+        # show(TimeStep!(l_b.valuations,1))
+        # println()
+        # show(EnabledActions(l_b))
+        # printlines()
 
-        show(TimeStep!(l_b.valuations,1))
-        println()
-        # show(LocalSteps(:send,l_b))
-        # show(LocalSteps(:recv,l_b))
-        show(EnabledActions(l_b))
-        printlines()
+        show(StepDriver())
 
     end
 

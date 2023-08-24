@@ -204,12 +204,10 @@ module SessionTypes
 
 
     
-
-    import InteractiveUtils.subtypes
-
     mutable struct S <: SessionType
         child::T where {T<:SessionType}
         kind::Symbol
+
         S(c::T) where {T<:Interaction} = new(c,:interaction)
         S(c::T) where {T<:Choice} = new(c,:choice)
         S(c::T) where {T<:Def} = new(c,:def)
@@ -240,6 +238,24 @@ module SessionTypes
     Base.show(s::S, io::Core.IO = stdout) = print(io, string(s))
     Base.string(s::S) = string(s.child)
 
+
+    export Dual
+
+    struct Dual <: SessionType
+        child::T where {T<:SessionType}
+        kind::Symbol
+        
+        Dual(c::T) where {T<:Def} = new(c,:def)
+        Dual(c::T) where {T<:Call} = new(c,:call)
+        Dual(c::T) where {T<:End} = new(c,:end)
+        
+        Dual(c::T) where {T<:Interaction} = new(Interaction((c.direction == :send) ? :recv : :send, c[2:end]...),:interaction)
+
+        Dual(c::T) where {T<:Choice} = new(c,:choice)
+
+    end
+    Base.show(s::Dual, io::Core.IO = stdout) = print(io, string(s))
+    Base.string(s::Dual) = string(s.child)
 
 
 end
