@@ -78,7 +78,7 @@ module TOAST
 
         clocks = Clocks([("a",1),("b",2),("c",3)])
 
-        show(string(clocks))
+        show(clocks)
         printlines()
         
         show(value!(clocks,"a"))
