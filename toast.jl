@@ -4,7 +4,7 @@ module TOAST
 
     show_logical_clock_tests=false
     show_clock_constraints_tests=false
-    show_session_type_tests=false
+    show_session_type_tests=true
     show_clock_valuations_tests=false
     show_evaluate_tests=false
     show_configuration_tests=false
@@ -173,7 +173,8 @@ module TOAST
         show(S((:send, Msg("a", Data(Int)), δ(:tt), [], (:recv, Msg("b", Data(String)), δ(:tt), [], End()))) )
         printlines()
 
-        show(S((:send, Msg("a", Data(Int)), δ(:tt), [], (:recv, Msg("b", Data(String)), δ(:tt), [] ))) )
+        c = S((:send, Msg("a", Data(Int)), δ(:tt), [], (:recv, Msg("b", Data(String)), δ(:tt), [] ))) 
+        show(c)
         printlines()
 
         show(S(Choice([ (:send, Msg("a", Data(Int)), δ(:tt), []) ])))
@@ -230,6 +231,22 @@ module TOAST
 
         show(S(([(:send, Msg("e", Data(Int)),δ(:tt), []  ),(:send, Msg("f", Data(String)),δ(:tt), []  )])))
         printlines()
+
+        
+
+        println("duality tests:")
+        println(string("s: ", string(c)))
+        println(string("d: ", string(Dual(c))))
+        printlines()
+        
+        println(string("s: ", string(a)))
+        println(string("d: ", string(Dual(a))))
+        printlines()
+        
+        println(string("s: ", string(b)))
+        println(string("d: ", string(Dual(b))))
+        printlines()
+
 
     end
 
@@ -389,7 +406,7 @@ module TOAST
         # printlines()
         # printlines()
 
-
+        _v = Valuations()
         s_b = S(([(:send, Msg("e", Data(Int)),δ(:eq,"x",1), []  ),(:send, Msg("f", Data(String)),δ(:eq,"x",2), []  ),(:recv, Msg("g", Data(Int)),δ(:eq,"x",4), []  ),(:send, Msg("h", Data(String)),δ(:eq,"x",5), []  )]))
         l_b = Local(_v,s_b)
 
@@ -418,7 +435,7 @@ module TOAST
         # show(EnabledActions(l_b))
         # printlines()
 
-        show(StepDriver())
+        # show(StepDriver())
 
     end
 

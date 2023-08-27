@@ -4,6 +4,10 @@ module SessionTypes
     import Base.show
     import Base.string
 
+    import Base.iterate
+    import Base.getindex
+    import Base.lastindex
+
 
     using ..General
     using ..LogicalClocks
@@ -244,14 +248,17 @@ module SessionTypes
     struct Dual <: SessionType
         child::T where {T<:SessionType}
         kind::Symbol
+
+        Dual(c::T) where {T<:S} = Dual(c.child)
         
         Dual(c::T) where {T<:Def} = new(c,:def)
         Dual(c::T) where {T<:Call} = new(c,:call)
         Dual(c::T) where {T<:End} = new(c,:end)
         
-        Dual(c::T) where {T<:Interaction} = new(Interaction((c.direction == :send) ? :recv : :send, c[2:end]...),:interaction)
+        # Dual(c::T) where {T<:Interaction} = new(Interaction((c.direction == :send) ? :recv : :send, c[2:end]...),:interaction)
+        Dual(c::T) where {T<:Interaction} = new(Interaction((c.direction == :send) ? :recv : :send, c.msg, c.δ, c.λ, c.S),:interaction)
 
-        Dual(c::T) where {T<:Choice} = new(c,:choice)
+        Dual(c::T) where {T<:Choice} = new(Choice([Interaction((i.direction == :send) ? :recv : :send, i.msg, i.δ, i.λ, i.S) for i in c]),:choice)
 
     end
     Base.show(s::Dual, io::Core.IO = stdout) = print(io, string(s))
