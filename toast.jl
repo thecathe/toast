@@ -4,7 +4,7 @@ module TOAST
 
     show_logical_clock_tests=false
     show_clock_constraints_tests=false
-    show_session_type_tests=true
+    show_session_type_tests=false
     show_clock_valuations_tests=false
     show_evaluate_tests=false
     show_configuration_tests=false
@@ -373,7 +373,7 @@ module TOAST
     include("configurations.jl")
     using .Configurations
 
-    if show_configuration_tests || show_all_tests
+    if show_configuration_tests || show_all_tests 
         println("configuration tests:")
 
         _c = Clocks([("a",1)])
@@ -383,6 +383,25 @@ module TOAST
 
         show(_l)
         printlines()
+
+
+        
+        _v = Valuations()
+        s_b = S(([(:send, Msg("e", Data(Int)),δ(:eq,"x",1), []  ),(:send, Msg("f", Data(String)),δ(:eq,"x",2), []  ),(:recv, Msg("g", Data(Int)),δ(:eq,"x",4), []  ),(:send, Msg("h", Data(String)),δ(:eq,"x",5), []  )]))
+        l_b1 = Local(_v,s_b)
+        l_b2 = Local(_v,Dual(s_b))
+        sys = System(l_b1,l_b2)
+
+
+        show(l_b1,:local)
+        printlines()
+
+        show(Social(l_b1),:social)
+        printlines()
+
+        show(sys)
+        printlines()
+
 
     end
 
@@ -408,7 +427,27 @@ module TOAST
 
         _v = Valuations()
         s_b = S(([(:send, Msg("e", Data(Int)),δ(:eq,"x",1), []  ),(:send, Msg("f", Data(String)),δ(:eq,"x",2), []  ),(:recv, Msg("g", Data(Int)),δ(:eq,"x",4), []  ),(:send, Msg("h", Data(String)),δ(:eq,"x",5), []  )]))
-        l_b = Local(_v,s_b)
+        l_b1 = Local(_v,s_b)
+        l_b2 = Local(_v,Dual(s_b))
+        sys = System(l_b1,l_b2)
+
+
+        show(l_b1,:local)
+        printlines()
+
+        show(Social(l_b1),:social)
+        printlines()
+
+        show(sys)
+        printlines()
+
+
+        # show(sys)
+        # printlines()
+
+        # show(StepDriver())
+        # printlines()
+
 
         # show(l_b)
         # println()
@@ -435,7 +474,6 @@ module TOAST
         # show(EnabledActions(l_b))
         # printlines()
 
-        # show(StepDriver())
 
     end
 

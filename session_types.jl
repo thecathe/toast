@@ -43,22 +43,24 @@ module SessionTypes
 
     Base.convert(::Type{Payload},t::Type{T}) where {T<:Any} = Data(t)
 
-
-    struct Msg 
+    struct Msg
         label::Label
         payload::T where {T<:Payload}
+
         Msg(label,payload) = new(label,payload)
     end
     Base.show(m::Msg, io::Core.IO = stdout) = print(io, string(m))
     Base.string(m::Msg) = string(m.label, "<", string(m.payload), ">")
 
     
-    struct Msgs
+    mutable struct Msgs
         children::Array{Msg}
+
+        Msgs() = new(Array{Msg}([]))
         Msgs(children) = new(children)
     end
     Base.show(m::Msgs, io::Core.IO = stdout) = print(io, string(m))
-    Base.string(m::Msgs) = string(join([string(x) for x in m], ", "))
+    Base.string(m::Msgs) = isempty(m) ? string("∅") : string(join([string(x) for x in m], ", "))
 
     Base.push!(m::Msgs, x::Msg) = push!(m.children, x)
 
@@ -66,8 +68,8 @@ module SessionTypes
     Base.isempty(m::Msgs) = isempty(m.children)
     Base.getindex(m::Msgs, i::Int) = getindex(m.children, i)
 
-    Base.iterate(m::Msgs) = isempty(c) ? nothing : (m[1], Int(1))
-    Base.iterate(m::Msgs, i::Int) = (i >= length(c)) ? nothing : (m[i+1], i+1)
+    Base.iterate(m::Msgs) = isempty(m) ? nothing : (m[1], Int(1))
+    Base.iterate(m::Msgs, i::Int) = (i >= length(m)) ? nothing : (m[i+1], i+1)
 
 
 
@@ -100,9 +102,9 @@ module SessionTypes
     end
     Base.show(s::Choice, io::Core.IO = stdout) = print(io, string(s))
     Base.show(s::Choice, verbose::Bool, io::Core.IO = stdout) = print(io, string(s,verbose))
-    function Base.string(s::Choice, verbose::Bool = false) 
+    function Base.string(s::Choice, verbose::Bool = true) 
         if verbose && length(s) > 1
-            string("{\n ", join([string(" ", string(c)) for c in s.children], ",\n "), "\n}")
+            string("{", join([string(" ", string(c)) for c in s.children], ", "), "  }")
         else
             string("{ ", join([string(c) for c in s.children], ", "), " }")
         end
@@ -264,5 +266,7 @@ module SessionTypes
     Base.show(s::Dual, io::Core.IO = stdout) = print(io, string(s))
     Base.string(s::Dual) = string(s.child)
 
+    # convert back to s
+    Base.convert(::Type{S}, s::T) where {T<:Dual} = S(s.child)
 
 end
