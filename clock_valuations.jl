@@ -22,7 +22,12 @@ module ClockValuations
     mutable struct Valuations
         clocks::Clocks
         system::Clock
-        function Valuations(clocks,system=Clock(global_clock,0)) 
+
+        Valuations() = new(Clocks(),Clock(global_clock,0))
+        Valuations(system::Clock=Clock(global_clock,0)) = new(Clocks(),system)
+
+        # provided clocks
+        function Valuations(clocks::Clocks,system::Clock=Clock(global_clock,0)) 
             @assert !(system.label in labels(clocks)) "Global-system clock '$(system.label)' cannot be in local clocks: $(string(clocks))"
             
             new(clocks,system)
