@@ -90,7 +90,7 @@ module Configurations
                         pad_clock, 
                         y==1 ? string(field_sep, "{ ") : repeat(" ",4), 
                         pad_type, 
-                        y==type_len ? string(" }") : repeat(" ",2),
+                        y==type_len ? string("} ") : repeat(" ",2),
                         y==1 ? (max_lines==1 ? cfg_suffix : " \\") : (y==max_lines ? " /" : "  |")
                     ))
                 end
@@ -211,9 +211,9 @@ module Configurations
                     pad_clock, 
                     y==1 ? string(field_sep, "{ ") : repeat(" ",4), 
                     pad_type, 
-                    y==type_len ? string(" }", field_sep) : repeat(" ",4),
+                    y==type_len ? string("}", field_sep) : repeat(" ",3),
                     pad_queue,
-                    y==1 ? (max_lines==1 ? cfg_suffix : " \\") : (y==max_lines ? " /" : "  |")
+                    y==1 ? (max_lines==1 ? cfg_suffix : " \\ ") : (y==max_lines ? " / " : "  |")
                 ))
             end
             if mode==:array
@@ -236,6 +236,10 @@ module Configurations
     struct System <: Configuration
         lhs::Social
         rhs::Social
+
+        # only one, make dual
+        System(lhs::Local) = new(Social(lhs),Social(lhs.valuations,Dual(lhs.type)))
+        System(lhs::Social) = new(lhs,Social(lhs.valuations,Dual(lhs.type),lhs.queue))
 
         System(lhs::Local,rhs::Local) = new(Social(lhs),Social(rhs))
         System(lhs::Social,rhs::Social) = new(lhs,rhs)
@@ -260,7 +264,7 @@ module Configurations
             end
 
             # add parl
-            push!(current_line, max_len==1 ? " | " : (y in [1,max_len] ? "    " : " | "))
+            push!(current_line, max_len==1 ? " | " : (max_len==2 ? " | " : (y in [1,max_len] ? "   " :  " | " )))
 
             if y <= rhs_len
                 push!(current_line,rhs[y])

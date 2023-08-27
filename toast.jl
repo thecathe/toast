@@ -384,6 +384,9 @@ module TOAST
         show(_l)
         printlines()
 
+        show(System(_l))
+        printlines()
+
 
         
         _v = Valuations()
@@ -393,15 +396,14 @@ module TOAST
         sys = System(l_b1,l_b2)
 
 
-        show(l_b1,:local)
-        printlines()
+        # show(l_b1,:local)
+        # printlines()
 
-        show(Social(l_b1),:social)
-        printlines()
+        # show(Social(l_b1),:social)
+        # printlines()
 
         show(sys)
         printlines()
-
 
     end
 
