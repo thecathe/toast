@@ -25,8 +25,23 @@ module Configurations
         # type::T where {T<:SessionType}
         type::S
 
-        Local(valuations::Valuations,type::Dual) = new(valuations,S(type.child))
-        Local(valuations::Valuations,type::S) = new(valuations,type)
+        Local(valuations::Valuations,type::Dual) = Local(valuations,S(type.child))
+        
+        function Local(valuations::Valuations,type::S) 
+            if type.kind in [:choice,:interaction]
+                # populate immediately relevant clocks
+                if type.kind==:choice
+                    _relevant_clocks = ConstrainedClocks(Constraints([s.δ for s in type.child.children]))
+                elseif type.kind==:interaction
+                    _relevant_clocks = ConstrainedClocks(Constraints([type.child.δ]))
+                end
+
+                for l in _relevant_clocks.labels
+                    Value!(valuations, l)
+                end
+            end
+            new(valuations,type)
+        end
     end
     Base.show(c::Local, mode::Symbol, io::Core.IO = stdout) = print(io, string(c, mode))
     Base.show(c::Local, io::Core.IO = stdout) = print(io, string(c))
@@ -130,8 +145,23 @@ module Configurations
         queue::Queue
         
         Social(l::Local,queue::Queue=Queue()) = new(l.valuations,l.type,queue)
-        Social(clocks::Valuations,type::Dual,queue::Queue=Queue()) = new(clocks,S(type.child),queue)
-        Social(clocks::Valuations,type::S,queue::Queue=Queue()) = new(clocks,type,queue)
+        Social(valuations::Valuations,type::Dual,queue::Queue=Queue()) = new(valuations,S(type.child),queue)
+        
+        function Social(valuations::Valuations,type::S,queue::Queue=Queue()) 
+            if type.kind in [:choice,:interaction]
+                # populate immediately relevant clocks
+                if type.kind==:choice
+                    _relevant_clocks = get_labels(Constraints([s.δ for s in type.child.children]))
+                elseif type.kind==:interaction
+                    _relevant_clocks = get_labels(Constraints([type.child.δ]))
+                end
+
+                for l in _relevant_clocks
+                    Value!(valuations, l)
+                end
+            end
+            new(valuations,type,queue)
+        end
     end
     Base.show(c::Social, mode::Symbol, io::Core.IO = stdout) = print(io, string(c, mode))
     Base.show(c::Social, io::Core.IO = stdout) = print(io, string(c))

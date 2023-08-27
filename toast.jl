@@ -1,6 +1,6 @@
 module TOAST
 
-    show_all_tests=false
+    show_all_tests=true
 
     show_logical_clock_tests=false
     show_clock_constraints_tests=false
@@ -434,11 +434,11 @@ module TOAST
         sys = System(l_b1,l_b2)
 
 
-        show(l_b1,:local)
-        printlines()
+        # show(l_b1,:local)
+        # printlines()
 
-        show(Social(l_b1),:social)
-        printlines()
+        # show(Social(l_b1),:social)
+        # printlines()
 
         show(sys)
         printlines()

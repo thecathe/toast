@@ -96,6 +96,7 @@ module ClockConstraints
     
     mutable struct Constraints <: Constraint
         children::Array{δ}
+        Constraints() = Constraints([])
         function Constraints(children)
             new(children)
         end
@@ -113,7 +114,7 @@ module ClockConstraints
     Base.iterate(ds::Constraints, i::Int) = (i >= length(ds)) ? nothing : (getindex(ds,i+1), i+1)
 
     
-    export flatten, constrained_clocks
+    export flatten
 
     # flatten constraint tree into conjunctive list
     function flatten(d::δ, neg::Bool = false) 
@@ -162,10 +163,20 @@ module ClockConstraints
 
     # return list of relevant clocks in constraint
     struct ConstrainedClocks
-        δ::δ
+        constraint::T where {T<:Constraint}
         flattened::Constraints
         labels::Labels
-        function ConstrainedClocks(d) 
+        function ConstrainedClocks(d::Constraints) 
+            _flattened = Constraints()
+            for x in d.children
+                for y in flatten(x).children
+                    push!(_flattened,  y)
+                end
+            end
+            # _flattened = Constraints([_flattened])
+            new(d,_flattened,Labels([Label(c) for c in get_labels(_flattened)],true))
+        end
+        function ConstrainedClocks(d::δ) 
             _flattened = flatten(d)
             new(d,_flattened,Labels([Label(c) for c in get_labels(_flattened)],true))
         end
@@ -174,6 +185,6 @@ module ClockConstraints
 
 
     Base.show(t::T, io::Core.IO = stdout) where {T<:ConstrainedClocks} = print(io, string(t))
-    Base.string(c::ConstrainedClocks) = string(string(c.δ), " contrained clocks: ", string(c.labels))
+    Base.string(c::ConstrainedClocks) = string(string(c.constraint), " contrained clocks: ", string(c.labels))
 
 end
