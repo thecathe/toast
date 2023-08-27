@@ -42,6 +42,7 @@ module LogicalClocks
 
     struct Clocks
         children::Array{Clock}
+        Clocks() = new(Array{Clock}([]))
         Clocks(children) = new(children)
     end
     Base.show(c::Clocks, io::Core.IO = stdout) = print(io, string(c))
