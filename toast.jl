@@ -1,6 +1,6 @@
 module TOAST
 
-    show_all_tests=true
+    show_all_tests=false
 
     show_logical_clock_tests=false
     show_clock_constraints_tests=false
@@ -8,6 +8,7 @@ module TOAST
     show_clock_valuations_tests=false
     show_evaluate_tests=false
     show_configuration_tests=false
+    show_enabled_actions_tests=true
     show_transition_tests=true
 
     module General
@@ -404,6 +405,22 @@ module TOAST
 
         show(sys)
         printlines()
+
+    end
+
+    
+    include("enabled_configuration_actions.jl")
+    using .EnabledConfigurationActions
+
+    if show_enabled_actions_tests || show_all_tests
+        println("enabled actions tests:")
+
+        
+        _v = Valuations()
+        s_b = S(([(:send, Msg("e", Data(Int)),δ(:eq,"x",1), []  ),(:send, Msg("f", Data(String)),δ(:eq,"x",2), []  ),(:recv, Msg("g", Data(Int)),δ(:eq,"x",4), []  ),(:send, Msg("h", Data(String)),δ(:eq,"x",5), []  )]))
+        l_b1 = Local(_v,s_b)
+
+        
 
     end
 
