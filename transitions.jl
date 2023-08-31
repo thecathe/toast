@@ -8,12 +8,11 @@ module Transitions
     import Base.isempty
     
 
-    # import InteractiveUtils.subtypes
-
     using ..General
     using ..Configurations
     using ..Evaluate
     using ..SessionTypes
+    using ..SessionTypeActions
     using ..ClockValuations
 
     abstract type LabelledStep end
