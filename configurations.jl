@@ -111,9 +111,9 @@ module Configurations
                     push!(lines, string(
                         y==1 ? (max_lines==1 ? cfg_prefix : " / ") : (y==max_lines ? " \\ " : "|  "), 
                         pad_clock, 
-                        y==1 ? string(field_sep, "{ ") : repeat(" ",4), 
+                        y==1 && cfg.type isa Choice ? string(field_sep, "{ ") : repeat(" ",4), 
                         pad_type, 
-                        y==type_len ? string("} ") : repeat(" ",2),
+                        y==type_len && cfg.type isa Choice  ? string("} ") : repeat(" ",2),
                         y==1 ? (max_lines==1 ? cfg_suffix : " \\") : (y==max_lines ? " /" : "  |")
                     ))
                 end
