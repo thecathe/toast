@@ -4,13 +4,15 @@ module EnabledConfigurationActions
     import Base.string
 
     using ..General
+    using ..SessionTypes
+    using ..SessionTypeActions
+    using ..ClockValuations
+    using ..TransitionTimeSteps
     using ..Configurations
     using ..Evaluate
-    using ..SessionTypes
-    using ..ClockValuations
 
     
-    export isEnabled
+    export IsEnabled
     
     struct IsEnabled
         enabled::Bool
@@ -18,11 +20,12 @@ module EnabledConfigurationActions
         val::Valuations
         typ::S
         kind::Symbol
-        function IsEnabled(c::T,kind::Symbol=:comm) where {T<:Configuration}
+        IsEnabled(c::Social) = IsEnabled(Local(c.valuations,c.type))
+        function IsEnabled(c::Local,kind::Symbol=:comm) 
             val=c.valuations
             t=c.type
 
-            @assert kind in [:send,:recv] "IsEnabled, kind ($(string(kind))) not expected, expects: $(string([:send,:recv]))"
+            @assert kind in [:send,:recv,:comm] "IsEnabled, kind ($(string(kind))) not expected, expects: $(string([:send,:recv]))"
 
             if t.kind in [:interaction,:choice]
                 # consistent
@@ -34,7 +37,6 @@ module EnabledConfigurationActions
                     @error "IsEnabled, kind ($(t.kind)) not expected"
                 end
 
-                @assert kind in [:send,:recv] "IsEnabled, kind ($(string(kind))) not expected, expects: $(string([:send,:recv]))"
 
                 # collect all relevant actions that are satisfied now
                 _actions = Array{Action}([])
@@ -54,29 +56,6 @@ module EnabledConfigurationActions
         end
     end
     Base.show(e::IsEnabled, io::Core.IO = stdout) = print(io,string(e))
-    function Base.string(e::IsEnabled) 
-        return string(e.enabled ? string(e.kind==:comm ? "Any enabled actions:\n" : e.kind==:send ? "Enabled sending actions:\n" : "Enabled receiving actions:\n", isempty(e.actions) ? "error, no actions" : join(e.actions, "\n")) : "Error, no enabled actions.")
-    end
-
-    
-    export EnabledActions
-
-    struct EnabledActions
-        send::LocalSteps
-        recv::LocalSteps
-        function EnabledActions(state::Local)
-            send = LocalSteps(:send,state)
-            recv = LocalSteps(:recv,state)
-            new(send,recv)
-        end
-    end
-    function Base.show(s::EnabledActions, io::Core.IO = stdout) 
-        print(io, string("send: ", string(s.send), "\nrecv: ", string(s.recv)))
-    end
-    function Base.string(s::EnabledActions) 
-        string(string(s.send),string(s.recv))
-    end
-
-
+    Base.string(e::IsEnabled) = string(isempty(e.actions) ? "(no viable actions)" : join([string(a) for a in e.actions],"\n"))
 
 end
