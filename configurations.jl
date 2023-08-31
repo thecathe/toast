@@ -52,10 +52,18 @@ module Configurations
             # arrays for each field
             clock_lines = Array{String}([string(cfg.valuations.system),[string(v) for v in cfg.valuations.clocks]...])
 
-            if cfg.type.kind==:choice
-                type_lines = Array{String}([string(i) for i in cfg.type.child.children])
+            if mode==:local_full
+                if cfg.type.kind==:choice
+                    type_lines = Array{String}([string(i,:full) for i in cfg.type.child.children])
+                else
+                    type_lines = Array{String}([string(cfg.type,:full)])
+                end
             else
-                type_lines = Array{String}([string(cfg.type)])
+                if cfg.type.kind==:choice
+                    type_lines = Array{String}([string(i) for i in cfg.type.child.children])
+                else
+                    type_lines = Array{String}([string(cfg.type)])
+                end
             end
 
             clock_len = length(clock_lines)
@@ -91,7 +99,7 @@ module Configurations
             # return as each line of array
             if mode==:array
                 return merged_lines
-            elseif mode==:local
+            elseif mode in [:local,:local_full]
                 cfg_prefix = "( "
                 cfg_suffix = " )"
                 # create array of each line
