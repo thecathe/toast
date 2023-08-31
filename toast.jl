@@ -5,6 +5,8 @@ module TOAST
     show_logical_clock_tests=false
     show_clock_constraints_tests=false
     show_session_type_tests=false
+    show_session_type_actions_tests=false
+    show_transition_time_steps_tests=true
     show_clock_valuations_tests=false
     show_evaluate_tests=false
     show_configuration_tests=false
@@ -63,6 +65,9 @@ module TOAST
         const Num = T where {T<:Number}
     end
 
+    #
+    #
+    #
     using .General
         
     function printlines() 
@@ -71,6 +76,9 @@ module TOAST
         # println()
     end
 
+    #
+    #
+    #
     include("logical_clocks.jl")
     using .LogicalClocks
 
@@ -109,8 +117,9 @@ module TOAST
         
     end
 
-
-
+    #
+    #
+    #
     include("clock_constraints.jl")
     using.ClockConstraints
 
@@ -151,8 +160,9 @@ module TOAST
 
     end
 
-
-
+    #
+    #
+    #
     include("session_types.jl")
     using .SessionTypes
 
@@ -251,12 +261,89 @@ module TOAST
 
     end
 
- 
+    #
+    #
+    #
+    include("session_type_actions.jl")
+    using .SessionTypeActions
+
+    if show_session_type_actions_tests || show_all_tests
+        println("session type actions tests:")
+
+
+    end
+
+    #
+    #
+    #
     include("clock_valuations.jl")
     using .ClockValuations
 
     if show_clock_valuations_tests || show_all_tests
         println("clock valuation tests:")
+
+        clocks = Clocks([("a",1),("b",2),("c",3)])
+        
+        a = Valuations(clocks)
+        show(a)
+        printlines() 
+
+        show(Reset!(a,["b","c","y"]))
+        printlines() 
+
+        show(Value!(a,"z"))
+        printlines() 
+
+    end
+
+    #
+    #
+    #
+    include("configurations.jl")
+    using .Configurations
+
+    if show_configuration_tests || show_all_tests 
+        println("configuration tests:")
+
+        _c = Clocks([("a",1)])
+        _v = Valuations(_c)
+        _s = S(Choice([(:send, Msg("a", Int), δ(:not,δ(:geq,"x",3)),[], Def("a", (:send, Msg("b", String), δ(:tt), [], Call("a")))),(:recv, Msg("c", Bool), δ(:geq,"y",3),[])]))
+        _l = Local(_v,_s)
+
+        show(_l)
+        printlines()
+
+        show(System(_l))
+        printlines()
+
+
+        
+        _v = Valuations()
+        s_b = S(([(:send, Msg("e", Data(Int)),δ(:eq,"x",1), []  ),(:send, Msg("f", Data(String)),δ(:eq,"x",2), []  ),(:recv, Msg("g", Data(Int)),δ(:eq,"x",4), []  ),(:send, Msg("h", Data(String)),δ(:eq,"x",5), []  )]))
+        l_b1 = Local(_v,s_b)
+        l_b2 = Local(_v,Dual(s_b))
+        sys = System(l_b1,l_b2)
+
+
+        # show(l_b1,:local)
+        # printlines()
+
+        # show(Social(l_b1),:social)
+        # printlines()
+
+        show(sys)
+        printlines()
+
+    end
+
+    #
+    #
+    #
+    include("transition_time_steps.jl")
+    using .TransitionTimeSteps
+ 
+    if show_transition_time_steps_tests || show_all_tests
+        println("transition time steps tests:")
 
         clocks = Clocks([("a",1),("b",2),("c",3)])
         
@@ -277,8 +364,10 @@ module TOAST
         printlines() 
 
     end
-
     
+    #
+    #
+    #
     include("evaluate.jl")
     using .Evaluate
 
@@ -369,46 +458,9 @@ module TOAST
 
     end
 
-
-    
-    include("configurations.jl")
-    using .Configurations
-
-    if show_configuration_tests || show_all_tests 
-        println("configuration tests:")
-
-        _c = Clocks([("a",1)])
-        _v = Valuations(_c)
-        _s = S(Choice([(:send, Msg("a", Int), δ(:not,δ(:geq,"x",3)),[], Def("a", (:send, Msg("b", String), δ(:tt), [], Call("a")))),(:recv, Msg("c", Bool), δ(:geq,"y",3),[])]))
-        _l = Local(_v,_s)
-
-        show(_l)
-        printlines()
-
-        show(System(_l))
-        printlines()
-
-
-        
-        _v = Valuations()
-        s_b = S(([(:send, Msg("e", Data(Int)),δ(:eq,"x",1), []  ),(:send, Msg("f", Data(String)),δ(:eq,"x",2), []  ),(:recv, Msg("g", Data(Int)),δ(:eq,"x",4), []  ),(:send, Msg("h", Data(String)),δ(:eq,"x",5), []  )]))
-        l_b1 = Local(_v,s_b)
-        l_b2 = Local(_v,Dual(s_b))
-        sys = System(l_b1,l_b2)
-
-
-        # show(l_b1,:local)
-        # printlines()
-
-        # show(Social(l_b1),:social)
-        # printlines()
-
-        show(sys)
-        printlines()
-
-    end
-
-    
+    #
+    #
+    #
     include("enabled_configuration_actions.jl")
     using .EnabledConfigurationActions
 
@@ -420,11 +472,27 @@ module TOAST
         s_b = S(([(:send, Msg("e", Data(Int)),δ(:eq,"x",1), []  ),(:send, Msg("f", Data(String)),δ(:eq,"x",2), []  ),(:recv, Msg("g", Data(Int)),δ(:eq,"x",4), []  ),(:send, Msg("h", Data(String)),δ(:eq,"x",5), []  )]))
         l_b1 = Local(_v,s_b)
 
-        
+        show(l_b1,:local)
+        printlines()
+
+        show(IsEnabled(l_b1))
+        printlines()
+
+        for i in range(1,5)
+
+            show(TimeStep!(l_b1,1))
+            printlines()
+
+            show(IsEnabled(l_b1))
+            printlines()
+
+        end
 
     end
 
-        
+    #
+    #
+    #  
     include("transitions.jl")
     using .Transitions
 
