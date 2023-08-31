@@ -47,7 +47,7 @@ module ClockValuations
 
 
 
-    export Value!, TimeStep!, Reset!
+    export Value!, Reset!
 
     
     # return value of valuation, using offset of global clock if necesary
@@ -67,22 +67,6 @@ module ClockValuations
     Base.string(t::Value!) = string(string(Clock(t.l,t.v)), t.fresh ? "" : " (new)" )
 
 
-    struct TimeStep!
-        old::Clock
-        v::Valuations
-        t::TimeValue
-        # TimeStep!(c::T,t::TimeValue) where {T<:Tuple{Clocks,S}} = TimeStep!(c.clocks,t)
-        function TimeStep!(v,t)
-            _old = Clock(global_clock,v.system.value)
-            _t = TimeValue(t)
-            v.system.value += _t.value
-            time_step!(v.clocks,_t)
-            new(_old,v,_t)
-        end
-    end
-    Base.show(t::TimeStep!,io::Core.IO = stdout) = print(io, string(t))
-    Base.string(t::TimeStep!) = string(string(t.old) , " -($(string(t.t)))> ", string(t.v))
-    
     struct Reset!
         v::Valuations
         l::Labels
