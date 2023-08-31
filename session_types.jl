@@ -83,15 +83,25 @@ module SessionTypes
         msg::Msg
         δ::δ
         λ::Labels
-        S::T where {T<:SessionType}
-        function Interaction(direction,msg,δ,λ,S=End())
+        child::T where {T<:SessionType}
+        function Interaction(direction,msg,δ,λ,child=End())
             @assert direction in [:send, :recv]
 
-            new(direction,msg,δ,λ,S)
+            new(direction,msg,δ,λ,child)
         end
     end
     Base.show(s::Interaction, io::Core.IO = stdout) = print(io, string(s))
-    Base.string(s::Interaction, verbose::Bool = false) = string((s.direction == :send) ? "!" : "?", " ", string(s.msg), " (", string(s.δ), ", ", string(s.λ), ").", verbose ? string(s.S) : string("S"))
+    function Base.string(s::Interaction, mode::Symbol = :default) 
+        if mode==:default 
+            string(s.direction==:send ? "!" : "?", " ", string(s.msg), " (", string(s.δ), ", ", string(s.λ), ").§")
+        elseif mode==:full
+            string(s.direction==:send ? "!" : "?", " ", string(s.msg), " (", string(s.δ), ", ", string(s.λ), ").",string(s.child,:full))
+        elseif mode==:ext
+            string(s.direction==:send ? "!" : "?", " ", string(s.msg), " (", string(s.δ), ", ", string(s.λ), ").",string(s.child))
+        else
+            @error "Interaction.string, unexpected mode: $(string(mode))"
+        end
+    end
 
 
 
@@ -101,12 +111,13 @@ module SessionTypes
         Choice(children) = new(Array{Interaction}(children))
     end
     Base.show(s::Choice, io::Core.IO = stdout) = print(io, string(s))
-    Base.show(s::Choice, verbose::Bool, io::Core.IO = stdout) = print(io, string(s,verbose))
-    function Base.string(s::Choice, verbose::Bool = true) 
-        if verbose && length(s) > 1
-            string("{", join([string(" ", string(c)) for c in s.children], ", "), "  }")
-        else
+    function Base.string(s::Choice, mode::Symbol = :default) 
+        if mode==:default 
             string("{ ", join([string(c) for c in s.children], ", "), " }")
+        elseif mode in [:full,:ext]
+            string("{ ", join([string(c,mode) for c in s.children], ", "), " }")
+        else
+            @error "Choice.string, unexpected mode: $(string(mode))"
         end
     end         
     
@@ -122,16 +133,15 @@ module SessionTypes
         End() = new()
     end
     Base.show(s::End, io::Core.IO = stdout) = print(io, string(s))
-    Base.string(s::End) = "end"
+    Base.string(s::End, mode::Symbol = :default) = string("end")
 
     mutable struct Def <: RecursionType
         identity::String
-        S::T where {T<:SessionType}
+        child::T where {T<:SessionType}
         Def(identity, S) = new(identity, S)
     end
     Base.show(s::Def, io::Core.IO = stdout) = print(io, string(s))
-    Base.show(s::Def, verbose::Bool, io::Core.IO = stdout) = print(io, string(s,verbose))
-    Base.string(s::Def, verbose::Bool = false) = string("μα[$(s.identity)].", verbose ? string(s.S) : string("S"))
+    Base.string(s::Def, mode::Symbol = :default) = string("μα[$(s.identity)].", mode in [:full,:ext] ? mode==:full ? string(s.child, mode) : string(s.child) : "§")
 
 
     struct Call <: RecursionType
@@ -140,7 +150,7 @@ module SessionTypes
         Call(identity,iteration=0) = new(identity,iteration)
     end
     Base.show(s::Call, io::Core.IO = stdout) = print(io, string(s))
-    Base.string(s::Call) = string("α[$(s.identity)]")
+    Base.string(s::Call, mode::Symbol = :default) = string("α[$(s.identity)]")
 
 
     # convert to msg
@@ -166,6 +176,14 @@ module SessionTypes
     Base.convert(::Type{E}, i::T) where E<:Interaction where {T<:Tuple{Symbol, Msg, C, R, Choice} where {C<:Constraint, R<:Array{Any}}} = Interaction(i...)
     Base.convert(::Type{E}, i::T) where E<:Interaction where {T<:Tuple{Symbol, Msg, C, R, Def} where {C<:Constraint, R<:Array{Any}}} = Interaction(i...)
     Base.convert(::Type{E}, i::T) where E<:Interaction where {T<:Tuple{Symbol, Msg, C, R, Call} where {C<:Constraint, R<:Array{Any}}} = Interaction(i...)
+
+
+    # allows for anonymous interactions within anonymous choices with vararg tails
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Tuple{Symbol, Msg, C, R, Vararg{P}} where {C<:Constraint, R<:Array{Any}, P<:SessionType}} = Interaction(i...)
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Tuple{Symbol, Msg, C, R, Array{P}} where {C<:Constraint, R<:Array{Any}, P<:Tuple{Symbol, Msg, C, R, Vararg{Q}} where Q<:SessionType}} = Interaction(i...)
+    # Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Tuple{Symbol, Msg, C, R, Array{P}} where {C<:Constraint, R<:Array{Any}, P<:Tuple{Symbol, Msg, C, R, Vararg{Call}}}} = Interaction(i...)
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Array{Tuple{Symbol, Msg, C, R, Vararg{P}}} where {C<:Constraint, R<:Array{Any}, P<:SessionType}} = Choice([i...])
+
 
     # allows for anonymous choice declaration
     Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Array{Interaction}} = Choice([i...])
@@ -221,6 +239,7 @@ module SessionTypes
         S(c::T) where {T<:Array{Tuple{Symbol, Msg, C, R, P}} where {C<:Constraint, R<:Array{Any}, P<:Tuple{Symbol, Msg, C, R, End}}}  = new(c,:choice)
     end
     Base.show(s::S, io::Core.IO = stdout) = print(io, string(s))
+    Base.string(s::S, mode::Symbol) = string(s.child, mode)
     Base.string(s::S) = string(s.child)
 
 

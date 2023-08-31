@@ -1,4 +1,4 @@
-module TransitionTimeSteps
+module LocalTransitionTimeSteps
 
     import Base.show
     import Base.string

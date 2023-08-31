@@ -7,7 +7,7 @@ module EnabledConfigurationActions
     using ..SessionTypes
     using ..SessionTypeActions
     using ..ClockValuations
-    using ..TransitionTimeSteps
+    using ..LocalTransitionTimeSteps
     using ..Configurations
     using ..Evaluate
 

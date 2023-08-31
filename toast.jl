@@ -11,8 +11,8 @@ module TOAST
     show_configuration_tests=false
     show_transition_unfolds_tests=true
     show_transition_time_steps_tests=false
-    show_enabled_actions_tests=true
-    show_transition_actions_teps_tests=true
+    show_enabled_actions_tests=false
+    show_transition_action_steps_tests=true
     show_transition_tests=false
 
     module General
@@ -342,30 +342,28 @@ module TOAST
     #
     #
     include("transitions_local/transition_unfolds.jl")
-    using .TransitionActionSteps
+    using .LocalTransitionUnfolds
  
     if show_transition_unfolds_tests || show_all_tests
         println("transition unfolds tests:")
 
         _v = Valuations()
-        s_b = S(([(:send, Msg("e", Data(Int)),δ(:eq,"x",1), []  ),(:send, Msg("f", Data(String)),δ(:eq,"x",2), []  ),(:recv, Msg("g", Data(Int)),δ(:eq,"x",4), []  ),(:send, Msg("h", Data(String)),δ(:eq,"x",5), []  )]))
+        s_b = S(Def("a", (:send, Msg("a", Data(Int)), δ(:tt), [], ([
+            (:send, Msg("e", Data(Int)),δ(:eq,"x",1), []  ),
+            (:send, Msg("f", Data(String)),δ(:eq,"x",2), [], Call("a")  ),
+            (:recv, Msg("g", Data(Int)),δ(:eq,"x",4), []  ),
+            (:send, Msg("h", Data(String)),δ(:eq,"x",5), [], Call("a")  )]))))
         l_b1 = Local(_v,s_b)
 
-        show(l_b1,:local)
+        show(l_b1,:local_full)
         printlines()
 
-        show(IsEnabled(l_b1))
+        Unfold!(l_b1)
+
+        show(l_b1,:local_full)
         printlines()
 
-        for i in range(1,5)
 
-            show(TimeStep!(l_b1,1))
-            printlines()
-
-            show(IsEnabled(l_b1))
-            printlines()
-
-        end
 
     end
     
@@ -373,7 +371,7 @@ module TOAST
     #
     #
     include("transitions_local/transition_time_steps.jl")
-    using .TransitionTimeSteps
+    using .LocalTransitionTimeSteps
  
     # if show_transition_time_steps_tests || show_all_tests
     #     println("transition time steps tests:")
@@ -527,7 +525,7 @@ module TOAST
     #
     #
     include("transitions_local/transition_action_steps.jl")
-    using .TransitionActionSteps
+    using .LocalTransitionActionSteps
  
     if show_transition_action_steps_tests || show_all_tests
         println("transition action steps tests:")
@@ -539,18 +537,18 @@ module TOAST
         show(l_b1,:local)
         printlines()
 
-        show(IsEnabled(l_b1))
-        printlines()
+        # show(IsEnabled(l_b1))
+        # printlines()
 
-        for i in range(1,5)
+        # for i in range(1,5)
 
-            show(TimeStep!(l_b1,1))
-            printlines()
+        #     show(TimeStep!(l_b1,1))
+        #     printlines()
 
-            show(IsEnabled(l_b1))
-            printlines()
+        #     show(IsEnabled(l_b1))
+        #     printlines()
 
-        end
+        # end
 
     end
     
