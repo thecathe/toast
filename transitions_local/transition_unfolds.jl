@@ -1,4 +1,4 @@
-module Transition Unfolds
+module TransitionUnfolds
 
     import Base.show
     import Base.string
