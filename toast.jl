@@ -6,12 +6,14 @@ module TOAST
     show_clock_constraints_tests=false
     show_session_type_tests=false
     show_session_type_actions_tests=false
-    show_transition_time_steps_tests=true
     show_clock_valuations_tests=false
     show_evaluate_tests=false
     show_configuration_tests=false
+    show_transition_unfolds_tests=true
+    show_transition_time_steps_tests=false
     show_enabled_actions_tests=true
-    show_transition_tests=true
+    show_transition_actions_teps_tests=true
+    show_transition_tests=false
 
     module General
 
@@ -339,31 +341,62 @@ module TOAST
     #
     #
     #
-    include("transition_time_steps.jl")
-    using .TransitionTimeSteps
+    include("transitions_local/transition_unfolds.jl")
+    using .TransitionActionSteps
  
-    if show_transition_time_steps_tests || show_all_tests
-        println("transition time steps tests:")
+    if show_transition_unfolds_tests || show_all_tests
+        println("transition unfolds tests:")
 
-        clocks = Clocks([("a",1),("b",2),("c",3)])
-        
-        a = Valuations(clocks)
-        show(a)
-        printlines() 
+        _v = Valuations()
+        s_b = S(([(:send, Msg("e", Data(Int)),δ(:eq,"x",1), []  ),(:send, Msg("f", Data(String)),δ(:eq,"x",2), []  ),(:recv, Msg("g", Data(Int)),δ(:eq,"x",4), []  ),(:send, Msg("h", Data(String)),δ(:eq,"x",5), []  )]))
+        l_b1 = Local(_v,s_b)
 
-        show(TimeStep!(a,1))
-        printlines() 
+        show(l_b1,:local)
+        printlines()
 
-        show(Reset!(a,["b","c","y"]))
-        printlines() 
+        show(IsEnabled(l_b1))
+        printlines()
 
-        show(Value!(a,"z"))
-        printlines() 
+        for i in range(1,5)
 
-        show(TimeStep!(a,3))
-        printlines() 
+            show(TimeStep!(l_b1,1))
+            printlines()
+
+            show(IsEnabled(l_b1))
+            printlines()
+
+        end
 
     end
+    
+    # superceeded by configurations when moduralised
+    #
+    #
+    include("transitions_local/transition_time_steps.jl")
+    using .TransitionTimeSteps
+ 
+    # if show_transition_time_steps_tests || show_all_tests
+    #     println("transition time steps tests:")
+
+    #     clocks = Clocks([("a",1),("b",2),("c",3)])
+        
+    #     a = Valuations(clocks)
+    #     show(a)
+    #     printlines() 
+
+    #     show(TimeStep!(a,1))
+    #     printlines() 
+
+    #     show(Reset!(a,["b","c","y"]))
+    #     printlines() 
+
+    #     show(Value!(a,"z"))
+    #     printlines() 
+
+    #     show(TimeStep!(a,3))
+    #     printlines() 
+
+    # end
     
     #
     #
@@ -492,77 +525,64 @@ module TOAST
 
     #
     #
-    #  
-    include("transitions.jl")
-    using .Transitions
-
-    if show_transition_tests || show_all_tests
-        println("transitions tests:")
-
-        # _c = Clocks([("a",1)])
-        # _v = Valuations(_c)
-        # _s = S(Choice([(:send, Msg("a", Int), δ(:not,δ(:geq,"x",3)),[], Def("a", (:send, Msg("b", String), δ(:tt), [], Call("a")))),(:recv, Msg("c", Bool), δ(:geq,"y",3),[])]))
-        # l_a = Local(_v,_s)
-        
-        # show(l_a)
-        # println()
-
-        # a = LocalSteps(:send,l_a)
-        # show(a)
-        # printlines()
-        # printlines()
+    #
+    include("transitions_local/transition_action_steps.jl")
+    using .TransitionActionSteps
+ 
+    if show_transition_action_steps_tests || show_all_tests
+        println("transition action steps tests:")
 
         _v = Valuations()
         s_b = S(([(:send, Msg("e", Data(Int)),δ(:eq,"x",1), []  ),(:send, Msg("f", Data(String)),δ(:eq,"x",2), []  ),(:recv, Msg("g", Data(Int)),δ(:eq,"x",4), []  ),(:send, Msg("h", Data(String)),δ(:eq,"x",5), []  )]))
         l_b1 = Local(_v,s_b)
-        l_b2 = Local(_v,Dual(s_b))
-        sys = System(l_b1,l_b2)
 
-
-        # show(l_b1,:local)
-        # printlines()
-
-        # show(Social(l_b1),:social)
-        # printlines()
-
-        show(sys)
+        show(l_b1,:local)
         printlines()
 
+        show(IsEnabled(l_b1))
+        printlines()
 
-        # show(sys)
-        # printlines()
+        for i in range(1,5)
 
-        # show(StepDriver())
-        # printlines()
+            show(TimeStep!(l_b1,1))
+            printlines()
 
+            show(IsEnabled(l_b1))
+            printlines()
 
-        # show(l_b)
-        # println()
-        # show(EnabledActions(l_b))
-        # printlines()
-
-        # show(TimeStep!(l_b.valuations,1))
-        # println()
-        # show(EnabledActions(l_b))
-        # printlines()
-
-        # show(TimeStep!(l_b.valuations,1))
-        # println()
-        # show(EnabledActions(l_b))
-        # printlines()
-
-        # show(TimeStep!(l_b.valuations,1))
-        # println()
-        # show(EnabledActions(l_b))
-        # printlines()
-
-        # show(TimeStep!(l_b.valuations,1))
-        # println()
-        # show(EnabledActions(l_b))
-        # printlines()
-
+        end
 
     end
+    
+
+
+    #
+    # #
+    # #  
+    # include("transitions.jl")
+    # using .Transitions
+
+    # if show_transition_tests || show_all_tests
+    #     println("transitions tests:")
+
+    #     _v = Valuations()
+    #     s_b = S(([(:send, Msg("e", Data(Int)),δ(:eq,"x",1), []  ),(:send, Msg("f", Data(String)),δ(:eq,"x",2), []  ),(:recv, Msg("g", Data(Int)),δ(:eq,"x",4), []  ),(:send, Msg("h", Data(String)),δ(:eq,"x",5), []  )]))
+    #     l_b1 = Local(_v,s_b)
+    #     l_b2 = Local(_v,Dual(s_b))
+    #     sys = System(l_b1,l_b2)
+
+
+    #     # show(l_b1,:local)
+    #     # printlines()
+
+    #     # show(Social(l_b1),:social)
+    #     # printlines()
+
+    #     show(sys)
+    #     printlines()
+
+
+    # end
 
 
 end
