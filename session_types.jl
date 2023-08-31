@@ -18,7 +18,7 @@ module SessionTypes
     abstract type RecursionType <: SessionType end
 
     # messages 
-    export Msgs, Msg, Data, Delegation
+    export Msgs, Msg, Data, Delegation, ActionType
 
     abstract type Payload end
     struct Delegation <: Payload 
@@ -116,27 +116,6 @@ module SessionTypes
 
     Base.iterate(s::Choice) = isempty(s) ? nothing : (s[1], Int(1))
     Base.iterate(s::Choice, i::Int) = (i >= length(s)) ? nothing : (s[i+1], i+1)
-
-
-
-    export Action, ActionType 
-
-    struct Action
-        direction::Symbol
-        msg::Msg
-        # label::Label
-        post::Labels
-        function Action(interaction::Interaction)
-            _dir=interaction.direction
-            _msg=interaction.msg
-            # _label=string(string(_dir),string(_msg))
-            new(_dir,_msg,Labels(interaction.λ))
-        end
-    end
-    Base.show(s::Action, io::Core.IO = stdout) = print(io, string(s))
-    Base.string(s::Action) = string("[", string(s.direction == :send ? "!" : s.direction == :recv ? "?" : "□"), " ", string(s.msg), "]")
-
-
 
 
     struct End <: SessionType 
