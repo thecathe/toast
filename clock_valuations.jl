@@ -70,7 +70,8 @@ module ClockValuations
     struct Reset!
         v::Valuations
         l::Labels
-        function Reset!(v,l)
+        Reset!(v::Valuations,l::Label) = Reset!(v,Labels([l]))
+        function Reset!(v::Valuations,l::Labels)
             _l = Labels(l)
             @assert !(v.system.label in l) "Global-system clock '$(v.system.label)' cannot be reset to 0!"
             # for each label a in l
