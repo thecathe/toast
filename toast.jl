@@ -341,7 +341,7 @@ module TOAST
     #
     #
     #
-    include("transitions_local/transition_unfolds.jl")
+    include("transitions_local/transition_unfold.jl")
     using .LocalTransitionUnfolds
  
     if show_transition_unfolds_tests || show_all_tests
@@ -370,7 +370,7 @@ module TOAST
     # superceeded by configurations when moduralised
     #
     #
-    include("transitions_local/transition_time_steps.jl")
+    include("transitions_local/transition_tick.jl")
     using .LocalTransitionTimeSteps
  
     # if show_transition_time_steps_tests || show_all_tests
@@ -524,7 +524,7 @@ module TOAST
     #
     #
     #
-    include("transitions_local/transition_action_steps.jl")
+    include("transitions_local/transition_act.jl")
     using .LocalTransitionActionSteps
  
     if show_transition_action_steps_tests || show_all_tests
