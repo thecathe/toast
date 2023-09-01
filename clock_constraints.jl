@@ -139,26 +139,6 @@ module ClockConstraints
         end
     end
 
-    # get labels in single flattened constraint
-    function get_labels(c::Constraints)
-        label_builder = Labels([])
-        for d in c.children
-            if d.head==:not
-                @assert length(d.args) == 1 "get_labels expected '($(d.head))' to only have (1) argument, not ($(length(d.args))): $(string(d.args))"
-                push!(label_builder, get_labels(Constraints([d.args[1]]))...)
-            elseif d.head in [:eq,:geq]
-                @assert length(d.args) == 2 "get_labels expected '($(d.head))' to only have (2) arguments, not ($(length(d.args))): $(string(d.args))"
-                push!(label_builder, Labels([(d.args[1])])...)
-            elseif d.head in [:deq,:dgeq]
-                @assert length(d.args) == 3 "get_labels expected '($(d.head))' to only have (3) arguments, not ($(length(d.args))): $(string(d.args))"
-                push!(label_builder, Labels([(d.args[1]),(d.args[2])])...)
-            else
-                @error "get_labels did not expect '($(d.head))', with args ($(length(d.args))): $(string(d.args))"
-            end
-        end
-        return label_builder
-    end
-
     export ConstrainedClocks
 
     # return list of relevant clocks in constraint
@@ -180,11 +160,31 @@ module ClockConstraints
             _flattened = flatten(d)
             new(d,_flattened,Labels([Label(c) for c in get_labels(_flattened)],true))
         end
+        
+    end
+    Base.show(t::ConstrainedClocks, io::Core.IO = stdout) = print(io, string(t))
+    Base.string(c::ConstrainedClocks) = string(string(c.constraint), " contrained clocks: ", string(c.labels))
+
+
+    # get labels in single flattened constraint
+    function get_labels(c::Constraints) # TODO fix this circular dependency
+        label_builder = Labels([])
+        for d in c.children
+            if d.head==:not
+                @assert length(d.args) == 1 "get_labels expected '($(d.head))' to only have (1) argument, not ($(length(d.args))): $(string(d.args))"
+                push!(label_builder, get_labels(Constraints([d.args[1]]))...)
+            elseif d.head in [:eq,:geq]
+                @assert length(d.args) == 2 "get_labels expected '($(d.head))' to only have (2) arguments, not ($(length(d.args))): $(string(d.args))"
+                push!(label_builder, Labels([(d.args[1])])...)
+            elseif d.head in [:deq,:dgeq]
+                @assert length(d.args) == 3 "get_labels expected '($(d.head))' to only have (3) arguments, not ($(length(d.args))): $(string(d.args))"
+                push!(label_builder, Labels([(d.args[1]),(d.args[2])])...)
+            else
+                @error "get_labels did not expect '($(d.head))', with args ($(length(d.args))): $(string(d.args))"
+            end
+        end
+        return label_builder
     end
 
-
-
-    Base.show(t::T, io::Core.IO = stdout) where {T<:ConstrainedClocks} = print(io, string(t))
-    Base.string(c::ConstrainedClocks) = string(string(c.constraint), " contrained clocks: ", string(c.labels))
 
 end

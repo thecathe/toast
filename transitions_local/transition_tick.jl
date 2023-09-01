@@ -14,8 +14,11 @@ module LocalTransitionTick
         old::Clock
         v::Valuations
         t::TimeValue
+        # time step configurations
         TimeStep!(c::T,t::TimeValue) where {T<:Configuration} = TimeStep!(c.valuations,t)
+        # time step configurations (when given an int, check it is >= 0)
         TimeStep!(c::T,t::X) where {T<:Configuration,X<:Int} = TimeStep!(c.valuations,TimeValue(t))
+        # time step over clock valuations
         TimeStep!(c::Valuations,t::X) where {X<:Int} = TimeStep!(c,TimeValue(t))
         function TimeStep!(v::Valuations,t::TimeValue)
             _old = Clock(global_clock,v.system.value)

@@ -31,9 +31,9 @@ module Configurations
             if type.kind in [:choice,:interaction]
                 # populate immediately relevant clocks
                 if type.kind==:choice
-                    _relevant_clocks = ConstrainedClocks(Constraints([s.δ for s in type.child.children]))
+                    _relevant_clocks = ConstrainedClocks(Constraints([s.constraints for s in type.child.children]))
                 elseif type.kind==:interaction
-                    _relevant_clocks = ConstrainedClocks(Constraints([type.child.δ]))
+                    _relevant_clocks = ConstrainedClocks(Constraints([type.child.constraints]))
                 end
 
                 for l in _relevant_clocks.labels
@@ -53,13 +53,13 @@ module Configurations
             clock_lines = Array{String}([string(cfg.valuations.system),[string(v) for v in cfg.valuations.clocks]...])
 
             if mode==:local_full
-                if cfg.type.kind==:choice
+                if cfg.type.child isa Choice
                     type_lines = Array{String}([string(i,:full) for i in cfg.type.child.children])
                 else
                     type_lines = Array{String}([string(cfg.type,:full)])
                 end
             else
-                if cfg.type.kind==:choice
+                if cfg.type.child isa Choice
                     type_lines = Array{String}([string(i) for i in cfg.type.child.children])
                 else
                     type_lines = Array{String}([string(cfg.type)])
@@ -159,9 +159,9 @@ module Configurations
             if type.kind in [:choice,:interaction]
                 # populate immediately relevant clocks
                 if type.kind==:choice
-                    _relevant_clocks = get_labels(Constraints([s.δ for s in type.child.children]))
+                    _relevant_clocks = get_labels(Constraints([s.constraints for s in type.child.children]))
                 elseif type.kind==:interaction
-                    _relevant_clocks = get_labels(Constraints([type.child.δ]))
+                    _relevant_clocks = get_labels(Constraints([type.child.constraints]))
                 end
 
                 for l in _relevant_clocks

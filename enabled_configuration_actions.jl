@@ -41,7 +41,7 @@ module EnabledConfigurationActions
                 # collect all relevant actions that are satisfied now
                 _actions = Array{Action}([])
                 for i in _type.child.children
-                    if (kind==:comm || kind==i.direction) && Eval(val,i.δ).result
+                    if (kind==:comm || kind==i.direction) && Eval(val,i.constraints).result
                         push!(_actions,Action(i))
                     end
                 end

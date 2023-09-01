@@ -13,6 +13,7 @@ module Evaluate
     using ..LogicalClocks
     using ..ClockConstraints
     using ..ClockValuations
+    using ..Configurations
 
     export Eval, δEval
 
@@ -96,7 +97,10 @@ module Evaluate
         clocks::Labels
         children::Evaluations
         result::Bool
-        function Eval(v,d)
+        # eval d using valuations of configuration c
+        Eval(c::T,d::δ) where {T<:Configuration} = Eval(c.valuations,d)
+        # eval d using valuations v
+        function Eval(v::Valuations,d::δ)
             _constrained::Labels = ConstrainedClocks(d).labels
 
             # store result in children
@@ -112,6 +116,6 @@ module Evaluate
         end
     end
     Base.show(d::Eval, io::Core.IO = stdout)  = print(io, string(d))
-    Base.string(d::Eval) = string(string(Clocks([(value!(d.v.clocks, l)[1:2]) for l in d.clocks])), " ⊨ ", string(d.δ), " = ", string(d.result))
+    Base.string(d::Eval) = string(string(Clocks([(value!(d.v.clocks, l)[1:2]) for l in d.clocks])), " ⊨ ", string(d.constraints), " = ", string(d.result))
 
 end

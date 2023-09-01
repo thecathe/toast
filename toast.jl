@@ -13,7 +13,6 @@ module TOAST
     show_transition_time_steps_tests=false
     show_enabled_actions_tests=false
     show_transition_action_steps_tests=true
-    show_transition_tests=false
 
     module General
 
@@ -363,8 +362,6 @@ module TOAST
         show(l_b1,:local_full)
         printlines()
 
-
-
     end
     
     # superceeded by configurations when moduralised
@@ -508,24 +505,33 @@ module TOAST
         println("transition action steps tests:")
 
         _v = Valuations()
-        s_b = S(([(:send, Msg("e", Data(Int)),δ(:eq,"x",1), []  ),(:send, Msg("f", Data(String)),δ(:eq,"x",2), []  ),(:recv, Msg("g", Data(Int)),δ(:eq,"x",4), []  ),(:send, Msg("h", Data(String)),δ(:eq,"x",5), []  )]))
+        s_b = S(([(:send, Msg("e", Data(Int)),δ(:eq,"x",1), Labels(["x"])  ),(:send, Msg("f", Data(String)),δ(:eq,"x",2), Labels([])  ),(:recv, Msg("g", Data(Int)),δ(:eq,"x",4),Labels([])  ),(:send, Msg("h", Data(String)),δ(:eq,"x",5), Labels([])  )]))
         l_b1 = Local(_v,s_b)
 
-        show(l_b1,:local)
+        show(TimeStep!(l_b1,0))
         printlines()
 
-        # show(IsEnabled(l_b1))
-        # printlines()
+        show(l_b1,:local_full)
+        printlines()
 
-        # for i in range(1,5)
+        show(Act!(l_b1,(:send, Msg("e",Data(Int)))))
+        printlines()
 
-        #     show(TimeStep!(l_b1,1))
-        #     printlines()
+        show(l_b1,:local_full)
+        printlines()
 
-        #     show(IsEnabled(l_b1))
-        #     printlines()
+        show(TimeStep!(l_b1,1))
+        printlines()
 
-        # end
+        show(l_b1,:local_full)
+        printlines()
+
+        show(Act!(l_b1,(:send, Msg("e",Data(Int)))))
+        printlines()
+
+        show(l_b1,:local_full)
+        printlines()
+
 
     end
     

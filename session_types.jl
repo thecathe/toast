@@ -21,27 +21,8 @@ module SessionTypes
     export Msgs, Msg, Data, Delegation, ActionType
 
     abstract type Payload end
-    struct Delegation <: Payload 
-        init::Constraint
-        type::T where {T<:SessionType}
-        Delegation(init,type) = new(init,type)
-    end
-    Base.show(m::Delegation, io::Core.IO = stdout) = print(io, string(m))
-    Base.string(m::Delegation) = string("(", string(m.init), ", ", string(m.type), ")")
 
-    struct Data <: Payload
-        child::DataType
-        function Data(child) 
-            supported_types = [String, Bool, Int]
-            @assert child in supported_types "Data.child '$(string(child))' not in: $(string(supported_types))"
-
-            new(child)
-        end
-    end
-    Base.show(m::Data, io::Core.IO = stdout) = print(io, string(m))
-    Base.string(m::Data) = string(m.child)
-
-    Base.convert(::Type{Payload},t::Type{T}) where {T<:Any} = Data(t)
+    # payload defs at end, after S
 
     struct Msg
         label::Label
@@ -81,23 +62,23 @@ module SessionTypes
     mutable struct Interaction <: ActionType
         direction::Symbol
         msg::Msg
-        δ::δ
-        λ::Labels
+        constraints::δ
+        resets::Labels
         child::T where {T<:SessionType}
-        function Interaction(direction,msg,δ,λ,child=End())
+        function Interaction(direction,msg,constraints,resets,child=End())
             @assert direction in [:send, :recv]
 
-            new(direction,msg,δ,λ,child)
+            new(direction,msg,constraints,resets,child)
         end
     end
     Base.show(s::Interaction, io::Core.IO = stdout) = print(io, string(s))
     function Base.string(s::Interaction, mode::Symbol = :default) 
         if mode==:default 
-            string(s.direction==:send ? "!" : "?", " ", string(s.msg), " (", string(s.δ), ", ", string(s.λ), ").§")
+            string(s.direction==:send ? "!" : "?", " ", string(s.msg), " (", string(s.constraints), ", ", string(s.resets), ").§")
         elseif mode==:full
-            string(s.direction==:send ? "!" : "?", " ", string(s.msg), " (", string(s.δ), ", ", string(s.λ), ").",string(s.child,:full))
+            string(s.direction==:send ? "!" : "?", " ", string(s.msg), " (", string(s.constraints), ", ", string(s.resets), ").",string(s.child,:full))
         elseif mode==:ext
-            string(s.direction==:send ? "!" : "?", " ", string(s.msg), " (", string(s.δ), ", ", string(s.λ), ").",string(s.child))
+            string(s.direction==:send ? "!" : "?", " ", string(s.msg), " (", string(s.constraints), ", ", string(s.resets), ").",string(s.child))
         else
             @error "Interaction.string, unexpected mode: $(string(mode))"
         end
@@ -154,7 +135,7 @@ module SessionTypes
 
 
     # convert to msg
-    Base.convert(::Type{Msg}, i::T) where {T<:Tuple{Label, Data}} = Msg(i[1],i[2])
+    Base.convert(::Type{Msg}, i::T) where {T<:Tuple{Label, X} where {X<:Payload}} = Msg(i[1],i[2])
     
 
 
@@ -205,6 +186,58 @@ module SessionTypes
     Base.convert(::Type{E}, i::T) where E<:Choice where {T<:Array{Tuple{Symbol, Msg, C, R, Def}} where {C<:Constraint, R<:Array{Any}}} =  Choice([i...])
     Base.convert(::Type{E}, i::T) where E<:Choice where {T<:Array{Tuple{Symbol, Msg, C, R, Call}} where {C<:Constraint, R<:Array{Any}}} =  Choice([i...])
 
+    
+
+
+    
+    # allows for anonymous interaction types
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Tuple{Symbol, Msg, C, R} where {C<:Constraint, R<:Labels}} = Interaction(i...)
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Tuple{Symbol, Msg, C, R, End} where {C<:Constraint, R<:Labels}} = Interaction(i...)
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Tuple{Symbol, Msg, C, R, Interaction} where {C<:Constraint, R<:Labels}} = Interaction(i...)
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Tuple{Symbol, Msg, C, R, Choice} where {C<:Constraint, R<:Labels}} = Interaction(i...)
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Tuple{Symbol, Msg, C, R, Def} where {C<:Constraint, R<:Labels}} = Interaction(i...)
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Tuple{Symbol, Msg, C, R, Call} where {C<:Constraint, R<:Labels}} = Interaction(i...)
+
+    # anonymous interactions with nested tails
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Tuple{Symbol, Msg, C, R, P} where {C<:Constraint, R<:Labels, P<:Tuple{Symbol, Msg, C, R}}} = Interaction(i...)
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Tuple{Symbol, Msg, C, R, P} where {C<:Constraint, R<:Labels, P<:Tuple{Symbol, Msg, C, R, End}}} = Interaction(i...)
+    
+    # anonymous interactions with non-nested tails
+    Base.convert(::Type{E}, i::T) where E<:Interaction where {T<:Tuple{Symbol, Msg, C, R, End} where {C<:Constraint, R<:Labels}} = Interaction(i...)
+    Base.convert(::Type{E}, i::T) where E<:Interaction where {T<:Tuple{Symbol, Msg, C, R, Interaction} where {C<:Constraint, R<:Labels}} = Interaction(i...)
+    Base.convert(::Type{E}, i::T) where E<:Interaction where {T<:Tuple{Symbol, Msg, C, R, Choice} where {C<:Constraint, R<:Labels}} = Interaction(i...)
+    Base.convert(::Type{E}, i::T) where E<:Interaction where {T<:Tuple{Symbol, Msg, C, R, Def} where {C<:Constraint, R<:Labels}} = Interaction(i...)
+    Base.convert(::Type{E}, i::T) where E<:Interaction where {T<:Tuple{Symbol, Msg, C, R, Call} where {C<:Constraint, R<:Labels}} = Interaction(i...)
+
+
+    # allows for anonymous interactions within anonymous choices with vararg tails
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Tuple{Symbol, Msg, C, R, Vararg{P}} where {C<:Constraint, R<:Labels, P<:SessionType}} = Interaction(i...)
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Tuple{Symbol, Msg, C, R, Array{P}} where {C<:Constraint, R<:Labels, P<:Tuple{Symbol, Msg, C, R, Vararg{Q}} where Q<:SessionType}} = Interaction(i...)
+    # Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Tuple{Symbol, Msg, C, R, Array{P}} where {C<:Constraint, R<:Labels, P<:Tuple{Symbol, Msg, C, R, Vararg{Call}}}} = Interaction(i...)
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Array{Tuple{Symbol, Msg, C, R, Vararg{P}}} where {C<:Constraint, R<:Labels, P<:SessionType}} = Choice([i...])
+
+
+    # allows for anonymous choice declaration
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Array{Interaction}} = Choice([i...])
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Array{Tuple{Symbol, Msg, C, R}} where {C<:Constraint, R<:Labels}} = Choice([i...])
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Array{Tuple{Symbol, Msg, C, R, End}} where {C<:Constraint, R<:Labels}} = Choice([i...])
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Array{Tuple{Symbol, Msg, C, R, Interaction}} where {C<:Constraint, R<:Labels}} = Choice([i...])
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Array{Tuple{Symbol, Msg, C, R, Choice}} where {C<:Constraint, R<:Labels}} = Choice([i...])
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Array{Tuple{Symbol, Msg, C, R, Def}} where {C<:Constraint, R<:Labels}} = Choice([i...])
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Array{Tuple{Symbol, Msg, C, R, Call}} where {C<:Constraint, R<:Labels}} = Choice([i...])
+
+    # allows for anonymous choices with anonymous interactions with nested tails
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Array{Tuple{Symbol, Msg, C, R, P}} where {C<:Constraint, R<:Labels, P<:Tuple{Symbol, Msg, C, R}}} = Choice([i...])
+    Base.convert(::Type{E}, i::T) where E<:SessionType where {T<:Array{Tuple{Symbol, Msg, C, R, P}} where {C<:Constraint, R<:Labels, P<:Tuple{Symbol, Msg, C, R, End}}} = Choice([i...])
+
+    # allows for anonymous choices with anonymous interactions with non-nested tails
+    Base.convert(::Type{E}, i::T) where E<:Choice where {T<:Array{Tuple{Symbol, Msg, C, R, End}} where {C<:Constraint, R<:Labels}} = Choice([i...])
+    Base.convert(::Type{E}, i::T) where E<:Choice where {T<:Array{Tuple{Symbol, Msg, C, R, Interaction}} where {C<:Constraint, R<:Labels}} = Choice([i...])
+    Base.convert(::Type{E}, i::T) where E<:Choice where {T<:Array{Tuple{Symbol, Msg, C, R, Choice}} where {C<:Constraint, R<:Labels}} = Choice([i...])
+    Base.convert(::Type{E}, i::T) where E<:Choice where {T<:Array{Tuple{Symbol, Msg, C, R, Def}} where {C<:Constraint, R<:Labels}} =  Choice([i...])
+    Base.convert(::Type{E}, i::T) where E<:Choice where {T<:Array{Tuple{Symbol, Msg, C, R, Call}} where {C<:Constraint, R<:Labels}} =  Choice([i...])
+
+
 
     
     mutable struct S <: SessionType
@@ -237,10 +270,58 @@ module SessionTypes
         
         S(c::T) where {T<:Array{Tuple{Symbol, Msg, C, R, P}} where {C<:Constraint, R<:Array{Any}, P<:Tuple{Symbol, Msg, C, R}}}  = new(c,:choice)
         S(c::T) where {T<:Array{Tuple{Symbol, Msg, C, R, P}} where {C<:Constraint, R<:Array{Any}, P<:Tuple{Symbol, Msg, C, R, End}}}  = new(c,:choice)
+
+
+
+        
+        S(c::T) where {T<:Tuple{Symbol, Msg, C, R} where {C<:Constraint, R<:Labels}} = new(c,:interaction)
+        S(c::T) where {T<:Tuple{Symbol, Msg, C, R, End} where {C<:Constraint, R<:Labels}}  = new(c,:interaction)
+        S(c::T) where {T<:Tuple{Symbol, Msg, C, R, Interaction} where {C<:Constraint, R<:Labels}}  = new(c,:interaction)
+        S(c::T) where {T<:Tuple{Symbol, Msg, C, R, Choice} where {C<:Constraint, R<:Labels}} = new(c,:interaction)
+        S(c::T) where {T<:Tuple{Symbol, Msg, C, R, Def} where {C<:Constraint, R<:Labels}} = new(c,:interaction)
+        S(c::T) where {T<:Tuple{Symbol, Msg, C, R, Call} where {C<:Constraint, R<:Labels}} = new(c,:interaction)
+        
+        S(c::T) where {T<:Tuple{Symbol, Msg, C, R, P} where {C<:Constraint, R<:Labels, P<:Tuple{Symbol, Msg, C, R}}}  = new(c,:interaction)
+        S(c::T) where {T<:Tuple{Symbol, Msg, C, R, P} where {C<:Constraint, R<:Labels, P<:Tuple{Symbol, Msg, C, R, End}}}  = new(c,:interaction)
+
+        S(c::T) where {T<:Array{Interaction}} = new(c,:choice)
+        S(c::T) where {T<:Array{Tuple{Symbol, Msg, C, R}} where {C<:Constraint, R<:Labels}} = new(c,:choice)
+        S(c::T) where {T<:Array{Tuple{Symbol, Msg, C, R, End}} where {C<:Constraint, R<:Labels}} = new(c,:choice)
+        S(c::T) where {T<:Array{Tuple{Symbol, Msg, C, R, Interaction}} where {C<:Constraint, R<:Labels}} = new(c,:choice)
+        S(c::T) where {T<:Array{Tuple{Symbol, Msg, C, R, Choice}} where {C<:Constraint, R<:Labels}} = new(c,:choice)
+        S(c::T) where {T<:Array{Tuple{Symbol, Msg, C, R, Def}} where {C<:Constraint, R<:Labels}} = new(c,:choice)
+        S(c::T) where {T<:Array{Tuple{Symbol, Msg, C, R, Call}} where {C<:Constraint, R<:Labels}} = new(c,:choice)
+        
+        S(c::T) where {T<:Array{Tuple{Symbol, Msg, C, R, P}} where {C<:Constraint, R<:Labels, P<:Tuple{Symbol, Msg, C, R}}}  = new(c,:choice)
+        S(c::T) where {T<:Array{Tuple{Symbol, Msg, C, R, P}} where {C<:Constraint, R<:Labels, P<:Tuple{Symbol, Msg, C, R, End}}}  = new(c,:choice)
     end
     Base.show(s::S, io::Core.IO = stdout) = print(io, string(s))
     Base.string(s::S, mode::Symbol) = string(s.child, mode)
     Base.string(s::S) = string(s.child)
+
+
+
+    struct Delegation <: Payload 
+        init::δ
+        type::S
+        Delegation(init::δ,type::S) = new(init,type)
+    end
+    Base.show(m::Delegation, io::Core.IO = stdout) = print(io, string(m))
+    Base.string(m::Delegation) = string("(", string(m.init), ", ", string(m.type), ")")
+
+    struct Data <: Payload
+        child::DataType
+        function Data(child) 
+            supported_types = [String, Bool, Int]
+            @assert child in supported_types "Data.child '$(string(child))' not in: $(string(supported_types))"
+
+            new(child)
+        end
+    end
+    Base.show(m::Data, io::Core.IO = stdout) = print(io, string(m))
+    Base.string(m::Data) = string(m.child)
+
+    Base.convert(::Type{Payload},t::Type{T}) where {T<:Any} = Data(t)
 
 
     export Dual
@@ -256,9 +337,9 @@ module SessionTypes
         Dual(c::T) where {T<:End} = new(c,:end)
         
         # Dual(c::T) where {T<:Interaction} = new(Interaction((c.direction == :send) ? :recv : :send, c[2:end]...),:interaction)
-        Dual(c::T) where {T<:Interaction} = new(Interaction((c.direction == :send) ? :recv : :send, c.msg, c.δ, c.λ, c.S),:interaction)
+        Dual(c::T) where {T<:Interaction} = new(Interaction((c.direction == :send) ? :recv : :send, c.msg, c.constraints, c.resets, c.S),:interaction)
 
-        Dual(c::T) where {T<:Choice} = new(Choice([Interaction((i.direction == :send) ? :recv : :send, i.msg, i.δ, i.λ, i.S) for i in c]),:choice)
+        Dual(c::T) where {T<:Choice} = new(Choice([Interaction((i.direction == :send) ? :recv : :send, i.msg, i.constraints, i.resets, i.S) for i in c]),:choice)
 
     end
     Base.show(s::Dual, io::Core.IO = stdout) = print(io, string(s))

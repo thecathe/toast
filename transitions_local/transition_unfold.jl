@@ -23,10 +23,11 @@ module LocalTransitionUnfold
                 folded = Def(state.child.identity,deepcopy(state.child.child))
                 call_id = folded.identity
 
-                # num_calls = 0
-
                 # seek and unfold in tail
                 num_calls = unfold!(state.child.child,call_id,folded)
+
+                # replace def with tail
+                state.child=state.child.child
 
                 new(folded,num_calls,state)
             else
@@ -36,11 +37,14 @@ module LocalTransitionUnfold
 
         # continue unfold
         function unfold!(state::T,call_id::String,folded::Def) where {T<:SessionType}
-            # check reached call
+            # check reached call immediately
             if state isa Call
                 if state.identity==call_id
+                    @error "unfold!, reached relevant call immediately after definition. *this is likely unintended*"
+                    state.child = folded
                     return 1
                 else
+                    @error "unfold!, reached different call immediately after definition. *this is likely unintended*"
                     return 0
                 end
             elseif state isa Choice
