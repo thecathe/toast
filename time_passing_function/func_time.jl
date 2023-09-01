@@ -1,0 +1,3 @@
+module FuncTime
+
+end

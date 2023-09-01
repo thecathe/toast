@@ -1,0 +1,3 @@
+module FuncWait
+
+end
