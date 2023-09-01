@@ -19,7 +19,6 @@ module SessionTypeActions
     Base.show(s::Action, io::Core.IO = stdout) = print(io, string(s))
     Base.string(s::Action) = string(string(s.direction == :send ? "!" : s.direction == :recv ? "?" : "□"), " ", string(s.msg))
 
-    # Base.convert(::Type{Action}, t::T) where {T<:Tuple{Symbol,Msg}} = Action(t...)
 
 
 end

@@ -9,7 +9,7 @@ module ClockValuations
 
     using ..General
     using ..LogicalClocks
-    using ..ClockConstraints
+    # using ..ClockConstraints
 
     
     
@@ -71,8 +71,9 @@ module ClockValuations
         v::Valuations
         l::Labels
         Reset!(v::Valuations,l::Label) = Reset!(v,Labels([l]))
+        Reset!(v::Valuations,l::Array{String}) = Reset!(v,Labels([l...]))
         function Reset!(v::Valuations,l::Labels)
-            _l = Labels(l)
+            # _l = Labels(l)
             @assert !(v.system.label in l) "Global-system clock '$(v.system.label)' cannot be reset to 0!"
             # for each label a in l
             # if a value already exists for a
@@ -88,7 +89,7 @@ module ClockValuations
                     end
                 end
             end
-            new(v,_l)
+            new(v,l)
         end
     end
     Base.show(t::Reset!,io::Core.IO = stdout) = print(io, string(t))

@@ -8,6 +8,8 @@ module SessionTypes
     import Base.getindex
     import Base.lastindex
 
+    import Base.push!
+
 
     using ..General
     using ..LogicalClocks
@@ -68,7 +70,11 @@ module SessionTypes
         function Interaction(direction,msg,constraints,resets,child=End())
             @assert direction in [:send, :recv]
 
-            new(direction,msg,constraints,resets,child)
+            if resets isa Labels
+                new(direction,msg,constraints,resets,child)
+            else
+                new(direction,msg,constraints,Labels(resets),child)
+            end
         end
     end
     Base.show(s::Interaction, io::Core.IO = stdout) = print(io, string(s))
@@ -337,9 +343,9 @@ module SessionTypes
         Dual(c::T) where {T<:End} = new(c,:end)
         
         # Dual(c::T) where {T<:Interaction} = new(Interaction((c.direction == :send) ? :recv : :send, c[2:end]...),:interaction)
-        Dual(c::T) where {T<:Interaction} = new(Interaction((c.direction == :send) ? :recv : :send, c.msg, c.constraints, c.resets, c.S),:interaction)
+        Dual(c::T) where {T<:Interaction} = new(Interaction((c.direction == :send) ? :recv : :send, c.msg, c.constraints, c.resets, c.child),:interaction)
 
-        Dual(c::T) where {T<:Choice} = new(Choice([Interaction((i.direction == :send) ? :recv : :send, i.msg, i.constraints, i.resets, i.S) for i in c]),:choice)
+        Dual(c::T) where {T<:Choice} = new(Choice([Interaction((i.direction == :send) ? :recv : :send, i.msg, i.constraints, i.resets, i.child) for i in c]),:choice)
 
     end
     Base.show(s::Dual, io::Core.IO = stdout) = print(io, string(s))

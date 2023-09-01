@@ -13,18 +13,10 @@ module LogicalClocks
     
     using ..General
 
-    export Clocks, Clock, ClockValue, TimeValue
+    export Clocks, Clock
     export value!, reset!, time_step!, labels
 
-    const ClockValue = UInt8
-    struct TimeValue 
-        value::T where {T<:Real}
-        function TimeValue(value::Number)
-            @assert value>=0 "Time values must be greater or equal to 0: '$(value)' is invalid."
-            new(value)
-        end
-    end
-    Base.string(t::TimeValue) = string(t.value)
+    
     # Base.convert(::Type{TimeValue}, t::T) where {T<:Int} = TimeValue(t)
 
 

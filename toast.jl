@@ -1,540 +1,652 @@
 module TOAST
 
-    show_all_tests=false
-
-    show_logical_clock_tests=false
-    show_clock_constraints_tests=false
-    show_session_type_tests=false
-    show_session_type_actions_tests=false
-    show_clock_valuations_tests=false
-    show_evaluate_tests=false
-    show_configuration_tests=false
-    show_transition_unfolds_tests=true
-    show_transition_time_steps_tests=false
-    show_enabled_actions_tests=false
-    show_transition_action_steps_tests=true
-
-    module General
-
-        import Base.show
-        import Base.string
-        import Base.convert
-        import Base.getindex
-        import Base.iterate
-        import Base.push!
-        import Base.length
-        import Base.isempty
-        
-        export Label, Labels
-
-        const Label = String 
-
-        abstract type LabelList end
-
-        struct Labels <: LabelList
-            children::Array{Label}
-            distinct::Bool
-            # Labels(distinct=false) = new(Array{Label}([]),distinct)
-            function Labels(children,distinct=true) 
-                if distinct
-                    return new(Array{Label}([unique(children)...]),distinct)
-                else
-                    return new(Array{Label}([children...]),distinct)
-                end
-            end
-        end
-
-        Base.show(l::Labels, io::Core.IO = stdout) = print(io, string(l))
-        Base.string(l::Labels) = isempty(l) ? string("∅") : string("{", join(l, ", "), "}")
-        
-        Base.convert(::Type{Labels}, l::T) where {T<:Array{S} where {S<:String}} = Labels([l...])
-        function Base.convert(::Type{Labels}, l::T) where {T<:Array{Any}}
-            @assert isempty(l) "Base.convert Labels, unknown non-empty: ($(typeof(l))) : $(string(l))"
-            return Labels([],true)
-        end
-        
-        Base.push!(l::Labels, a::Label) = push!(l.children, a)
-
-        Base.length(l::Labels) = length(l.children)
-        Base.isempty(l::Labels) = isempty(l.children)
-        Base.getindex(l::Labels, i::Int) = getindex(l.children, i)
-
-        Base.iterate(l::Labels) = isempty(l) ? nothing : (getindex(l,1), Int(1))
-        Base.iterate(l::Labels, i::Int) = (i >= length(l)) ? nothing : (getindex(l,i+1), i+1)
-
-        export Num
-        const Num = T where {T<:Number}
-    end
-
-    #
-    #
-    #
-    using .General
-        
     function printlines() 
         println()
         println()
-        # println()
     end
 
+    show_all_tests=true
+    show_tests=true
+
+    #
+    # clock tests
+    #
+    show_all_clock_tests=false
+    show_clock_tests = true
+
+    show_logical_clock_tests=false
+    show_clock_valuations_tests=false
+    show_clock_constraints_tests=false
+
+    #
+    # type tests
+    #
+    show_all_type_tests=false
+    show_type_tests=true
+
+    show_session_type_tests=false
+    show_session_type_actions_tests=false
+
+    #
+    # configuration tests
+    #
+    show_all_configuration_tests=false
+    show_configuration_tests=true
+
+    show_configuration_tests=false  
+    show_evaluate_tests=false  
+    show_enabled_actions_tests=false
+
+    #
+    # transition tests
+    #
+    show_all_transition_tests=false
+    show_transition_tests=true
+
+    show_all_local_transition_tests=false
+    show_local_transition_tests=true
+    show_local_tick_test=false
+    show_local_unfold_test=false
+    show_local_act_test=false
+
+    show_all_social_transition_tests=false
+    show_social_transition_tests=true
+    show_social_que_test=false
+    show_social_send_test=false
+    show_social_recv_test=false
+    show_social_time_test=false
+
+    show_all_system_transition_tests=false
+    show_system_transition_tests=true
+    show_system_com_l_test=false
+    show_system_com_r_test=false
+    show_system_par_l_test=false
+    show_system_par_r_test=false
+    show_system_wait_test=false
+
+    
     #
     #
+    #
+    include("general/_import_all.jl")
+    using .General
+        
+
+    #
+    # clocks and constraints
     #
     include("logical_clocks.jl")
     using .LogicalClocks
 
-    if show_logical_clock_tests || show_all_tests
-        println("logical clock tests:")
-
-        clocks = Clocks([("a",1),("b",2),("c",3)])
-
-        show(clocks)
-        printlines()
-        
-        show(value!(clocks,"a"))
-        printlines()
-        
-        show(value!(clocks,"z"))
-        printlines()
-        
-        show(clocks)
-        printlines()
-
-        reset!(clocks,[])
-        show(clocks)
-        printlines()
-        
-        reset!(clocks,["a","b"])
-        show(clocks)
-        printlines()
-        
-        time_step!(clocks, 3)
-        show(clocks)
-        printlines()
-        
-        reset!(clocks,["a","b"])
-        show(clocks)
-        printlines()
-        
-    end
-
-    #
-    #
-    #
-    include("clock_constraints.jl")
-    using.ClockConstraints
-
-    if show_clock_constraints_tests || show_all_tests
-        println("clock constraints tests:")
-
-        show(δ(:and, δ(:not, δ(:tt)), δ(:tt)))
-        printlines()
-
-        a = δ(:eq, "x", 3)
-        show(a)
-        printlines()
-
-        b = δ(:not, δ(:eq, "x", 3))
-        show(b)
-        printlines()
-
-        c = δ(:and, δ(:eq, "x", 3), δ(:geq, "y", 4))
-        show(c)
-        printlines()
-
-        d = δ(:deq, "x", "y", 3)
-        show(d)
-        printlines()
-
-
-        e = δ(:and, δ(:not, δ(:and, δ(:eq, "w", 3), δ(:geq, "x", 4))), δ(:and, δ(:eq, "y", 3), δ(:geq, "z", 4)))   
-        show(e)
-        printlines()
-
-        f = flatten(e)
-        show(f)
-        printlines()
-
-        g = ConstrainedClocks(e)
-        show(g)
-        printlines()
-
-    end
-
-    #
-    #
-    #
-    include("session_types.jl")
-    using .SessionTypes
-
-    if show_session_type_tests || show_all_tests
-        println("session type tests:")
-
-        show(S(Interaction(:send, Msg("a", Data(Int)), δ(:tt), [] )) )
-        printlines()
-
-        show(S(Interaction(:send, Msg("a", Data(Int)), δ(:tt), [], Interaction(:recv, Msg("b", Data(String)), δ(:tt), [], End()))) )
-        printlines()
-
-        show(S(Interaction(:send, Msg("a", Data(Int)), δ(:tt), [], Interaction(:recv, Msg("b", Data(String)), δ(:tt), []))) )
-        printlines()
-
-        show(S((:send, Msg("a", Data(Int)), δ(:tt), [] )) )
-        printlines()
-
-        show(S((:send, Msg("a", Data(Int)), δ(:tt), [], (:recv, Msg("b", Data(String)), δ(:tt), [], End()))) )
-        printlines()
-
-        c = S((:send, Msg("a", Data(Int)), δ(:tt), [], (:recv, Msg("b", Data(String)), δ(:tt), [] ))) 
-        show(c)
-        printlines()
-
-        show(S(Choice([ (:send, Msg("a", Data(Int)), δ(:tt), []) ])))
-        printlines()
-
-        show(S(Choice([ 
-            (:send, Msg("a", Data(Int)), δ(:tt), [], (:recv, Msg("b", Data(String)), δ(:tt), [], End())) 
-            ])))
-        printlines()
-
-        show(S(Choice([ 
-            (:send, Msg("a", Data(Int)), δ(:tt), [], (:recv, Msg("b", Data(String)), δ(:tt), [])) 
-            ])))
-        printlines()
-
-        show(S(Choice([ 
-            (:send, Msg("a", Data(Int)), δ(:tt), []), 
-            (:send, Msg("c", Data(Int)),δ(:tt), []) 
-            ])))
-        printlines()
-
-        show(S(Choice([ 
-            (:send, Msg("a", Data(Int)), δ(:tt), []), 
-            (:recv, Msg("b", Data(String)), δ(:tt), [], (:send, Msg("c", Data(Int)), δ(:tt), [])) 
-            ])))
-        printlines()
-
-        a = Choice([
-                    (:send, Msg("e", Data(Int)), δ(:tt), []),
-                    (:send, Msg("f", Data(Int)), δ(:tt), [], (:send, Msg("g", Data(Int)), δ(:tt), []))
-                ])
-        b = S(Choice([ 
-            (:send, Msg("a", Data(Int)), δ(:tt), []), 
-            (:recv, Msg("b", Data(String)), δ(:tt), [], (:send, Msg("c", Data(Int)), δ(:tt), [])),
-            (:send, Msg("d", Data(Int)), δ(:tt), [], a) 
-            ]))
-        show(b)
-        printlines()
-
-        show(S(Def("a", (:send, Msg("a", Data(Int)), δ(:tt), [], (:send, Msg("a", Data(Int)), δ(:tt), [] ) ))) )
-        printlines()
-
-        show(S(Def("a",  Call("a") )) )
-        printlines()
-
-        show(S(Def("a", (:send, Msg("a", Data(Int)), δ(:tt), [], Call("a") ))) )
-        printlines()
-
-        show(S((:send, Msg("a", Data(Int)), δ(:tt), [], Def("a", (:send, Msg("a", Data(Int)), δ(:tt), [], Call("a")  ) ))) )
-        printlines()
-
-        show(S(([Interaction(:send, Msg("e", Data(Int)),δ(:tt), []  ),Interaction(:send, Msg("f", Data(String)),δ(:tt), []  )])))
-        printlines()
-
-        show(S(([(:send, Msg("e", Data(Int)),δ(:tt), []  ),(:send, Msg("f", Data(String)),δ(:tt), []  )])))
-        printlines()
-
-        
-
-        println("duality tests:")
-        println(string("s: ", string(c)))
-        println(string("d: ", string(Dual(c))))
-        printlines()
-        
-        println(string("s: ", string(a)))
-        println(string("d: ", string(Dual(a))))
-        printlines()
-        
-        println(string("s: ", string(b)))
-        println(string("d: ", string(Dual(b))))
-        printlines()
-
-
-    end
-
-    #
-    #
-    #
-    include("session_type_actions.jl")
-    using .SessionTypeActions
-
-    if show_session_type_actions_tests || show_all_tests
-        println("session type actions tests:")
-
-
-    end
-
-    #
-    #
-    #
     include("clock_valuations.jl")
     using .ClockValuations
 
-    if show_clock_valuations_tests || show_all_tests
-        println("clock valuation tests:")
+    include("clock_constraints.jl")
+    using .ClockConstraints
 
-        clocks = Clocks([("a",1),("b",2),("c",3)])
-        
-        a = Valuations(clocks)
-        show(a)
-        printlines() 
+    if show_clock_tests || show_all_clock_tests || show_all_tests
 
-        show(Reset!(a,["b","c","y"]))
-        printlines() 
+        # logical clocks
+        if show_logical_clock_tests || show_all_clock_tests || show_all_tests
+            println("logical clock tests:")
 
-        show(Value!(a,"z"))
-        printlines() 
+            clocks = Clocks([("a",1),("b",2),("c",3)])
+
+            show(clocks)
+            printlines()
+            
+            show(value!(clocks,"a"))
+            printlines()
+            
+            show(value!(clocks,"z"))
+            printlines()
+            
+            show(clocks)
+            printlines()
+
+            reset!(clocks,[])
+            show(clocks)
+            printlines()
+            
+            reset!(clocks,["a","b"])
+            show(clocks)
+            printlines()
+            
+            time_step!(clocks, 3)
+            show(clocks)
+            printlines()
+            
+            reset!(clocks,["a","b"])
+            show(clocks)
+            printlines()
+            
+        end
+
+        # clock valuations
+        if show_clock_valuations_tests || show_all_clock_tests || show_all_tests
+            println("clock valuation tests:")
+
+            clocks = Clocks([("a",1),("b",2),("c",3)])
+            
+            a = Valuations(clocks)
+            show(a)
+            printlines() 
+
+            show(Reset!(a,["b","c","y"]))
+            printlines() 
+
+            show(Value!(a,"z"))
+            printlines() 
+
+        end
+
+        # clock constraints
+        if show_clock_constraints_tests || show_all_clock_tests || show_all_tests
+            println("clock constraints tests:")
+
+            show(δ(:and, δ(:not, δ(:tt)), δ(:tt)))
+            printlines()
+
+            a = δ(:eq, "x", 3)
+            show(a)
+            printlines()
+
+            b = δ(:not, δ(:eq, "x", 3))
+            show(b)
+            printlines()
+
+            c = δ(:and, δ(:eq, "x", 3), δ(:geq, "y", 4))
+            show(c)
+            printlines()
+
+            d = δ(:deq, "x", "y", 3)
+            show(d)
+            printlines()
+
+
+            e = δ(:and, δ(:not, δ(:and, δ(:eq, "w", 3), δ(:geq, "x", 4))), δ(:and, δ(:eq, "y", 3), δ(:geq, "z", 4)))   
+            show(e)
+            printlines()
+
+            f = flatten(e)
+            show(f)
+            printlines()
+
+            g = ConstrainedClocks(e)
+            show(g)
+            printlines()
+
+        end
 
     end
 
     #
+    # session types and actions
     #
+    include("session_types.jl")
+    using .SessionTypes
+    
+    include("session_type_actions.jl")
+    using .SessionTypeActions
+
+    if show_type_tests || show_all_type_tests || show_all_tests
+
+        # session types
+        if show_session_type_tests || show_all_type_tests || show_all_tests
+            println("session type tests:")
+
+            show(S(Interaction(:send, Msg("a", Data(Int)), δ(:tt), [] )) )
+            printlines()
+
+            show(S(Interaction(:send, Msg("a", Data(Int)), δ(:tt), [], Interaction(:recv, Msg("b", Data(String)), δ(:tt), [], End()))) )
+            printlines()
+
+            show(S(Interaction(:send, Msg("a", Data(Int)), δ(:tt), [], Interaction(:recv, Msg("b", Data(String)), δ(:tt), []))) )
+            printlines()
+
+            show(S((:send, Msg("a", Data(Int)), δ(:tt), [] )) )
+            printlines()
+
+            show(S((:send, Msg("a", Data(Int)), δ(:tt), [], (:recv, Msg("b", Data(String)), δ(:tt), [], End()))) )
+            printlines()
+
+            c = S((:send, Msg("a", Data(Int)), δ(:tt), [], (:recv, Msg("b", Data(String)), δ(:tt), [] ))) 
+            show(c)
+            printlines()
+
+            show(S(Choice([ (:send, Msg("a", Data(Int)), δ(:tt), []) ])))
+            printlines()
+
+            show(S(Choice([ 
+                (:send, Msg("a", Data(Int)), δ(:tt), [], (:recv, Msg("b", Data(String)), δ(:tt), [], End())) 
+                ])))
+            printlines()
+
+            show(S(Choice([ 
+                (:send, Msg("a", Data(Int)), δ(:tt), [], (:recv, Msg("b", Data(String)), δ(:tt), [])) 
+                ])))
+            printlines()
+
+            show(S(Choice([ 
+                (:send, Msg("a", Data(Int)), δ(:tt), []), 
+                (:send, Msg("c", Data(Int)),δ(:tt), []) 
+                ])))
+            printlines()
+
+            show(S(Choice([ 
+                (:send, Msg("a", Data(Int)), δ(:tt), []), 
+                (:recv, Msg("b", Data(String)), δ(:tt), [], (:send, Msg("c", Data(Int)), δ(:tt), [])) 
+                ])))
+            printlines()
+
+            a = Choice([
+                        (:send, Msg("e", Data(Int)), δ(:tt), []),
+                        (:send, Msg("f", Data(Int)), δ(:tt), [], (:send, Msg("g", Data(Int)), δ(:tt), []))
+                    ])
+            b = S(Choice([ 
+                (:send, Msg("a", Data(Int)), δ(:tt), []), 
+                (:recv, Msg("b", Data(String)), δ(:tt), [], (:send, Msg("c", Data(Int)), δ(:tt), [])),
+                (:send, Msg("d", Data(Int)), δ(:tt), [], a) 
+                ]))
+            show(b)
+            printlines()
+
+            show(S(Def("a", (:send, Msg("a", Data(Int)), δ(:tt), [], (:send, Msg("a", Data(Int)), δ(:tt), [] ) ))) )
+            printlines()
+
+            show(S(Def("a",  Call("a") )) )
+            printlines()
+
+            show(S(Def("a", (:send, Msg("a", Data(Int)), δ(:tt), [], Call("a") ))) )
+            printlines()
+
+            show(S((:send, Msg("a", Data(Int)), δ(:tt), [], Def("a", (:send, Msg("a", Data(Int)), δ(:tt), [], Call("a")  ) ))) )
+            printlines()
+
+            show(S(([Interaction(:send, Msg("e", Data(Int)),δ(:tt), []  ),Interaction(:send, Msg("f", Data(String)),δ(:tt), []  )])))
+            printlines()
+
+            show(S(([(:send, Msg("e", Data(Int)),δ(:tt), []  ),(:send, Msg("f", Data(String)),δ(:tt), []  )])))
+            printlines()
+
+            
+
+            println("duality tests:")
+            println(string("s: ", string(c)))
+            println(string("d: ", string(Dual(c))))
+            printlines()
+            
+            println(string("s: ", string(a)))
+            println(string("d: ", string(Dual(a))))
+            printlines()
+            
+            println(string("s: ", string(b)))
+            println(string("d: ", string(Dual(b))))
+            printlines()
+
+
+        end
+
+        # actions
+        if show_session_type_actions_tests || show_all_type_tests || show_all_tests
+            println("session type actions tests:")
+
+
+        end
+
+    end
+
+
+
+
+    #
+    # configurations and enabled actions
     #
     include("configurations.jl")
     using .Configurations
 
-    if show_configuration_tests || show_all_tests 
-        println("configuration tests:")
-
-        _c = Clocks([("a",1)])
-        _v = Valuations(_c)
-        _s = S(Choice([(:send, Msg("a", Int), δ(:not,δ(:geq,"x",3)),[], Def("a", (:send, Msg("b", String), δ(:tt), [], Call("a")))),(:recv, Msg("c", Bool), δ(:geq,"y",3),[])]))
-        _l = Local(_v,_s)
-
-        show(_l)
-        printlines()
-
-        show(System(_l))
-        printlines()
-
-
-        
-        _v = Valuations()
-        s_b = S(([(:send, Msg("e", Data(Int)),δ(:eq,"x",1), []  ),(:send, Msg("f", Data(String)),δ(:eq,"x",2), []  ),(:recv, Msg("g", Data(Int)),δ(:eq,"x",4), []  ),(:send, Msg("h", Data(String)),δ(:eq,"x",5), []  )]))
-        l_b1 = Local(_v,s_b)
-        l_b2 = Local(_v,Dual(s_b))
-        sys = System(l_b1,l_b2)
-
-
-        # show(l_b1,:local)
-        # printlines()
-
-        # show(Social(l_b1),:social)
-        # printlines()
-
-        show(sys)
-        printlines()
-
-    end
-
-    #
-    #
-    #
-    include("transitions_local/transition_unfold.jl")
-    using .LocalTransitionUnfold
- 
-    if show_transition_unfolds_tests || show_all_tests
-        println("transition unfolds tests:")
-
-        _v = Valuations()
-        s_b = S(Def("a", (:send, Msg("a", Data(Int)), δ(:tt), [], ([
-            (:send, Msg("e", Data(Int)),δ(:eq,"x",1), []  ),
-            (:send, Msg("f", Data(String)),δ(:eq,"x",2), [], Call("a")  ),
-            (:recv, Msg("g", Data(Int)),δ(:eq,"x",4), []  ),
-            (:send, Msg("h", Data(String)),δ(:eq,"x",5), [], Call("a")  )]))))
-        l_b1 = Local(_v,s_b)
-
-        show(l_b1,:local_full)
-        printlines()
-
-        Unfold!(l_b1)
-
-        show(l_b1,:local_full)
-        printlines()
-
-    end
-    
-    # superceeded by configurations when moduralised
-    #
-    #
-    include("transitions_local/transition_tick.jl")
-    using .LocalTransitionTick
-    
-    #
-    #
-    #
     include("evaluate.jl")
     using .Evaluate
 
-    if show_evaluate_tests || show_all_tests
-        println("evaluate tests:")
-
-        clocks = Clocks([("a",1),("b",2),("c",3)])
-        v = Valuations(clocks)
-
-        # show(v)
-        # printlines()
-
-        a = δ(:eq, "x", 3)
-        # b = δ(:not, a)
-        # c = δ(:and, a, δ(:geq, "y", 4))
-        b = δ(:not, δ(:eq, "a", 3))
-        c = δ(:and, δ(:eq, "a", 1), δ(:geq, "c", 2))
-        d = δ(:deq, "c", "y", 3)
-        e = δ(:and, δ(:not, δ(:and, δ(:eq, "b", 1), δ(:geq, "x", 4))), δ(:and, δ(:eq, "a", 3), δ(:geq, "z", 4)))   
-
-
-        show(v)
-        println()
-        show(Eval(v,a))
-        printlines()
-
-        show(v)
-        println()
-        show(Eval(v,b))
-        printlines()
-        
-        show(v)
-        println()
-        show(Eval(v,c))
-        printlines()
-        
-        show(v)
-        println()
-        show(Eval(v,d))
-        printlines()
-        
-        show(v)
-        println()
-        show(Eval(v,e))
-        printlines()
-
-        printlines()
-        show(TimeStep!(v,3))
-        printlines()
-        printlines() 
-
-        show(v)
-        println()
-        show(Eval(v,a))
-        printlines()
-
-        show(v)
-        println()
-        show(Eval(v,b))
-        printlines()
-        
-        show(v)
-        println()
-        show(Eval(v,c))
-        printlines()
-        
-        show(v)
-        println()
-        show(Eval(v,d))
-        printlines()
-        
-        show(v)
-        println()
-        show(Eval(v,e))
-        printlines()
-
-        # show(a)
-        # printlines()
-
-        # show(b)
-        # printlines()
-
-        # show(c)
-        # printlines()
-
-        # show(d)
-        # printlines()
-
-    end
-
-    #
-    #
-    #
     include("enabled_configuration_actions.jl")
     using .EnabledConfigurationActions
 
-    if show_enabled_actions_tests || show_all_tests
-        println("enabled actions tests:")
+    if show_configuration_tests || show_all_configuration_tests || show_all_tests
 
-        
-        _v = Valuations()
-        s_b = S(([(:send, Msg("e", Data(Int)),δ(:eq,"x",1), []  ),(:send, Msg("f", Data(String)),δ(:eq,"x",2), []  ),(:recv, Msg("g", Data(Int)),δ(:eq,"x",4), []  ),(:send, Msg("h", Data(String)),δ(:eq,"x",5), []  )]))
-        l_b1 = Local(_v,s_b)
+        # configurations
+        if show_configuration_tests || show_all_configuration_tests || show_all_tests 
+            println("configuration tests:")
 
-        show(l_b1,:local)
-        printlines()
+            _c = Clocks([("a",1)])
+            _v = Valuations(_c)
+            _s = S(Choice([(:send, Msg("a", Int), δ(:not,δ(:geq,"x",3)),[], Def("a", (:send, Msg("b", String), δ(:tt), [], Call("a")))),(:recv, Msg("c", Bool), δ(:geq,"y",3),[])]))
+            _l = Local(_v,_s)
 
-        show(IsEnabled(l_b1))
-        printlines()
+            show(_l)
+            printlines()
 
-        for i in range(1,5)
+            show(System(_l))
+            printlines()
 
-            show(TimeStep!(l_b1,1))
+
+            
+            _v = Valuations()
+            s_b = S(([(:send, Msg("e", Data(Int)),δ(:eq,"x",1), []  ),(:send, Msg("f", Data(String)),δ(:eq,"x",2), []  ),(:recv, Msg("g", Data(Int)),δ(:eq,"x",4), []  ),(:send, Msg("h", Data(String)),δ(:eq,"x",5), []  )]))
+            l_b1 = Local(_v,s_b)
+            l_b2 = Local(_v,Dual(s_b))
+            sys = System(l_b1,l_b2)
+
+
+            # show(l_b1,:local)
+            # printlines()
+
+            # show(Social(l_b1),:social)
+            # printlines()
+
+            show(sys)
+            printlines()
+
+        end
+
+        # evaluations
+        if show_evaluate_tests || show_all_configuration_tests || show_all_tests
+            println("evaluate tests:")
+
+            clocks = Clocks([("a",1),("b",2),("c",3)])
+            v = Valuations(clocks)
+
+            # show(v)
+            # printlines()
+
+            a = δ(:eq, "x", 3)
+            # b = δ(:not, a)
+            # c = δ(:and, a, δ(:geq, "y", 4))
+            b = δ(:not, δ(:eq, "a", 3))
+            c = δ(:and, δ(:eq, "a", 1), δ(:geq, "c", 2))
+            d = δ(:deq, "c", "y", 3)
+            e = δ(:and, δ(:not, δ(:and, δ(:eq, "b", 1), δ(:geq, "x", 4))), δ(:and, δ(:eq, "a", 3), δ(:geq, "z", 4)))   
+
+
+            show(v)
+            println()
+            show(Eval(v,a))
+            printlines()
+
+            show(v)
+            println()
+            show(Eval(v,b))
+            printlines()
+            
+            show(v)
+            println()
+            show(Eval(v,c))
+            printlines()
+            
+            show(v)
+            println()
+            show(Eval(v,d))
+            printlines()
+            
+            show(v)
+            println()
+            show(Eval(v,e))
+            printlines()
+
+            show(v)
+            println()
+            show(Eval(v,a))
+            printlines()
+
+            show(v)
+            println()
+            show(Eval(v,b))
+            printlines()
+            
+            show(v)
+            println()
+            show(Eval(v,c))
+            printlines()
+            
+            show(v)
+            println()
+            show(Eval(v,d))
+            printlines()
+            
+            show(v)
+            println()
+            show(Eval(v,e))
+            printlines()
+
+
+        end
+
+        # enabled actions
+        if show_enabled_actions_tests || show_all_configuration_tests || show_all_tests
+            println("enabled actions tests:")
+
+            
+            _v = Valuations()
+            s_b = S(([(:send, Msg("e", Data(Int)),δ(:eq,"x",1), []  ),(:send, Msg("f", Data(String)),δ(:eq,"x",2), []  ),(:recv, Msg("g", Data(Int)),δ(:eq,"x",4), []  ),(:send, Msg("h", Data(String)),δ(:eq,"x",5), []  )]))
+            l_b1 = Local(_v,s_b)
+
+            show(l_b1,:local)
             printlines()
 
             show(IsEnabled(l_b1))
             printlines()
 
+            # for i in range(1,5)
+
+            #     show(TimeStep!(l_b1,1))
+            #     printlines()
+
+            #     show(IsEnabled(l_b1))
+            #     printlines()
+
+            # end
+
         end
 
     end
 
     #
+    # operational semantics of configurations
     #
-    #
+
+    # local transitions
+    include("transitions_local/transition_tick.jl")
+    using .LocalTransitionTick
+
+    include("transitions_local/transition_unfold.jl")
+    using .LocalTransitionUnfold
+    
     include("transitions_local/transition_act.jl")
     using .LocalTransitionAct
+
+    
+    # social transitions
+    include("transitions_social/transition_que.jl")
+    using .SocialTransitionQue
+
+    include("transitions_social/transition_send.jl")
+    using .SocialTransitionSend
  
-    if show_transition_action_steps_tests || show_all_tests
-        println("transition action steps tests:")
+    include("transitions_social/transition_recv.jl")
+    using .SocialTransitionRecv
+ 
+    include("transitions_social/transition_time.jl")
+    using .SocialTransitionTime
 
-        _v = Valuations()
-        s_b = S(([(:send, Msg("e", Data(Int)),δ(:eq,"x",1), Labels(["x"])  ),(:send, Msg("f", Data(String)),δ(:eq,"x",2), Labels([])  ),(:recv, Msg("g", Data(Int)),δ(:eq,"x",4),Labels([])  ),(:send, Msg("h", Data(String)),δ(:eq,"x",5), Labels([])  )]))
-        l_b1 = Local(_v,s_b)
 
-        show(TimeStep!(l_b1,0))
-        printlines()
+    # system transitions
+    include("transitions_system/transition_com_l.jl")
+    using .SystemTransitionComL
+    
+    include("transitions_system/transition_com_r.jl")
+    using .SystemTransitionComR
+    
+    include("transitions_system/transition_par_l.jl")
+    using .SystemTransitionParL
+    
+    include("transitions_system/transition_par_r.jl")
+    using .SystemTransitionParR
+    
+    include("transitions_system/transition_wait.jl")
+    using .SystemTransitionWait
+ 
+    if show_transition_tests || show_all_transition_tests || show_all_tests
 
-        show(l_b1,:local_full)
-        printlines()
+        # local transitions
+        if show_local_transition_tests || show_all_local_transition_tests || show_all_tests
 
-        show(Act!(l_b1,(:send, Msg("e",Data(Int)))))
-        printlines()
+            # tick
+            if show_local_tick_test || show_all_local_transition_tests ||show_all_tests
+                println("local transition tick tests:")
 
-        show(l_b1,:local_full)
-        printlines()
+                _v = Valuations()
+                s_b = S(([(:send, Msg("e", Data(Int)),δ(:eq,"x",1), []  ),(:send, Msg("f", Data(String)),δ(:eq,"x",2), []  ),(:recv, Msg("g", Data(Int)),δ(:eq,"x",4), []  ),(:send, Msg("h", Data(String)),δ(:eq,"x",5), []  )]))
+                l_b1 = Local(_v,s_b)
 
-        show(TimeStep!(l_b1,1))
-        printlines()
+                show(l_b1,:local)
+                printlines()
 
-        show(l_b1,:local_full)
-        printlines()
+                show(IsEnabled(l_b1))
+                printlines()
 
-        show(Act!(l_b1,(:send, Msg("e",Data(Int)))))
-        printlines()
+                for i in range(1,5)
 
-        show(l_b1,:local_full)
-        printlines()
+                    show(TimeStep!(l_b1,1))
+                    printlines()
 
+                    show(IsEnabled(l_b1))
+                    printlines()
+
+                end
+            end
+
+            # unfold
+            if show_local_unfold_test || show_all_local_transition_tests ||show_all_tests
+                println("local transition unfold tests:")
+
+                _v = Valuations()
+                s_b = S(Def("a", (:send, Msg("a", Data(Int)), δ(:tt), [], ([
+                    (:send, Msg("e", Data(Int)),δ(:eq,"x",1), []  ),
+                    (:send, Msg("f", Data(String)),δ(:eq,"x",2), [], Call("a")  ),
+                    (:recv, Msg("g", Data(Int)),δ(:eq,"x",4), []  ),
+                    (:send, Msg("h", Data(String)),δ(:eq,"x",5), [], Call("a")  )]))))
+                l_b1 = Local(_v,s_b)
+
+                show(l_b1,:local_full)
+                printlines()
+
+                Unfold!(l_b1)
+
+                show(l_b1,:local_full)
+                printlines()
+
+            end
+
+            # act
+            if show_local_act_test || show_all_local_transition_tests ||show_all_tests
+                println("local transition act tests:")
+
+                _v = Valuations()
+                s_b = S(([(:send, Msg("e", Data(Int)),δ(:eq,"x",1), Labels(["x"])  ),(:send, Msg("f", Data(String)),δ(:eq,"x",2), Labels([])  ),(:recv, Msg("g", Data(Int)),δ(:eq,"x",4),Labels([])  ),(:send, Msg("h", Data(String)),δ(:eq,"x",5), Labels([])  )]))
+                l_b1 = Local(_v,s_b)
+
+                show(TimeStep!(l_b1,0))
+                printlines()
+
+                show(l_b1,:local_full)
+                printlines()
+
+                show(Act!(l_b1,(:send, Msg("e",Data(Int)))))
+                printlines()
+
+                show(l_b1,:local_full)
+                printlines()
+
+                show(TimeStep!(l_b1,1))
+                printlines()
+
+                show(l_b1,:local_full)
+                printlines()
+
+                show(Act!(l_b1,(:send, Msg("e",Data(Int)))))
+                printlines()
+
+                show(l_b1,:local_full)
+                printlines()
+            end
+
+        end
+
+        # social transitions
+        if show_social_transition_tests || show_all_social_transition_tests || show_all_tests
+
+            # que
+            if show_social_que_test || show_all_social_transition_tests || show_all_tests
+                println("social transition que tests:")
+
+                _v = Valuations()
+                s_b = S(([(:send, Msg("e", Data(Int)),δ(:eq,"x",1), Labels(["x"])  ),(:send, Msg("f", Data(String)),δ(:eq,"x",2), Labels([])  ),(:recv, Msg("g", Data(Int)),δ(:eq,"x",4),Labels([])  ),(:send, Msg("h", Data(String)),δ(:eq,"x",5), Labels([])  )]))
+                l_b1 = Local(_v,s_b)
+            end
+
+            # send
+            if show_social_send_test || show_all_social_transition_tests || show_all_tests
+                println("social transition send tests:")
+
+            end
+
+            # recv
+            if show_social_recv_test || show_all_social_transition_tests || show_all_tests
+                println("social transition recv tests:")
+
+            end
+
+            # time
+            if show_social_time_test || show_all_social_transition_tests || show_all_tests
+                println("social transition time tests:")
+
+            end
+
+        end
+
+        # system transitions
+        if show_system_transition_tests || show_all_system_transition_tests || show_all_tests
+
+            # com-l
+            if show_system_com_l_test || show_all_system_transition_tests || show_all_tests
+                println("system transition com-l tests:")
+
+            end
+            
+            # com-r
+            if show_system_com_r_test || show_all_system_transition_tests || show_all_tests
+                println("system transition com-r tests:")
+
+            end
+            
+            # par-l
+            if show_system_par_l_test || show_all_system_transition_tests || show_all_tests
+                println("system transition par-l tests:")
+
+            end
+            
+            # par-r
+            if show_system_par_r_test || show_all_system_transition_tests || show_all_tests
+                println("system transition par-r tests:")
+
+            end
+            
+            # wait
+            if show_system_wait_test || show_all_system_transition_tests || show_all_tests
+                println("system transition wait tests:")
+
+            end
+        end
 
     end
-    
-
 
 end

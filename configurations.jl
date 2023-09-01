@@ -6,6 +6,7 @@ module Configurations
     import Base.iterate
     import Base.isempty
     import Base.length
+    import Base.push!
     
     using ..General
     using ..LogicalClocks
@@ -134,6 +135,8 @@ module Configurations
     Base.string(q::Queue) = isempty(q) ? string("∅") : string(q.children)
 
     Base.isempty(q::Queue) = isempty(q.children)
+    
+    Base.push!(q::Queue,m::Msg) = push!(q.children,m)
 
     function head!(q::Queue)
         if length(q.children)>0

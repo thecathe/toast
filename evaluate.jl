@@ -93,7 +93,7 @@ module Evaluate
     # evaluate constraint against clocks
     struct Eval
         v::Valuations
-        δ::δ
+        constraints::δ
         clocks::Labels
         children::Evaluations
         result::Bool
