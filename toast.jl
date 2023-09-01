@@ -372,29 +372,6 @@ module TOAST
     #
     include("transitions_local/transition_tick.jl")
     using .LocalTransitionTick
- 
-    # if show_transition_time_steps_tests || show_all_tests
-    #     println("transition time steps tests:")
-
-    #     clocks = Clocks([("a",1),("b",2),("c",3)])
-        
-    #     a = Valuations(clocks)
-    #     show(a)
-    #     printlines() 
-
-    #     show(TimeStep!(a,1))
-    #     printlines() 
-
-    #     show(Reset!(a,["b","c","y"]))
-    #     printlines() 
-
-    #     show(Value!(a,"z"))
-    #     printlines() 
-
-    #     show(TimeStep!(a,3))
-    #     printlines() 
-
-    # end
     
     #
     #
