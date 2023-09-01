@@ -554,33 +554,4 @@ module TOAST
     
 
 
-    #
-    # #
-    # #  
-    # include("transitions.jl")
-    # using .Transitions
-
-    # if show_transition_tests || show_all_tests
-    #     println("transitions tests:")
-
-    #     _v = Valuations()
-    #     s_b = S(([(:send, Msg("e", Data(Int)),δ(:eq,"x",1), []  ),(:send, Msg("f", Data(String)),δ(:eq,"x",2), []  ),(:recv, Msg("g", Data(Int)),δ(:eq,"x",4), []  ),(:send, Msg("h", Data(String)),δ(:eq,"x",5), []  )]))
-    #     l_b1 = Local(_v,s_b)
-    #     l_b2 = Local(_v,Dual(s_b))
-    #     sys = System(l_b1,l_b2)
-
-
-    #     # show(l_b1,:local)
-    #     # printlines()
-
-    #     # show(Social(l_b1),:social)
-    #     # printlines()
-
-    #     show(sys)
-    #     printlines()
-
-
-    # end
-
-
 end
