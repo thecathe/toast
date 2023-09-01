@@ -342,7 +342,7 @@ module TOAST
     #
     #
     include("transitions_local/transition_unfold.jl")
-    using .LocalTransitionUnfolds
+    using .LocalTransitionUnfold
  
     if show_transition_unfolds_tests || show_all_tests
         println("transition unfolds tests:")
@@ -371,7 +371,7 @@ module TOAST
     #
     #
     include("transitions_local/transition_tick.jl")
-    using .LocalTransitionTimeSteps
+    using .LocalTransitionTick
  
     # if show_transition_time_steps_tests || show_all_tests
     #     println("transition time steps tests:")
@@ -525,7 +525,7 @@ module TOAST
     #
     #
     include("transitions_local/transition_act.jl")
-    using .LocalTransitionActionSteps
+    using .LocalTransitionAct
  
     if show_transition_action_steps_tests || show_all_tests
         println("transition action steps tests:")

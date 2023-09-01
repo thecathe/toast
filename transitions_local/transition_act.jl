@@ -1,4 +1,4 @@
-module LocalTransitionActionSteps
+module LocalTransitionAct
 
     import Base.show
     import Base.string

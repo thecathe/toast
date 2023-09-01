@@ -1,4 +1,4 @@
-module LocalTransitionUnfolds
+module LocalTransitionUnfold
 
     import Base.show
     import Base.string

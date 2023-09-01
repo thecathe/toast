@@ -1,0 +1,3 @@
+module SocialTransitionQue
+
+end

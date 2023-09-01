@@ -1,0 +1,3 @@
+module SocialTransitionRecv
+
+end
