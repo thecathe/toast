@@ -1,0 +1,3 @@
+module TypeCheckingRuleRes
+
+end

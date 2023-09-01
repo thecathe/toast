@@ -1,0 +1,3 @@
+module TypeCheckingRuleDelT
+
+end

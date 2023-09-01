@@ -1,0 +1,3 @@
+module TypeCheckingRuleTimer
+
+end

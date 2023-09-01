@@ -1,0 +1,3 @@
+module TypeCheckingRuleIfTrue
+
+end

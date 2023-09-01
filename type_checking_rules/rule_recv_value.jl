@@ -1,0 +1,3 @@
+module TypeCheckingRuleVRecv
+
+end

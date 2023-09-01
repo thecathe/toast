@@ -1,0 +1,3 @@
+module TypeCheckingRuleVar
+
+end

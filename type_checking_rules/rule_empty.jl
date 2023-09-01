@@ -1,0 +1,3 @@
+module TypeCheckingRuleEmpty
+
+end
