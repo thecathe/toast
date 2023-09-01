@@ -1,0 +1,3 @@
+module ProcessReductionStr
+
+end

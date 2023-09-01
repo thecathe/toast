@@ -1,0 +1,3 @@
+module ProcessReductionRecv
+
+end
