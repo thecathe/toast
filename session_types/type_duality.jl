@@ -5,15 +5,6 @@ module TypeDuality
 
     using ..SessionTypes
 
-    using ..TypeRec
-    using ..TypeCall
-    using ..TypeEnd
-
-    using ..TypeInteract
-    using ..TypeChoice
-
-    using ..TypeDirection
-
     export Duality
 
     struct Duality <: SessionType
