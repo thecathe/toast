@@ -8,7 +8,7 @@ module Configurations
     import Base.length
     import Base.push!
     
-    using ..General
+    # using ..General
     using ..LogicalClocks
     using ..ClockConstraints
     using ..SessionTypes

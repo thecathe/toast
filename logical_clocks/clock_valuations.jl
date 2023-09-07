@@ -16,6 +16,10 @@ module ClockValuations
         Valuations() = Valuations(Array{Clock}([]))
         # single
         Valuations(child::Clock) = Valuations(Array{Clock}([child]))
+        # anonymous clock
+        Valuations(child::T,offset::Num = 0) where {T<:Tuple{String,Num}} = Valuations(Array{Clock}([Clock(c...)]), offset)
+        # anonymous clocks
+        Valuations(children::Array{T},offset::Num = 0) where {T<:Tuple{String,Num}} = Valuations(Array{Clock}([Clock(c...) for c in children]), offset)
     end
 
     Base.show(t::Valuations, io::Core.IO = stdout) = print(io, string(t))
