@@ -1,20 +1,7 @@
 module LogicalClocks
 
-    import Base.show
-    import Base.string
-    import Base.convert
-
-    import Base.iterate
-
-    import Base.length
-    import Base.getindex
-    import Base.push!
-    import Base.isempty
-    
-    # re-export
-    using ..General
-    export ClockValue
-
+    export Num
+    const Num = T where {T<:Number}
 
     #
     # clock
@@ -33,5 +20,12 @@ module LogicalClocks
     include("logical_clocks/clock_valuations.jl")
     using .ClockValuations
     export Valuations, ValueOf!, ResetClocks!, TimeStep!
+    
+    #
+    # clock constraints
+    #
+    include("logical_clocks/clock_constraints.jl")
+    using .ClockConstraints
+    export δ, δExpr, supported_constraints
 
 end

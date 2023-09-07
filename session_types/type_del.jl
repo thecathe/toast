@@ -3,13 +3,13 @@ module TypeDel
     import Base.show
     import Base.string
 
-    using ...ClockConstraints
+    using ...LogicalClocks
 
     using ..SessionTypes
 
     export Del
 
-    mutable struct Del <: SpecialDataType
+    mutable struct Del <: SpecialPayload
         init::δ
         type::T where {T<:SessionType}
         Del(init::δ,type::T) where {T<:SessionType} = new(init,type)

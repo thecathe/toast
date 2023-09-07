@@ -14,7 +14,7 @@ module ClockConstraints
 
     struct δ
         head::Symbol
-        args::Array{Any}
+        args::T where {T<:Array{Any}}
         expr::δExpr
         clocks::Array{String}
 
@@ -22,38 +22,36 @@ module ClockConstraints
         δ() = δ(:tt)
 
         #
-        function δ(head::Symbol,args...)
-            @assert head in supported_constraints "δ, unexpected head: $(string(head))"
-
+        function δ(head::Symbol,args...)            
             if head==:tt
                 @assert length(args)==0 "δ($(string(head))) expects 0 args: ($(length(args))) $(string(args))"
 
-                new(head,args, δExpr(:&&,Inf), Array{String}([]))
+                new(head, [args...], δExpr(:&&,Inf), Array{String}([]))
 
             elseif head==:not
                 @assert length(args)==1 "δ($(string(head))) expects 1 args: ($(length(args))) $(string(args))"
 
                 @assert args[1] isa δ "δ($(string(head))) expects args of type δ, not: $(string(typeof(args[1])))"
 
-                new(head,args, δExpr(:call,[:!, args[1]]), unique(Array{String}([args[1].clocks...])))
+                new(head, [args...], δExpr(:call,[:!, args[1]]), unique(Array{String}([args[1].clocks...])))
 
             elseif head==:and
                 @assert length(args)==2 "δ($(string(head))) expects 2 args: ($(length(args))) $(string(args))"
 
-                for i in args @assert i isa δ "δ($(string(head))) expects args of type δ, not: $(string(typeof(i)))" end
+                for i ∈ args @assert i isa δ "δ($(string(head))) expects args of type δ, not: $(string(typeof(i)))" end
                 
-                new(head,args, δExpr(:&&, [args[1], args[2]]), unique(Array{String}([args[1].clocks...,args[2].clocks...])))
+                new(head, [args...], δExpr(:&&, [args[1], args[2]]), unique(Array{String}([args[1].clocks...,args[2].clocks...])))
 
-            elseif head in [:eq,:geq]
+            elseif head ∈ [:eq,:geq]
                 @assert length(args)==2 "δ($(string(head))) expects 2 args: ($(length(args))) $(string(args))"
 
                 @assert args[1] isa String "δ($(string(head))) expects #1 to be String, not: $(string(typeof(args[1])))"
                 
                 @assert args[2] isa Num "δ($(string(head))) expects #1 to be Num, not: $(string(typeof(args[1])))"
 
-                new(head,args, δExpr(:call, [head==:eq ? :(==) : :(>=), args[1], args[2]]), unique(Array{String}([args[1]])))
+                new(head, [args...], δExpr(:call, [head==:eq ? :(==) : :(>=), args[1], args[2]]), unique(Array{String}([args[1]])))
 
-            elseif head in [:deq,:dgeq]
+            elseif head ∈ [:deq,:dgeq]
                 @assert length(args)==3 "δ($(string(head))) expects 3 args: ($(length(args))) $(string(args))"
 
                 @assert args[1] isa String "δ($(string(head))) expects #1 to be String, not: $(string(typeof(args[1])))"
@@ -62,15 +60,17 @@ module ClockConstraints
                 
                 @assert args[3] isa Num "δ($(string(head))) expects #1 to be Num, not: $(string(typeof(args[1])))"
 
-                new(head,args, δExpr(:call, [head==:deq ? :(==) : :(>=), δExpr(:call, [:-, args[1], args[2]]), args[3]]), unique(Array{String}([args[1],args[2]])))
+                new(head, [args...], δExpr(:call, [head==:deq ? :(==) : :(>=), δExpr(:call, [:-, args[1], args[2]]), args[3]]), unique(Array{String}([args[1],args[2]])))
 
             elseif head==:flatten
                 @assert length(args)==1 "δ($(string(head))) expects 1 args: ($(length(args))) $(string(args))"
                 
                 @assert args[1] isa δ "δ($(string(head))) expects #1 to be δ, not: $(string(typeof(args[1])))"
 
-                _flat = flatten(args[1])
-                new(head, _flat, conjunctify(_flat), unique(Array{String}([d.clocks... for d in _flat])))
+                _flat = Flatδ(args[1])
+                _clocks = Array{String}([])
+                foreach(d -> push!(_clocks, d.clocks...), _flat.children)
+                new(head, [_flat.children...], δConjunctify(_flat).child, unique(_clocks))
 
             else
                 @error "δ, unexpected head: $(string(head))"
@@ -97,6 +97,8 @@ module ClockConstraints
                     string(string(d.args[1]), "-", string(d.args[2]), "=", string(d.args[3]))
                 elseif head==:dgeq
                     string(string(d.args[1]), "-", string(d.args[2]), "≥", string(d.args[3]))
+                elseif head==:flatten
+                    string(join([string(c) for c in d.args], " ∧ "))
                 else
                     @error "δ.string, unexpected head: $(string(d.head))"
                 end
@@ -107,6 +109,14 @@ module ClockConstraints
 
     end
     
+    #
+    # flatten
+    #
+    struct Flatδ
+        children::Array{δ}
+        Flatδ(d::δ) = new(flatten(d))
+    end
+
     # flatten constraint tree into conjunctive list
     function flatten(d::δ, neg::Bool = false) 
         if d.head==:and 
@@ -128,6 +138,14 @@ module ClockConstraints
                 Array{δ}([d])
             end
         end
+    end
+
+    #
+    # conjunctify
+    #
+    struct δConjunctify
+        child::δExpr
+        δConjunctify(f::Flatδ) = new(conjunctify(f.children))
     end
 
     # conjuctify flattned

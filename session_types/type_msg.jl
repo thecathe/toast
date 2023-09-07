@@ -5,15 +5,15 @@ module TypeMsg
 
     using ..SessionTypes
 
-    export Payload, SpecialDataType
-    abstract type SpecialDataType end
+    export Payload, SpecialPayload
+    abstract type SpecialPayload end
 
     export None
-    struct None <: SpecialDataType end
+    struct None <: SpecialPayload end
     Base.show(none::Type{None}, io::Core.IO = stdout) = print(io, string(none))
     Base.string(none::Type{None}) = string("None")
 
-    const Payload = Union{SpecialDataType,String,Int,Bool}
+    const Payload = Union{SpecialPayload,String,Int,Bool}
 
     export Msg
 

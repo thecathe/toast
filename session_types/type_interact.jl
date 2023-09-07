@@ -3,14 +3,8 @@ module TypeInteract
     import Base.show
     import Base.string
 
-    using ...ClockConstraints
-
     using ..SessionTypes
-
-    # ! temporary patch
-    include("../logical_clocks/clock_resets.jl")
-    using .ClockResets
-    export λ
+    using ...LogicalClocks
 
     export Interact
 

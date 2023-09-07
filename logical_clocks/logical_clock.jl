@@ -9,11 +9,11 @@ module LogicalClock
     
     mutable struct Clock
         label::String
-        value::ClockValue
+        value::UInt8
         #
-        Clock(label::String,value::Num) = new(label,value)
+        Clock(label::String,value::Num) = new(label,UInt8(value))
         # swapped
-        Clock(value::Num,label::String) = new(label,value)
+        Clock(value::Num,label::String) = new(label,UInt8(value))
     end
 
     Base.show(c::Clock, io::Core.IO = stdout) = print(io, string(c))

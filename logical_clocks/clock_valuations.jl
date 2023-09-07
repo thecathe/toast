@@ -14,6 +14,8 @@ module ClockValuations
         Valuations(children::T,offset::Num = 0) where {T<:Array{Clock}} = new(children,Clock("𝒢",UInt8(offset)))
         # empty
         Valuations() = Valuations(Array{Clock}([]))
+        # single
+        Valuations(child::Clock) = Valuations(Array{Clock}([child]))
     end
 
     Base.show(t::Valuations, io::Core.IO = stdout) = print(io, string(t))
@@ -21,7 +23,7 @@ module ClockValuations
 
     function Base.string(t::Valuations, mode::Symbol = :default)
         if mode==:default
-            string(join([string(v) for v in [t.system,t.clocks...]], ", "))
+            string(join([string(v) for v ∈ [t.system,t.clocks...]], ", "))
         else
             @error "TimeStep!.string, unexpected mode: $(string(t))"
         end
@@ -35,7 +37,7 @@ module ClockValuations
         value::UInt8
 
         function ValueOf!(v::Valuations,label::String) 
-            for c in v.clocks
+            for c ∈ v.clocks
                 if c.label==label
                     return new(label,c.value)
                 end
@@ -68,15 +70,15 @@ module ClockValuations
         #
         function ResetClocks!(v::Valuations,resets::T) where {T<:Array{String}}
             reset = Array{String}([])
-            for c in v.clocks
-                if c.label in resets
+            for c ∈ v.clocks
+                if c.label ∈ resets
                     c.value = 0
                     push!(reset,c.label)
                 end
             end
             # check for non-existant clocks
-            for l in resets
-                if !l in reset
+            for l ∈ resets
+                if l ∉ reset
                     push!(v.clocks,Clock(l,v.global_clock))
                 end
             end
@@ -89,7 +91,7 @@ module ClockValuations
 
     function Base.string(t::ResetClocks!, mode::Symbol = :default)
         if mode==:default
-            string("{$(string(t.resets))} ↦ 0")
+            string("[{$(join([string(r) for r in t.resets],","))}↦ 0]")
         else
             @error "ResetClocks!.string, unexpected mode: $(string(t))"
         end
@@ -115,7 +117,7 @@ module ClockValuations
 
     function Base.string(t::TimeStep!, mode::Symbol = :default)
         if mode==:default
-            string("⟶ ($(string(t.value)))")
+            string("⟶ (t=$(string(t.value)))⟶")
         else
             @error "TimeStep!.string, unexpected mode: $(string(t))"
         end

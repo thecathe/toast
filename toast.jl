@@ -11,11 +11,10 @@ module TOAST
     #
     # clock tests
     #
-    show_all_clock_tests=false
+    show_all_clock_tests=true
     show_clock_tests = true
 
     show_logical_clock_tests=false
-    show_clock_valuations_tests=false
     show_clock_constraints_tests=false
 
     #
@@ -66,81 +65,67 @@ module TOAST
     show_system_par_r_test=false
     show_system_wait_test=false
 
-    
-    #
-    #
-    #
-    include("general/_import_all.jl")
-    using .General
-        
-
     #
     # clocks and constraints
     #
     include("logical_clocks.jl")
     using .LogicalClocks
 
-    include("clock_valuations.jl")
-    using .ClockValuations
-
-    include("clock_constraints.jl")
-    using .ClockConstraints
-
     if show_clock_tests || show_all_clock_tests || show_all_tests
+
+        a = Clock("a", 1)
+        b = Clock("b", 2)
+        c = Clock("c", 3)
+        d = Clock("d", 4)
+
+        u = Valuations(a)
+        v = Valuations([a,b,c,d])
 
         # logical clocks
         if show_logical_clock_tests || show_all_clock_tests || show_all_tests
             println("logical clock tests:")
 
-            clocks = Clocks([("a",1),("b",2),("c",3)])
-
-            show(clocks)
-            printlines()
-            
-            show(value!(clocks,"a"))
-            printlines()
-            
-            show(value!(clocks,"z"))
-            printlines()
-            
-            show(clocks)
-            printlines()
-
-            reset!(clocks,[])
-            show(clocks)
-            printlines()
-            
-            reset!(clocks,["a","b"])
-            show(clocks)
-            printlines()
-            
-            time_step!(clocks, 3)
-            show(clocks)
-            printlines()
-            
-            reset!(clocks,["a","b"])
-            show(clocks)
-            printlines()
-            
-        end
-
-        # clock valuations
-        if show_clock_valuations_tests || show_all_clock_tests || show_all_tests
-            println("clock valuation tests:")
-
-            clocks = Clocks([("a",1),("b",2),("c",3)])
-            
-            a = Valuations(clocks)
             show(a)
-            printlines() 
+            printlines()
 
-            show(Reset!(a,["b","c","y"]))
-            printlines() 
+            show(u)
+            printlines()
 
-            show(Value!(a,"z"))
-            printlines() 
+            show(v)
+            printlines()
+
+            show(ValueOf!(v,"a"))
+            printlines()
+            
+            show(ValueOf!(v,"z"))
+            printlines()
+
+            show(v)
+            printlines()
+
+            show(ResetClocks!(v,"c"))
+            printlines()
+            
+            show(ValueOf!(v,"c"))
+            printlines()
+
+            show(v)
+            printlines()
+
+            show(TimeStep!(v,4))
+            printlines()
+
+            show(v)
+            printlines()
 
         end
+
+        a = δ(:eq, "x", 3)
+        b = δ(:not, δ(:eq, "x", 3))
+        c = δ(:and, δ(:eq, "x", 3), δ(:geq, "y", 4))
+        d = δ(:deq, "x", "y", 3)
+        e = δ(:and, δ(:not, δ(:and, δ(:eq, "w", 3), δ(:geq, "x", 4))), δ(:and, δ(:eq, "y", 3), δ(:geq, "z", 4))) 
+        f = δ(:flatten,e)
 
         # clock constraints
         if show_clock_constraints_tests || show_all_clock_tests || show_all_tests
@@ -149,33 +134,22 @@ module TOAST
             show(δ(:and, δ(:not, δ(:tt)), δ(:tt)))
             printlines()
 
-            a = δ(:eq, "x", 3)
             show(a)
             printlines()
 
-            b = δ(:not, δ(:eq, "x", 3))
             show(b)
             printlines()
 
-            c = δ(:and, δ(:eq, "x", 3), δ(:geq, "y", 4))
             show(c)
             printlines()
 
-            d = δ(:deq, "x", "y", 3)
             show(d)
             printlines()
-
-
-            e = δ(:and, δ(:not, δ(:and, δ(:eq, "w", 3), δ(:geq, "x", 4))), δ(:and, δ(:eq, "y", 3), δ(:geq, "z", 4)))   
+  
             show(e)
             printlines()
 
-            f = flatten(e)
             show(f)
-            printlines()
-
-            g = ConstrainedClocks(e)
-            show(g)
             printlines()
 
         end
@@ -423,7 +397,7 @@ module TOAST
     #         show(IsEnabled(l_b1))
     #         printlines()
 
-    #         # for i in range(1,5)
+    #         # for i ∈ range(1,5)
 
     #         #     show(TimeStep!(l_b1,1))
     #         #     printlines()
@@ -503,7 +477,7 @@ module TOAST
     #             show(IsEnabled(l_b1))
     #             printlines()
 
-    #             for i in range(1,5)
+    #             for i ∈ range(1,5)
 
     #                 show(TimeStep!(l_b1,1))
     #                 printlines()

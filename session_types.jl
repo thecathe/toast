@@ -27,7 +27,7 @@ module SessionTypes
     
     include("session_types/type_msg.jl")
     using .TypeMsg
-    export Msg, Payload, None, SpecialDataType
+    export Msg, Payload, None, SpecialPayload
 
     #
     # communication
@@ -35,7 +35,6 @@ module SessionTypes
     include("session_types/type_interact.jl")
     using .TypeInteract
     export Interact
-    export λ # ! temporary
     
     include("session_types/type_choice.jl")
     using .TypeChoice
@@ -74,7 +73,7 @@ module SessionTypes
     #
     # generic wrapper
     #
-    using ..ClockConstraints
+    using ..LogicalClocks
     export S
     struct S <: SessionType
 
