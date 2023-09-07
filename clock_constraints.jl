@@ -28,6 +28,9 @@ module ClockConstraints
         head::Symbol
         args::Array{Any}
         expr::δExpr
+        # empty
+        δ() = δ(:tt)
+        # 
         function δ(head,args...) 
             supported = [:tt, :not, :and, :eq, :geq, :deq, :dgeq]            
             @assert head in supported "δ must start ($(head)) with a symbol in: '$(string(supported))'"

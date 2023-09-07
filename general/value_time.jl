@@ -1,8 +1,8 @@
-struct TimeValue 
+struct UnitOfTime 
     value::T where {T<:Real}
-    function TimeValue(value::Number)
+    function UnitOfTime(value::Number)
         @assert value>=0 "Time values must be greater or equal to 0: '$(value)' is invalid."
         new(value)
     end
 end
-Base.string(t::TimeValue) = string(t.value)
+Base.string(t::UnitOfTime) = string(t.value)

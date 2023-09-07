@@ -1,1 +1,0 @@
-const ClockValue = UInt8

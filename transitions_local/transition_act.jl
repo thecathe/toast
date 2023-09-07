@@ -128,9 +128,9 @@ module LocalTransitionAct
     Base.show(l::Act!,io::Core.IO=stdout) = print(io,string(l))
     function Base.string(l::Act!) 
         if l.success
-            string("⟶ $(string(l.label)) $(string(l.resets))")
+            string("⟶ $(string(l.label)) [$(string(l.resets)) ↦ 0]")
         else
-            string("̸⟶ $(string(l.label)) $(string(l.resets))")
+            string("̸⟶ $(string(l.label)) [$(string(l.resets)) ↦ 0]")
         end
     end
 
