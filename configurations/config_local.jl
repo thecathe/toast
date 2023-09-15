@@ -26,4 +26,10 @@ module LocalConfigurations
     Base.show(c::Local, io::Core.IO = stdout) = print(io, string(c))
     Base.show(c::Local, mode::symbol, io::Core.IO = stdout) = print(io, string(c, mode))
 
+    function Base.string(c::Local, mode::Symbol=:default)
+        if mode==:default
+            return string("")
+        end
+    end
+
 end
