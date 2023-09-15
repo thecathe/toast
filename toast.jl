@@ -616,4 +616,29 @@ module TOAST
 
     # end
 
+    # ~ 
+    # ~ user demos
+    # ~
+    export Num, Clock, λ, Valuations, ValueOf!, ResetClocks!, TimeStep!, δ, δExpr, supported_constraints
+
+    export End
+    export μ
+    export α
+    export Direction, type_direction
+    export Msg, Payload, None, SpecialPayload
+    export Interact
+    export Choice
+    export Action
+    export Actions
+    export Msgs
+    export Del
+    export Duality, dual
+    export S
+
+    export Configuration, Local, Social, System
+    export Queue, head!
+    export Eval, δEval
+    export IsEnabled
+
+
 end
