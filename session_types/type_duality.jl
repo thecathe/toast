@@ -27,10 +27,14 @@ module TypeDuality
     Base.show(s::Duality, mode::Symbol, io::Core.IO = stdout) = print(io, string(s, mode))
     
     function Base.string(s::Duality, mode::Symbol = :default) 
-        if mode==:default
+        if mode in [:default,:tail,:full,:expanded]
             return string(s.dual)
-        elseif mode==:full
+        elseif mode==:fancy
+            return string("$(string(s.type,:default)) ⇒ $(string(s.dual,:default))")
+        elseif mode==:fancy_full
             return string("$(string(s.type,:full)) ⇒ $(string(s.dual,:full))")
+        elseif mode==:fancy_expanded
+            return string("$(string(s.type,:expanded)) ⇒ $(string(s.dual,:expanded))")
         else
             @error "Duality.show, unexpected mode: $(string(mode))"
         end

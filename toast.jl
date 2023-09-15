@@ -180,32 +180,37 @@ module TOAST
         f = Choice([a,b])
         g = Choice([a,b,c,d])
 
-        h = μ("a", c)
+        h = μ("a",c)
         i = Interact(b,α("z"))
         j = μ("z",i)
+
+        k = μ("z",Choice([Interact(d,g),Interact(a,e),Interact([b,a,μ("x",Choice([Interact(c,α("x")),i]))])]))
+        l = Interact(b,k)
+        m = Choice([Interact([a,c,d,g]),l])
+        n = μ("y",Choice([Interact([d,g]),l,Interact(b,Choice([Interact(a,k),a]))]))
 
         # interaction
         if show_interact_tests || show_all_type_tests || show_all_tests
             println("interact type tests:")
 
             fifo_tail = Interact([a,b,c,d,a,b])
-            show(fifo_tail,:full)
+            show(fifo_tail,:full_expanded_string)
             printlines()
 
-            show(a,:full)
+            show(a,:full_expanded_string)
             printlines()
 
-            show(b,:full)
+            show(b,:full_expanded_string)
             printlines()
 
-            show(c,:full)
+            show(c,:full_expanded_string)
             printlines()
 
-            show(d,:full)
+            show(d,:full_expanded_string)
             printlines()
 
             # anonymous interaction
-            show(S(:recv, ("c", Int), δ(), λ("z")), :full)
+            show(S(:recv, ("c", Int), δ(), λ("z")), :full_expanded_string)
             printlines()
         end
 
@@ -213,17 +218,17 @@ module TOAST
         if show_choice_tests || show_all_type_tests || show_all_clock_tests
             println("choice type tests:")
 
-            show(e,:full)
+            show(e,:full_expanded_string)
             printlines()
             
-            show(f,:full)
+            show(f,:full_expanded_string)
             printlines()
 
-            show(g,:full)
+            show(g,:full_expanded_string)
             printlines()
 
             # anonymous interaction
-            show(S([a,b]), :full)
+            show(S([a,b]), :full_expanded_string)
             printlines()
         end
 
@@ -231,13 +236,13 @@ module TOAST
         if show_rec_tests || show_all_type_tests || show_all_tests
             println("recursive type tests:")
 
-            show(h,:full)
+            show(h,:full_expanded_string)
             printlines()
 
-            show(i,:full)
+            show(i,:full_expanded_string)
             printlines()
 
-            show(j,:full)
+            show(j,:full_expanded_string)
             printlines()
 
         end
@@ -259,6 +264,49 @@ module TOAST
             printlines()
 
         end
+
+        # fancy prints
+        println("fancy type tests:")
+
+        printlines()
+        println("k:")
+        # show(k,:full_string)
+        # printlines()
+        # printlines()
+        
+        show(k,:full_expanded_string)
+        printlines()
+        printlines()
+        
+        printlines()
+        println("l:")
+        # show(l,:full_string)
+        # printlines()
+        # printlines()
+        
+        show(l,:full_expanded_string)
+        printlines()
+        printlines()
+        
+        printlines()
+        println("m:")
+        # show(m,:full_string)
+        # printlines()
+        # printlines()
+        
+        show(m,:full_expanded_string)
+        printlines()
+        printlines()
+        
+        printlines()
+        println("n:")
+        # show(n,:full_string)
+        # printlines()
+        # printlines()
+        
+        show(n,:full_expanded_string)
+        printlines()
+        printlines()
         
 
     end
@@ -266,150 +314,153 @@ module TOAST
 
 
 
-    #
-    # configurations and enabled actions
-    #
-    include("configurations.jl")
-    using .Configurations
+    # #
+    # # configurations and enabled actions
+    # #
+    # include("configurations.jl")
+    # using .Configurations
 
-    include("evaluate.jl")
-    using .Evaluate
+    # include("evaluate.jl")
+    # using .Evaluate
 
-    include("enabled_configuration_actions.jl")
-    using .EnabledConfigurationActions
+    # include("enabled_configuration_actions.jl")
+    # using .EnabledConfigurationActions
 
-    if show_configuration_tests || show_all_configuration_tests || show_all_tests
+    # if show_configuration_tests || show_all_configuration_tests || show_all_tests
 
-        s_a = S([(:send, ("a", Int), δ(:not,δ(:geq,"x",3)),[], μ("a", (:send, ("b"), δ(:tt), [], α("a")))),(:recv, ("c", Bool), δ(:geq,"y",3),[])])
+    #     s_a = S([(:send, ("a", Int), δ(:not,δ(:geq,"x",3)),[], μ("a", (:send, ("b"), δ(:tt), [], α("a")))),(:recv, ("c", Bool), δ(:geq,"y",3),[])])
 
-        s_b = S([(:send, ("e"), δ(:eq,"x",1), []  ),(:send, ("f", String), δ(:eq,"x",2), []  ),(:recv, ("g", Int), δ(:eq,"x",4), []  ),(:send, ("h", String), δ(:eq,"x",5), []  )])
+    #     s_b = S([(:send, ("e"), δ(:eq,"x",1), []  ),(:send, ("f", String), δ(:eq,"x",2), []  ),(:recv, ("g", Int), δ(:eq,"x",4), []  ),(:send, ("h", String), δ(:eq,"x",5), []  )])
 
-        v_a = Valuations([("a",3)],5)
-        v_b = Valuations()
+    #     v_a = Valuations([("a",3)],5)
+    #     v_b = Valuations()
 
-        a = Local(s_a, v_a)
-        b = Social(s_b, v_b)
+    #     a = Local(s_a, v_a)
+    #     b = Social(s_b, v_b)
 
-        sys = System(a,b)
+    #     sys = System(a,b)
 
-        # configurations
-        if show_configuration_tests || show_all_configuration_tests || show_all_tests 
-            println("configuration tests:")
+    #     # configurations
+    #     if show_configuration_tests || show_all_configuration_tests || show_all_tests 
+    #         println("configuration tests:")
 
-            _v = Valuations(_c)
-            _l = Local(_v,_s)
+    #         _v = Valuations(_c)
+    #         _l = Local(_v,_s)
 
-            show(a)
-            printlines()
+    #         show(a)
+    #         printlines()
 
-            show(b)
-            printlines()
+    #         show(b)
+    #         printlines()
 
-            show(sys)
-            printlines()
+    #         show(sys)
+    #         printlines()
 
-        end
+    #     end
 
-        # # evaluations
-        # if show_evaluate_tests || show_all_configuration_tests || show_all_tests
-        #     println("evaluate tests:")
+    #     # # evaluations
+    #     # if show_evaluate_tests || show_all_configuration_tests || show_all_tests
+    #     #     println("evaluate tests:")
 
-        #     clocks = Clocks([("a",1),("b",2),("c",3)])
-        #     v = Valuations(clocks)
+    #     #     clocks = Clocks([("a",1),("b",2),("c",3)])
+    #     #     v = Valuations(clocks)
 
-        #     # show(v)
-        #     # printlines()
+    #     #     # show(v)
+    #     #     # printlines()
 
-        #     a = δ(:eq, "x", 3)
-        #     # b = δ(:not, a)
-        #     # c = δ(:and, a, δ(:geq, "y", 4))
-        #     b = δ(:not, δ(:eq, "a", 3))
-        #     c = δ(:and, δ(:eq, "a", 1), δ(:geq, "c", 2))
-        #     d = δ(:deq, "c", "y", 3)
-        #     e = δ(:and, δ(:not, δ(:and, δ(:eq, "b", 1), δ(:geq, "x", 4))), δ(:and, δ(:eq, "a", 3), δ(:geq, "z", 4)))   
+    #     #     a = δ(:eq, "x", 3)
+    #     #     # b = δ(:not, a)
+    #     #     # c = δ(:and, a, δ(:geq, "y", 4))
+    #     #     b = δ(:not, δ(:eq, "a", 3))
+    #     #     c = δ(:and, δ(:eq, "a", 1), δ(:geq, "c", 2))
+    #     #     d = δ(:deq, "c", "y", 3)
+    #     #     e = δ(:and, δ(:not, δ(:and, δ(:eq, "b", 1), δ(:geq, "x", 4))), δ(:and, δ(:eq, "a", 3), δ(:geq, "z", 4)))   
 
 
-        #     show(v)
-        #     println()
-        #     show(Eval(v,a))
-        #     printlines()
+    #     #     show(v)
+    #     #     println()
+    #     #     show(Eval(v,a))
+    #     #     printlines()
 
-        #     show(v)
-        #     println()
-        #     show(Eval(v,b))
-        #     printlines()
+    #     #     show(v)
+    #     #     println()
+    #     #     show(Eval(v,b))
+    #     #     printlines()
             
-        #     show(v)
-        #     println()
-        #     show(Eval(v,c))
-        #     printlines()
+    #     #     show(v)
+    #     #     println()
+    #     #     show(Eval(v,c))
+    #     #     printlines()
             
-        #     show(v)
-        #     println()
-        #     show(Eval(v,d))
-        #     printlines()
+    #     #     show(v)
+    #     #     println()
+    #     #     show(Eval(v,d))
+    #     #     printlines()
             
-        #     show(v)
-        #     println()
-        #     show(Eval(v,e))
-        #     printlines()
+    #     #     show(v)
+    #     #     println()
+    #     #     show(Eval(v,e))
+    #     #     printlines()
 
-        #     show(v)
-        #     println()
-        #     show(Eval(v,a))
-        #     printlines()
+    #     #     show(v)
+    #     #     println()
+    #     #     show(Eval(v,a))
+    #     #     printlines()
 
-        #     show(v)
-        #     println()
-        #     show(Eval(v,b))
-        #     printlines()
+    #     #     show(v)
+    #     #     println()
+    #     #     show(Eval(v,b))
+    #     #     printlines()
             
-        #     show(v)
-        #     println()
-        #     show(Eval(v,c))
-        #     printlines()
+    #     #     show(v)
+    #     #     println()
+    #     #     show(Eval(v,c))
+    #     #     printlines()
             
-        #     show(v)
-        #     println()
-        #     show(Eval(v,d))
-        #     printlines()
+    #     #     show(v)
+    #     #     println()
+    #     #     show(Eval(v,d))
+    #     #     printlines()
             
-        #     show(v)
-        #     println()
-        #     show(Eval(v,e))
-        #     printlines()
+    #     #     show(v)
+    #     #     println()
+    #     #     show(Eval(v,e))
+    #     #     printlines()
 
 
-        # end
+    #     # end
 
-        # # enabled actions
-        # if show_enabled_actions_tests || show_all_configuration_tests || show_all_tests
-        #     println("enabled actions tests:")
+    #     # # enabled actions
+    #     # if show_enabled_actions_tests || show_all_configuration_tests || show_all_tests
+    #     #     println("enabled actions tests:")
 
             
-        #     _v = Valuations()
-        #     s_b = S(([(:send, Msg("e", Data(Int)),δ(:eq,"x",1), []  ),(:send, Msg("f", Data(String)),δ(:eq,"x",2), []  ),(:recv, Msg("g", Data(Int)),δ(:eq,"x",4), []  ),(:send, Msg("h", Data(String)),δ(:eq,"x",5), []  )]))
-        #     l_b1 = Local(_v,s_b)
+    #     #     _v = Valuations()
+    #     #     s_b = S(([(:send, Msg("e", Data(Int)),δ(:eq,"x",1), []  ),(:send, Msg("f", Data(String)),δ(:eq,"x",2), []  ),(:recv, Msg("g", Data(Int)),δ(:eq,"x",4), []  ),(:send, Msg("h", Data(String)),δ(:eq,"x",5), []  )]))
+    #     #     l_b1 = Local(_v,s_b)
 
-        #     show(l_b1,:local)
-        #     printlines()
+    #     #     show(l_b1,:local)
+    #     #     printlines()
 
-        #     show(IsEnabled(l_b1))
-        #     printlines()
+    #     #     show(IsEnabled(l_b1))
+    #     #     printlines()
 
-        #     # for i ∈ range(1,5)
+    #     #     # for i ∈ range(1,5)
 
-        #     #     show(TimeStep!(l_b1,1))
-        #     #     printlines()
+    #     #     #     show(TimeStep!(l_b1,1))
+    #     #     #     printlines()
 
-        #     #     show(IsEnabled(l_b1))
-        #     #     printlines()
+    #     #     #     show(IsEnabled(l_b1))
+    #     #     #     printlines()
 
-        #     # end
+    #     #     # end
 
-        # end
+    #     # end
 
-    end
+    # end
+
+
+
 
     # #
     # # operational semantics of configurations
