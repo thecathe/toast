@@ -73,7 +73,11 @@ module ClockConstraints
                 new(head, [_flat.children...], δConjunctify(_flat).child, unique(_clocks))
 
             else
-                @error "δ, unexpected head: $(string(head))"
+                if head in [:leq,:dleq]
+                    @error "δ, head $(string(head)) is not supported"
+                else
+                    @error "δ, unexpected head: $(string(head))"
+                end
             end
         end
 
@@ -160,12 +164,5 @@ module ClockConstraints
             @error "δ.conjunctify, called with empty list"
         end
     end
-
-    #
-    # δ wrapper
-    #
-    # export δ
-    # struct δ <: Constraint 
-
 
 end

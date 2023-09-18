@@ -25,7 +25,7 @@ module TypeChoice
     function Base.string(s::Choice, mode::Symbol = :default) 
         if mode==:default
             # :default - string
-            return string("{ ", join([string(c, :tail) for c in s.children], ", "), " }")
+            return string("{ ", join([string(c, :default) for c in s.children], ", "), " }")
 
         elseif mode==:tail
             # :tail - show if 'end' or 'α'
@@ -52,14 +52,22 @@ module TypeChoice
 
         elseif mode==:full
             # :full - array of each line
-            str_start = "{ "
-            str_end = " }"
-            lhs_buff = repeat(" ", length(str_start))
-            rhs_buff = repeat(" ", length(str_end))
             str_children = Array{String}([string(c, :default) for c in s.children])
             widest_child = maximum(length, str_children)
-
             num_children = length(str_children)
+
+            if num_children==1
+                str_start = "{ "
+                str_end = " }"
+            else
+                str_start = "/ "
+                str_end = " /"
+            end
+            alt_top = string(repeat(" ", length(str_end)-1), "\\")
+            alt_bot = string("\\", repeat(" ", length(str_start)-1))
+            lhs_buff = string("{", repeat(" ", length(str_start)-1))
+            rhs_buff = string(repeat(" ", length(str_end)-1), "}")
+
             arr_build = Array{String}([])
             for y in 1:num_children
                 # pad current child
@@ -67,9 +75,9 @@ module TypeChoice
                 padded = string(curr, repeat(" ", widest_child - length(curr)))
                 # add to array with necessary decorations
                 if y==1
-                    push!(arr_build, string(str_start, padded, rhs_buff))
+                    push!(arr_build, string(str_start, padded, num_children==1 ? str_end : alt_top))
                 elseif y==num_children
-                    push!(arr_build, string(lhs_buff, padded, str_end))
+                    push!(arr_build, string(alt_bot, padded, str_end))
                 else
                     push!(arr_build, string(lhs_buff, padded, rhs_buff))
                 end
@@ -86,9 +94,8 @@ module TypeChoice
 
             str_children = Array{String}([])
             for child_index in 1:num_immediate_children
-                c = s.children[child_index]
                 # fully expand each interaction
-                arr_child_tail = string(c, :full_expanded)
+                arr_child_tail = string(s.children[child_index],:full_expanded)
                 @assert arr_child_tail isa Array "TypeChoice.string (mode$(string(mode))), expected Array but got: $(string(typeof(arr_child_tail)))"
                 
                 arr_child_len = length(arr_child_tail)
@@ -117,7 +124,6 @@ module TypeChoice
             end
 
             widest_child = maximum(length, str_children)
-
             num_children = length(str_children)
 
             if num_children==1
@@ -127,12 +133,11 @@ module TypeChoice
                 str_start = "/ "
                 str_end = " /"
             end
-            alt_top = string(repeat(" ", length(str_start)-1), "\\")
-            alt_bot = string("\\", repeat(" ", length(str_end)-1))
+            alt_top = string(repeat(" ", length(str_end)-1), "\\")
+            alt_bot = string("\\", repeat(" ", length(str_start)-1))
             lhs_buff = string("{", repeat(" ", length(str_start)-1))
             rhs_buff = string(repeat(" ", length(str_end)-1), "}")
-
-
+            
             arr_build = Array{String}([])
             for y in 1:num_children # -1 to remove strut line spacing
                 # pad current child
@@ -140,6 +145,9 @@ module TypeChoice
                 padded = string(curr, repeat(" ", widest_child - length(curr)))
                 # add to array with necessary decorations
                 if y==1
+                    # println()
+                    # println("choice z($(string(widest_child)) - $(string(length(curr))) = $(string(widest_child-length(curr)))): |$(repeat("z", widest_child - length(curr)))|")
+                    # println("...|$(string(str_start, padded, num_children==1 ? str_end : alt_top))|")
                     push!(arr_build, string(str_start, padded, num_children==1 ? str_end : alt_top))
                 elseif y==num_children
                     push!(arr_build, string(alt_bot, padded, str_end))

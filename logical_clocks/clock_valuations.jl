@@ -13,11 +13,11 @@ module ClockValuations
         #
         Valuations(children::T,offset::Num = 0) where {T<:Array{Clock}} = new(children,Clock("𝒢",UInt8(offset)))
         # empty
-        Valuations() = Valuations(Array{Clock}([]))
+        Valuations(offset::Num = 0) = Valuations(Array{Clock}([]),offset)
         # single
         Valuations(child::Clock) = Valuations(Array{Clock}([child]))
         # anonymous clock
-        Valuations(child::T,offset::Num = 0) where {T<:Tuple{String,Num}} = Valuations(Array{Clock}([Clock(c...)]), offset)
+        Valuations(child::T,offset::Num = 0) where {T<:Tuple{String,Num}} = Valuations(Array{Clock}([Clock(child...)]), offset)
         # anonymous clocks
         Valuations(children::Array{T},offset::Num = 0) where {T<:Tuple{String,Num}} = Valuations(Array{Clock}([Clock(c...) for c in children]), offset)
     end
@@ -25,9 +25,61 @@ module ClockValuations
     Base.show(t::Valuations, io::Core.IO = stdout) = print(io, string(t))
     Base.show(t::Valuations, mode::Symbol, io::Core.IO = stdout) = print(io, string(t, mode))
 
-    function Base.string(t::Valuations, mode::Symbol = :default)
+    function Base.string(t::Valuations, args...)
+        if length(args)==0
+            mode = :default
+        else
+            @assert args[1] isa Symbol
+            mode = args[1]
+        end
+
         if mode==:default
             string(join([string(v) for v ∈ [t.system,t.clocks...]], ", "))
+        
+        elseif mode==:system
+            # :system - just return system
+            return string(string(t.system))
+        
+        elseif mode==:full
+            # :full - array of each line
+            str_children = Array{String}([string(t.system,:default), [string(c,:default) for c in t.clocks]...])
+            widest_child = maximum(length, str_children)
+            num_children = length(str_children)
+            
+            arr_build = Array{String}([])
+            for y in 1:num_children
+                # pad current child
+                curr = str_children[y]
+                push!(arr_build,string(curr, repeat(" ", widest_child - length(curr))))
+            end
+            return arr_build
+
+        elseif mode==:full_string
+            # :full_string - string array of clocks on each line
+            return join(string(t,:full),"\n")
+
+        elseif mode==:smart
+            # :smart - next arg is list of clocks to include (always include system)
+            @assert length(args)==2 "Valuations.string, mode :smart expects two parameters"
+            @assert args[2] isa Array{String} "Valuations.string, mode :smart expects Array{String}, not: $(typeof(args[2]))"
+
+            relevant_labels = Array{String}([args[2]...])
+
+            relevant_clocks = Array{Clock}([t.system,filter(x->(x.label in relevant_labels), t.clocks)...])
+            str_clocks = Array{String}([string(x,:default) for x in relevant_clocks])
+            num_relevant = length(str_clocks)
+
+            widest_child = maximum(length, str_clocks)
+            
+            str_system = string(t.system,:default)
+            arr_build = Array{String}([])
+            for y in 1:num_relevant
+                # pad current child
+                curr = str_clocks[y]
+                push!(arr_build,string(curr, repeat(" ", widest_child - length(curr))))
+            end
+            return arr_build
+
         else
             @error "TimeStep!.string, unexpected mode: $(string(t))"
         end
