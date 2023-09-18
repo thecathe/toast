@@ -55,6 +55,7 @@ module LocalConfigurations
             # :smart - show relevant clocks and type
             # :full - show all clocks and type
             # :full_expanded - show all clocks and expanded type
+            
             # get clock, type array
             if mode==:smart
                 arr_clocks = string(c.valuations,:smart,c.relevant_clocks)
@@ -97,7 +98,6 @@ module LocalConfigurations
         elseif mode in [:smart_string,:full_string,:full_expanded_string]
             # :full_string - stringify array of each line
             # :full_string - stringify array of each line
-
             if mode==:smart_string
                 arr_lines = string(c, :smart)
             elseif mode==:full_string
