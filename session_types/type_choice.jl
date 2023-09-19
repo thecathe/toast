@@ -2,6 +2,7 @@ module TypeChoice
 
     import Base.show
     import Base.string
+
     import Base.length
     import Base.isempty
     import Base.getindex
@@ -13,10 +14,15 @@ module TypeChoice
     export Choice
 
     mutable struct Choice <: SessionType
-        children::Array{Interact}
-        Choice(children::T) where {T<:Array{Interact}} = new(children)
+        children::T where {T<:Array{Interact}}
+        # # anonymous interact
+        # Choice(child::T) where {T<:Tuple} = Choice([Interact(child...)])
+        # # anonymous interactions
+        # Choice(children::T) where {T<:Array{Tuple}} = Choice([Interact(c...) for c in children])
         # single interact
         Choice(child::T) where {T<:Interact} = Choice([child])
+        #
+        Choice(children::T) where {T<:Array{Interact}} = new(children)
     end
 
     Base.show(s::Choice, io::Core.IO = stdout) = print(io, string(s))
@@ -126,7 +132,7 @@ module TypeChoice
 
         elseif mode==:full_expanded
             # :full_expanded - array of each line, with each tail expanded=
-            str_strut = string(" ",strut_char,repeat(" ",2-length(strut_char)))
+            str_strut = string(repeat(" ",3-length(strut_char)),strut_char)
             # str_strut = " | "
             strut_len = length(str_strut)
             strut_used = false

@@ -35,11 +35,11 @@ module TOAST
     show_all_configuration_tests=false
     show_configuration_tests=true
 
-    show_local_configuration_tests=true  
-    show_social_configuration_tests=true  
+    show_local_configuration_tests=false  
+    show_social_configuration_tests=false  
     show_system_configuration_tests=false  
 
-    show_evaluate_tests=false  
+    show_evaluate_tests=true  
     show_enabled_actions_tests=false
 
     #
@@ -351,25 +351,45 @@ module TOAST
         c = Interact(a,b)
         d = Interact(b,a)
 
-        e = Choice(a)
-        f = Choice([a,b])
-        g = Choice([a,b,c,d])
+        e = Choice([
+            Interact(:send, Msg("a"), δ(:eq, "x", 2), λ("y"), 
+                μ("p", 
+                    Choice([
+                        Interact(:recv, Msg("b"), δ(:not, δ(:geq, "y", 1)), λ()),
+                        Interact(:send, Msg("c"), δ(:eq, "y", 1), λ("y"), α("p")),
+                        Interact(:send, Msg("d"), δ(:geq, "x", 4), λ())
+                    ])
+                )
+            ),
+            Interact(:send, Msg("e"), δ(:not, δ(:geq, "y", 3)), λ()),
+            Interact(:recv, Msg("f"), δ(:eq, "z", 3), λ(["x","y"]),
+                Choice([
+                        Interact(:recv, Msg("g"), δ(:not, δ(:geq, "y", 1)), λ()),
+                        Interact(:send, Msg("h"), δ(:geq, "x", 4), λ())
+                    ])
+            ),
+            Interact(:send, Msg("i"), δ(:geq, "x", 3), λ()),
+        ])
 
-        h = μ("a",c)
-        i = Interact(b,α("z"))
-        j = μ("z",i)
+        # e = Choice(a)
+        # f = Choice([a,b])
+        # g = Choice([a,b,c,d])
 
-        k = μ("z",Choice([Interact(d,g),Interact(a,e),Interact([b,a,μ("x",Choice([Interact(c,α("x")),i]))])]))
-        l = Interact(b,k)
-        m = Choice([Interact([a,c,d,g]),l])
-        n = Choice([Interact([d,g]),l,Interact(b,Choice([Interact(a,k),a]))])
+        # h = μ("a",c)
+        # i = Interact(b,α("z"))
+        # j = μ("z",i)
+
+        # k = μ("z",Choice([Interact(d,g),Interact(a,e),Interact([b,a,μ("x",Choice([Interact(c,α("x")),i]))])]))
+        # l = Interact(b,k)
+        # m = Choice([Interact([a,c,d,g]),l])
+        # n = Choice([Interact([d,g]),l,Interact(b,Choice([Interact(a,k),a]))])
 
 
-        v_a = Valuations([("a",3)],5)
+        v_a = Valuations([("w",3)],0)
         v_b = Valuations()
 
-        local_a = Local(v_a, n)
-        social_a = Social(v_a, n)
+        local_a = Local(v_a, e)
+        social_a = Social(v_a, e)
 
         # sys = System(a,b)
 
@@ -413,10 +433,16 @@ module TOAST
             printlines()
 
         end
+        
 
-        # # evaluations
-        # if show_evaluate_tests || show_all_configuration_tests || show_all_tests
-        #     println("evaluate tests:")
+        # evaluations
+        if show_evaluate_tests || show_all_configuration_tests || show_all_tests
+            println("evaluate tests:")
+
+            eval_a = Evaluate!(local_a)
+
+            show(eval_a)
+            printlines()
 
         #     clocks = Clocks([("a",1),("b",2),("c",3)])
         #     v = Valuations(clocks)
@@ -484,7 +510,7 @@ module TOAST
         #     printlines()
 
 
-        # end
+        end
 
         # # enabled actions
         # if show_enabled_actions_tests || show_all_configuration_tests || show_all_tests

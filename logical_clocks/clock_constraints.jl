@@ -63,14 +63,30 @@ module ClockConstraints
                 new(head, [args...], δExpr(:call, [head==:deq ? :(==) : :(>=), δExpr(:call, [:-, args[1], args[2]]), args[3]]), unique(Array{String}([args[1],args[2]])))
 
             elseif head==:flatten
+                # :flatten - restructure δ to be flat conjunction
                 @assert length(args)==1 "δ($(string(head))) expects 1 args: ($(length(args))) $(string(args))"
                 
                 @assert args[1] isa δ "δ($(string(head))) expects #1 to be δ, not: $(string(typeof(args[1])))"
 
                 _flat = Flatδ(args[1])
                 _clocks = Array{String}([])
-                foreach(d -> push!(_clocks, d.clocks...), _flat.children)
-                new(head, [_flat.children...], δConjunctify(_flat).child, unique(_clocks))
+                foreach(d -> push!(_clocks, d.clocks...), _flat)
+                new(head, [_flat...], δConjunctify(_flat), unique(_clocks))
+
+            elseif head==:past
+                # :past - flatten and add addition constraints for each constrained clock :geq 0
+                @assert length(args)==1 "δ($(string(head))) expects 1 args: ($(length(args))) $(string(args))"
+                
+                _flat = Flatδ(args[1])
+                _clocks = Array{String}([])
+                foreach(d -> push!(_clocks, d.clocks...), _flat)
+
+                _weak_past_children = Array{δ}([_flat...])
+                for x in _clocks
+                    # add each constrained clock being >= 0
+                    push!(_weak_past_children, δ(:geq, x, 0))
+                end
+                new(head, _weak_past_children, δConjunctify(_weak_past_children), unique(_clocks))
 
             else
                 if head in [:leq,:dleq]
@@ -117,8 +133,9 @@ module ClockConstraints
     # flatten
     #
     struct Flatδ
-        children::Array{δ}
-        Flatδ(d::δ) = new(flatten(d))
+        # children::Array{δ}
+        # Flatδ(d::δ) = new(flatten(d))
+        Flatδ(d::δ) = flatten(d)
     end
 
     # flatten constraint tree into conjunctive list
@@ -148,8 +165,10 @@ module ClockConstraints
     # conjunctify
     #
     struct δConjunctify
-        child::δExpr
-        δConjunctify(f::Flatδ) = new(conjunctify(f.children))
+        # child::δExpr
+        # δConjunctify(f::Flatδ) = δConjunctify(f.children)
+        # δConjunctify(f::T) where {T<:Array{δ}} = new(conjunctify(f))
+        δConjunctify(f::T) where {T<:Array{δ}} = conjunctify(f)
     end
 
     # conjuctify flattned

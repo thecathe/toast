@@ -28,4 +28,11 @@ module LogicalClocks
     using .ClockConstraints
     export δ, δExpr, supported_constraints
 
+    #
+    # constraint evaluation
+    #
+    include("logical_clocks/constraint_evaluation.jl")
+    using .ConstraintEvaluation
+    export δEvaluation!
+
 end

@@ -15,5 +15,14 @@ module Configurations
     # include("configurations/config_system.jl")
     # using .SystemConfigurations
     # export System
+    
+    include("configurations/config_evaluate.jl")
+    using .ConfigurationEvaluations
+    export Evaluate!
+
+    include("configurations/config_transition.jl")
+    using .ConfigurationTransitions
+    # export 
+
 
 end
