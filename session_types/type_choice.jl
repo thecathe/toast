@@ -22,7 +22,23 @@ module TypeChoice
     Base.show(s::Choice, io::Core.IO = stdout) = print(io, string(s))
     Base.show(s::Choice, mode::Symbol, io::Core.IO = stdout) = print(io, string(s,mode))
 
-    function Base.string(s::Choice, mode::Symbol = :default) 
+    function Base.string(s::Choice, args...) 
+
+        # only top left and bottom right choice outlines?
+        choice_style_outline=:lightweight
+        lhs_inner_char=""
+        rhs_inner_char=""
+        lhs_outer_char=""
+        rhs_outer_char=""
+        strut_char="⋮"
+
+        # get mode
+        if length(args)==0
+            mode=:default
+        else
+            mode=args[1]
+        end
+
         if mode==:default
             # :default - string
             return string("{ ", join([string(c, :default) for c in s.children], ", "), " }")
@@ -56,17 +72,28 @@ module TypeChoice
             widest_child = maximum(length, str_children)
             num_children = length(str_children)
 
-            if num_children==1
+            if choice_style_outline==:lightweight
                 str_start = "{ "
                 str_end = " }"
+                alt_top = string(repeat(" ", length(str_end)))
+                alt_bot = string(repeat(" ", length(str_start)))
+                # lhs_buff = string(repeat(" ", length(str_start)))
+                # rhs_buff = string(repeat(" ", length(str_end)))
+                lhs_buff = string(lhs_outer_char,repeat(" ", length(str_start)-max(0,length(lhs_inner_char)+length(lhs_outer_char))),lhs_inner_char)
+                rhs_buff = string(rhs_inner_char,repeat(" ", length(str_end)-max(0,length(rhs_inner_char)+length(rhs_outer_char))),rhs_outer_char)
             else
-                str_start = "/ "
-                str_end = " /"
+                if num_children==1
+                    str_start = "{ "
+                    str_end = " }"
+                else
+                    str_start = "/ "
+                    str_end = " /"
+                end
+                alt_top = string(repeat(" ", length(str_end)-1), "\\")
+                alt_bot = string("\\", repeat(" ", length(str_start)-1))
+                lhs_buff = string("{", repeat(" ", length(str_start)-1))
+                rhs_buff = string(repeat(" ", length(str_end)-1), "}")
             end
-            alt_top = string(repeat(" ", length(str_end)-1), "\\")
-            alt_bot = string("\\", repeat(" ", length(str_start)-1))
-            lhs_buff = string("{", repeat(" ", length(str_start)-1))
-            rhs_buff = string(repeat(" ", length(str_end)-1), "}")
 
             arr_build = Array{String}([])
             for y in 1:num_children
@@ -82,11 +109,25 @@ module TypeChoice
                     push!(arr_build, string(lhs_buff, padded, rhs_buff))
                 end
             end
-            return arr_build
+            
+            # how to return? (default: str)
+            if length(args)>1
+                second_mode = args[2]
+            else
+                second_mode = :str
+            end
+            if second_mode==:str
+                return string(join(arr_build, "\n"))
+            elseif second_mode==:arr
+                return arr_build
+            else
+                @error "Choice.string, unexpected second mode: $(string(second_mode))"
+            end
 
         elseif mode==:full_expanded
             # :full_expanded - array of each line, with each tail expanded=
-            str_strut = " | "
+            str_strut = string(" ",strut_char,repeat(" ",2-length(strut_char)))
+            # str_strut = " | "
             strut_len = length(str_strut)
             strut_used = false
 
@@ -95,7 +136,7 @@ module TypeChoice
             str_children = Array{String}([])
             for child_index in 1:num_immediate_children
                 # fully expand each interaction
-                arr_child_tail = string(s.children[child_index],:full_expanded)
+                arr_child_tail = string(s.children[child_index],:full_expanded,:arr)
                 @assert arr_child_tail isa Array "TypeChoice.string (mode$(string(mode))), expected Array but got: $(string(typeof(arr_child_tail)))"
                 
                 arr_child_len = length(arr_child_tail)
@@ -125,18 +166,29 @@ module TypeChoice
 
             widest_child = maximum(length, str_children)
             num_children = length(str_children)
-
-            if num_children==1
+            
+            if choice_style_outline==:lightweight
                 str_start = "{ "
                 str_end = " }"
+                alt_top = string(repeat(" ", length(str_end)))
+                alt_bot = string(repeat(" ", length(str_start)))
+                # lhs_buff = string(repeat(" ", length(str_start)))
+                # rhs_buff = string(repeat(" ", length(str_end)))
+                lhs_buff = string(lhs_outer_char,repeat(" ", length(str_start)-max(0,length(lhs_inner_char)+length(lhs_outer_char))),lhs_inner_char)
+                rhs_buff = string(rhs_inner_char,repeat(" ", length(str_end)-max(0,length(rhs_inner_char)+length(rhs_outer_char))),rhs_outer_char)
             else
-                str_start = "/ "
-                str_end = " /"
+                if num_children==1
+                    str_start = "{ "
+                    str_end = " }"
+                else
+                    str_start = "/ "
+                    str_end = " /"
+                end
+                alt_top = string(repeat(" ", length(str_end)-1), "\\")
+                alt_bot = string("\\", repeat(" ", length(str_start)-1))
+                lhs_buff = string("{", repeat(" ", length(str_start)-1))
+                rhs_buff = string(repeat(" ", length(str_end)-1), "}")
             end
-            alt_top = string(repeat(" ", length(str_end)-1), "\\")
-            alt_bot = string("\\", repeat(" ", length(str_start)-1))
-            lhs_buff = string("{", repeat(" ", length(str_start)-1))
-            rhs_buff = string(repeat(" ", length(str_end)-1), "}")
             
             arr_build = Array{String}([])
             for y in 1:num_children # -1 to remove strut line spacing
@@ -155,18 +207,23 @@ module TypeChoice
                     push!(arr_build, string(lhs_buff, padded, rhs_buff))
                 end
             end
-            return arr_build
 
-        elseif mode==:full_string
-            # :full_string - stringify array of each line
-            return string(join(string(s, :full), "\n"))
-
-        elseif mode==:full_expanded_string
-            # :full_string - stringify array of each line
-            return string(join(string(s, :full_expanded), "\n"))
+            # how to return? (default: str)
+            if length(args)>1
+                second_mode = args[2]
+            else
+                second_mode = :str
+            end
+            if second_mode==:str
+                return string(join(arr_build, "\n"))
+            elseif second_mode==:arr
+                return arr_build
+            else
+                @error "Choice.string, unexpected second mode: $(string(args))"
+            end
 
         else
-            @error "TypeChoice.string, unexpected mode: $(string(mode))"
+            @error "TypeChoice.string, unexpected mode: $(string(args))"
         end
     end
 

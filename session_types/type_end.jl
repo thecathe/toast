@@ -14,9 +14,16 @@ module TypeEnd
     Base.show(s::End, io::Core.IO = stdout) = print(io, string(s))
     Base.show(s::End, mode::Symbol, io::Core.IO = stdout) = print(io, string(s, mode))
 
-    function Base.string(s::End, mode::Symbol = :default) 
+    function Base.string(s::End, args...) 
+        if length(args)==0
+            mode=:default
+        else
+            mode=args[1]
+        end
+
         str_base = string("end")
-        if mode in [:default, :tail, :stub, :full_string, :full_expanded_string]
+
+        if mode in [:default, :tail, :stub]
             # :default - string
             # :tail - show if 'end' or 'α'
             # :stub - string without child
@@ -28,7 +35,18 @@ module TypeEnd
 
         elseif mode in [:full,:full_expanded]
             # :full - array of each line
-            return Array{String}([str_base])
+            if length(args)>1
+                if args[2]==:str
+                    return str_base
+                elseif args[2]==:arr
+                    return Array{String}([str_base])
+                else
+                    @error "End.string, unexpected mode: $(string(args))"
+                end
+            else
+                # default: arr
+                return Array{String}([str_base])
+            end
             
         else
             @error "TypeEnd.string, unexpected mode: $(string(mode))"

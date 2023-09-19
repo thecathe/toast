@@ -51,8 +51,16 @@ module TypeInteract
     Base.show(s::Interact, io::Core.IO = stdout) = print(io, string(s))
     Base.show(s::Interact, mode::Symbol, io::Core.IO = stdout) = print(io, string(s,mode))
     
-    function Base.string(s::Interact, mode::Symbol = :default) 
+    function Base.string(s::Interact, args...) 
+        # get mode
+        if length(args)==0
+            mode=:default
+        else
+            mode=args[1]
+        end
+
         str_base = string(string(s.direction), "", string(s.msg), "(", string(s.constraints), ",", string(s.resets), ").")
+        
         if mode==:default
             # :default - string
             return string(str_base, string(s.child, :tail))
@@ -71,11 +79,25 @@ module TypeInteract
 
         elseif mode==:full
             # :full - array of each line
-            return Array{String}([string(str_base, string(s.child, :tail))])
+            str_children = Array{String}([string(str_base, string(s.child, :tail))])
+            
+            # how to return? (default: str)
+            if length(args)>1
+                second_mode = args[2]
+            else
+                second_mode = :str
+            end
+            if second_mode==:str
+                return string(join(str_children, "\n"))
+            elseif second_mode==:arr
+                return str_children
+            else
+                @error "Interact.string, unexpected second mode: $(string(args))"
+            end
 
         elseif mode==:full_expanded
             # :full_expanded - array of each line, with each tail expanded
-            arr_child_tail = string(s.child, :full_expanded)
+            arr_child_tail = string(s.child, :full_expanded,:arr)
             @assert arr_child_tail isa Array "TypeInteract.string (mode$(string(mode))), expected Array but got: $(string(typeof(arr_child_tail)))"
             
             str_children = Array{String}([])
@@ -92,18 +114,23 @@ module TypeInteract
                     push!(str_children, string(repeat(" ", base_len-1), " ", curr_child))
                 end
             end
-            return str_children
-
-        elseif mode==:full_string
-            # :full_string - stringify array of each line
-            return string(join(string(s, :full), "\n"))
-
-        elseif mode==:full_expanded_string
-            # :full_string - stringify array of each line
-            return string(join(string(s, :full_expanded), "\n"))
+            
+            # how to return? (default: str)
+            if length(args)>1
+                second_mode = args[2]
+            else
+                second_mode = :str
+            end
+            if second_mode==:str
+                return string(join(str_children, "\n"))
+            elseif second_mode==:arr
+                return str_children
+            else
+                @error "Interact.string, unexpected second mode: $(string(args))"
+            end
 
         else
-            @error "TypeInteract.string, unexpected mode: $(string(mode))"
+            @error "TypeInteract.string, unexpected mode: $(string(args))"
         end
     end
 

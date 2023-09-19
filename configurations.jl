@@ -4,9 +4,13 @@ module Configurations
     using .LocalConfigurations
     export Local
 
-    # include("configurations/config_social.jl")
-    # using .SocialConfigurations
-    # export Social
+    include("configurations/config_queue.jl")
+    using .ConfigurationQueues
+    export Queue, head!
+
+    include("configurations/config_social.jl")
+    using .SocialConfigurations
+    export Social
 
     # include("configurations/config_system.jl")
     # using .SystemConfigurations

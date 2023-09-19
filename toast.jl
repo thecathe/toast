@@ -36,7 +36,7 @@ module TOAST
     show_configuration_tests=true
 
     show_local_configuration_tests=true  
-    show_social_configuration_tests=false  
+    show_social_configuration_tests=true  
     show_system_configuration_tests=false  
 
     show_evaluate_tests=false  
@@ -369,7 +369,7 @@ module TOAST
         v_b = Valuations()
 
         local_a = Local(v_a, n)
-        # b = Social(s_b, v_b)
+        social_a = Social(v_a, n)
 
         # sys = System(a,b)
 
@@ -377,23 +377,32 @@ module TOAST
         if show_local_configuration_tests || show_all_configuration_tests || show_all_tests 
             println("local configuration tests:")
 
-            show(local_a,:default)
+            show(local_a,[:default])
             printlines()
             
-            show(local_a,:smart_string)
+            show(local_a,[:smart,:str])
             printlines()
             
-            show(local_a,:full_string)
+            show(local_a,[:full,:str])
             printlines()
             
-            show(local_a,:full_expanded_string)
+            show(local_a,[:full,:_expanded,:str])
             printlines()
         end
 
         if show_social_configuration_tests || show_all_configuration_tests || show_all_tests 
             println("social configuration tests:")
 
-            show(b)
+            show(social_a,[:default])
+            printlines()
+            
+            show(social_a,[:smart,:str])
+            printlines()
+            
+            show(social_a,[:full,:str])
+            printlines()
+            
+            show(social_a,[:full,:_expanded,:str])
             printlines()
         end
 

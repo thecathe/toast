@@ -18,8 +18,16 @@ module TypeRec
 
     # Base.string(s::μ, mode::Symbol = :default) = string("μα[$(s.identity)].", mode in [:full,:ext] ? mode==:full ? string(s.child, mode) : string(s.child) : "§")
 
-    function Base.string(s::μ, mode::Symbol = :default) 
+    function Base.string(s::μ, args...) 
+        # get mode
+        if length(args)==0
+            mode=:default
+        else
+            mode=args[1]
+        end
+
         str_base = string("μα[$(s.identity)].")
+
         if mode in [:default,:tail]
             # :default - string
             # :tail - show if 'end' or 'α'
@@ -35,11 +43,25 @@ module TypeRec
 
         elseif mode==:full
             # :full - array of each line
-            return Array{String}([string(str_base, string(s.child, :tail))])
+            str_children = Array{String}([string(str_base, string(s.child, :tail))])
+
+            # how to return? (default: str)
+            if length(args)>1
+                second_mode = args[2]
+            else
+                second_mode = :str
+            end
+            if second_mode==:str
+                return string(join(str_children, "\n"))
+            elseif second_mode==:arr
+                return str_children
+            else
+                @error "Rec.string, unexpected second mode: $(string(second_mode))"
+            end
 
         elseif mode==:full_expanded
             # :full_expanded - array of each line, with each tail expanded
-            arr_child_tail = string(s.child, :full_expanded)
+            arr_child_tail = string(s.child, :full_expanded,:arr)
             @assert arr_child_tail isa Array "TypeRec.string (mode$(string(mode))), expected Array but got: $(string(typeof(arr_child_tail)))"
             
             str_children = Array{String}([])
@@ -56,18 +78,23 @@ module TypeRec
                     push!(str_children, string(repeat(" ", base_len), curr_child))
                 end
             end
-            return str_children
-
-        elseif mode==:full_string
-            # :full_string - stringify array of each line
-            return string(join(string(s, :full), "\n"))
-
-        elseif mode==:full_expanded_string
-            # :full_string - stringify array of each line
-            return string(join(string(s, :full_expanded), "\n"))
+            
+            # how to return? (default: str)
+            if length(args)>1
+                second_mode = args[2]
+            else
+                second_mode = :str
+            end
+            if second_mode==:str
+                return string(join(str_children, "\n"))
+            elseif second_mode==:arr
+                return str_children
+            else
+                @error "Rec.string, unexpected second mode: $(string(args))"
+            end
 
         else
-            @error "TypeRec.string, unexpected mode: $(string(mode))"
+            @error "Rec.string, unexpected mode: $(string(args))"
         end
     end
 

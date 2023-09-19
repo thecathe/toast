@@ -26,7 +26,8 @@ module ClockValuations
     Base.show(t::Valuations, mode::Symbol, io::Core.IO = stdout) = print(io, string(t, mode))
 
     function Base.string(t::Valuations, args...)
-        if length(args)==0
+        arg_len = length(args)
+        if arg_len==0
             mode = :default
         else
             @assert args[1] isa Symbol
@@ -52,11 +53,20 @@ module ClockValuations
                 curr = str_children[y]
                 push!(arr_build,string(curr, repeat(" ", widest_child - length(curr))))
             end
-            return arr_build
 
-        elseif mode==:full_string
-            # :full_string - string array of clocks on each line
-            return join(string(t,:full),"\n")
+            # how to return? (default: arr)
+            if arg_len>1
+                second_mode = args[2]
+            else
+                second_mode = :arr
+            end
+            if second_mode==:arr
+                return arr_build
+            elseif second_mode==:str
+                return string(join(arr_build), "\n")
+            else
+                @error "Valuations.string, unexpected second mode: $(string(args))"
+            end
 
         elseif mode==:smart
             # :smart - next arg is list of clocks to include (always include system)
@@ -71,14 +81,26 @@ module ClockValuations
 
             widest_child = maximum(length, str_clocks)
             
-            str_system = string(t.system,:default)
             arr_build = Array{String}([])
             for y in 1:num_relevant
                 # pad current child
                 curr = str_clocks[y]
                 push!(arr_build,string(curr, repeat(" ", widest_child - length(curr))))
             end
-            return arr_build
+
+            # how to return? (default: arr)
+            if arg_len>2
+                second_mode = args[3]
+            else
+                second_mode = :arr
+            end
+            if second_mode==:arr
+                return arr_build
+            elseif second_mode==:str
+                return string(join(arr_build), "\n")
+            else
+                @error "Valuations.string, unexpected second mode: $(string(args))"
+            end
 
         else
             @error "TimeStep!.string, unexpected mode: $(string(t))"
