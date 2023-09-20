@@ -3,6 +3,12 @@ module ClockResets
     import Base.show
     import Base.string
 
+    import Base.length
+    import Base.isempty
+    
+    import Base.getindex
+    import Base.iterate
+
     export λ
     struct λ
         children::T where {T<:Array{String}}
@@ -27,5 +33,14 @@ module ClockResets
             @error "λ.string, unexpected mode: $(string(mode))"
         end
     end
+
+    
+    Base.length(resets::λ) = length(resets.children)
+    Base.isempty(resets::λ) = isempty(resets.children)
+    Base.getindex(resets::λ, i::Int) = getindex(resets.children, i)
+
+    Base.iterate(resets::λ) = isempty(resets) ? nothing : (resets[1], Int(1))
+    Base.iterate(resets::λ, i::Int) = (i >= length(resets)) ? nothing : (resets[i+1], i+1)
+
 
 end

@@ -45,7 +45,7 @@ module SocialConfigurations
         elseif mode in [:smart,:full]
             # :smart - show relevant clocks and type
             # :full - show all clocks and type
-            # :_expanded - show all clocks and expanded type
+            # :expand - show all clocks and expanded type
 
             # check if second mode before final :arr/:str (default: arr)
             if length(args)>2 
@@ -54,7 +54,7 @@ module SocialConfigurations
 
             elseif length(args)>1 
                 # get second arg and format mode if not all provided
-                if args[2]==:_expanded
+                if args[2]==:expand
                     second_mode = args[2]
                     format_mode = :arr 
                 else 
@@ -66,39 +66,44 @@ module SocialConfigurations
                 second_mode = :not_given
                 format_mode = :str 
             end
-            if second_mode==:_expanded
-                @assert mode==:full "Social.string, cannot have :_expanded with :smart"
-                arr_local = string(Local(c.valuations,c.type),:full,:_expanded,:social,:arr)
+            if second_mode==:expand
+                @assert mode==:full "Social.string, cannot have :expand with :smart"
+                arr_local = string(Local(c.valuations,c.type),:full,:expand,:social,:arr)
             else
                 arr_local = string(Local(c.valuations,c.type),mode,:social,:arr)
             end
             # arr_queue = string(c.queue,mode,:arr)
             # println("\nsocial test: $(typeof(arr_queue)): $(string(arr_queue))\n")
+            # "" adds empty line at top
             arr_queue = Array{String}([string(c.queue,mode,:arr)...])
 
-            len_local = length(arr_local)
-            len_queue = length(arr_queue)
-            config_height = max(len_local,len_queue)
+            # all should be same width
+            local_width = Int(length(arr_local[1]))
+            queue_width = Int(length(arr_queue[1]))
+
+            # add extra to top and bottom
+            insert!(arr_queue, 1, "")
+            push!(arr_queue,"")
+
+            height_local = length(arr_local)
+            height_queue = length(arr_queue)
+            config_height = max(height_local,height_queue)
             # println("$(string(len_local)) >< $(string(len_queue)) = $(string(config_height))")
 
-            # all should be same width
-            if len_local < config_height
-                # pad arrays, local
-                local_width = length(arr_local[1])
-                for _ in 1:config_height-len_local
-                    push!(arr_local, repeat(" ", local_width))
+            for y in 1:config_height
+                # padd local and queue
+                if y<=height_local
+                    arr_local[y] = string(arr_local[y], repeat(" ", max(0,local_width-length(arr_local[y]))))
+                else
+                     push!(arr_local, repeat(" ", local_width))
                 end
-            elseif len_queue < config_height
-                # pad arrays, queue
-                queue_width = length(arr_queue[1])
-                for _ in 1:config_height-len_queue
-                    push!(arr_queue, repeat(" ", queue_width))
+                if y<=height_queue
+                    arr_queue[y] = string(arr_queue[y], repeat(" ", max(0,queue_width-length(arr_queue[y]))))
+                else
+                     push!(arr_queue, repeat(" ", queue_width))
                 end
             end
-            # println("$(string(length(arr_local))) >< $(string(length(arr_queue))) = $(string(config_height))")
-            
-            # field_sep = ", "
-            # blank_sep = repeat(" ", length(field_sep))
+
 
             arr_build = Array{String}([])
             for y in 1:config_height

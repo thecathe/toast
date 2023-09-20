@@ -42,12 +42,16 @@ module ConfigurationEvaluations
                 for i in t
                     push!(_evals, Evaluate!(v,i))
                 end
+               
+                _not_en = false ∈ [i.enabled for i in _evals]
+                _en = !_not_en && true ∈ [i.enabled for i in _evals]
 
-                _not_en = occursin(false, Array{Bool}([i.enabled for i in _evals]))
-                _en = !_not_en && occursin(true, Array{Bool}([i.enabled for i in _evals]))
+                _not_fe = false ∈ [i.future_en for i in _evals]
+                _fe = _not_fe && true ∈ [i.future_en for i in _evals]
 
-                _not_fe = occursin(false, Array{Bool}([i.future_en for i in _evals]))
-                _fe = !_not_fe && occursin(true, Array{Bool}([i.future_en for i in _evals]))
+                _eval = δEvaluation!(v, δ(:disjunct, Array{δ}([i.constraints for i in t])...))
+                # _eval = δEvaluation!(:disjunct, δ(:disjunct, δConjunctify([i.constraints for i in t])))
+                # _eval = δEvaluation!(:disjunct, δ(:disjunct, [e.eval for e in _evals]...))
 
             elseif t isa Interact
                 _actionable=true
@@ -65,8 +69,15 @@ module ConfigurationEvaluations
                     _en=true
                     _fe=true
                 else
+                    _en=false
+
+                    # println("\nA) >|$(string(_constraints))|<")
+
                     # use weakpast to see if fe
                     _fe_constraints = δ(:past,_constraints)
+                    
+                    # println("\nB) >|$(string(_fe_constraints))|<")
+
                     _fe_eval = δEvaluation!(v,_fe_constraints)
                     _fe_result = eval(_fe_eval.expr)
                     @assert string(_fe_result) in ["true","false"] "Evaluate!, unexpected result (fe): $(string(_fe_result))\n\tof δEvaluation!: $(string(_fe_eval))"
@@ -111,7 +122,7 @@ module ConfigurationEvaluations
     function Base.string(e::Evaluate!, args...)
 
         return string(
-            "\nconfiguration: ", string(Local(e.valuations,e.type),[:smart,:str]),
+            "\nconfiguration:\n", string(Local(e.valuations,e.type),args...),
             "\nactionable: ", string(e.actionable),
             "\nenabled: ", string(e.enabled),
             "\nfuture enabled: ", string(e.future_en)

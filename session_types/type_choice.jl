@@ -5,6 +5,7 @@ module TypeChoice
 
     import Base.length
     import Base.isempty
+    
     import Base.getindex
     import Base.iterate
 

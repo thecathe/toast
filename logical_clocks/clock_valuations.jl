@@ -43,7 +43,7 @@ module ClockValuations
         
         elseif mode==:full
             # :full - array of each line
-            str_children = Array{String}([string(t.system,:default), [string(c,:default) for c in t.clocks]...])
+            str_children = Array{String}([string(t.system,:default), "", [string(c,:default) for c in t.clocks]...])
             widest_child = maximum(length, str_children)
             num_children = length(str_children)
             
@@ -75,8 +75,8 @@ module ClockValuations
 
             relevant_labels = Array{String}([args[2]...])
 
-            relevant_clocks = Array{Clock}([t.system,filter(x->(x.label in relevant_labels), t.clocks)...])
-            str_clocks = Array{String}([string(x,:default) for x in relevant_clocks])
+            relevant_clocks = Array{Clock}([filter(x->(x.label in relevant_labels), t.clocks)...])
+            str_clocks = Array{String}([string(t.system,:default), "", [string(x,:default) for x in relevant_clocks]...])
             num_relevant = length(str_clocks)
 
             widest_child = maximum(length, str_clocks)

@@ -364,11 +364,16 @@ module TOAST
             Interact(:send, Msg("e"), δ(:not, δ(:geq, "y", 3)), λ()),
             Interact(:recv, Msg("f"), δ(:eq, "z", 3), λ(["x","y"]),
                 Choice([
-                        Interact(:recv, Msg("g"), δ(:not, δ(:geq, "y", 1)), λ()),
-                        Interact(:send, Msg("h"), δ(:geq, "x", 4), λ())
-                    ])
+                    Interact(:recv, Msg("g"), δ(:not, δ(:geq, "y", 1)), λ(),
+                        Choice([
+                                Interact(:recv, Msg("h"), δ(:not, δ(:geq, "y", 1)), λ()),
+                                Interact(:send, Msg("i"), δ(:geq, "x", 4), λ())
+                        ])
+                    ),
+                    Interact(:send, Msg("j"), δ(:geq, "x", 4), λ(["l","m","a","o"]))
+                ])
             ),
-            Interact(:send, Msg("i"), δ(:geq, "x", 3), λ()),
+            Interact(:send, Msg("k"), δ(:geq, "x", 3), λ()),
         ])
 
         # e = Choice(a)
@@ -406,10 +411,11 @@ module TOAST
             show(local_a,[:full,:str])
             printlines()
             
-            show(local_a,[:full,:_expanded,:str])
+            show(local_a,[:full,:expand,:str])
             printlines()
         end
 
+        show_social_configuration_tests = true
         if show_social_configuration_tests || show_all_configuration_tests || show_all_tests 
             println("social configuration tests:")
 
@@ -422,7 +428,7 @@ module TOAST
             show(social_a,[:full,:str])
             printlines()
             
-            show(social_a,[:full,:_expanded,:str])
+            show(social_a,[:full,:expand,:str])
             printlines()
         end
 
@@ -439,9 +445,10 @@ module TOAST
         if show_evaluate_tests || show_all_configuration_tests || show_all_tests
             println("evaluate tests:")
 
-            eval_a = Evaluate!(local_a)
+            # eval_a = Evaluate!(local_a)
+            eval_a = Evaluate!(social_a)
 
-            show(eval_a)
+            show(eval_a,[:full,:expand,:str])
             printlines()
 
         #     clocks = Clocks([("a",1),("b",2),("c",3)])
