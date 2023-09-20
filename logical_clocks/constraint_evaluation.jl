@@ -60,32 +60,14 @@ module ConstraintEvaluation
                 
                 _expr = δExpr(:call, [get_call_op(head), δExpr(:call, :-, Number(ValueOf!(v.clocks,args[1]).value), Number(ValueOf!(v.clocks,args[2])).value), Integer(args[3])]...)
 
-            elseif head==:flatten
+            elseif head==:flat
                 # :flatten - array contining flattened constraints
-                @assert length(args)==1 "δEvaluation! head ($(head)) expects 1 more argument, not $(length(args)): '$(string(args))"
+                @assert false ∉ [d isa δ for d in args] "δEvaluation! head ($(head)) expects #1 to be Array{δ}, not $(typeof(args)): $(string(args))"
+                # @assert length(args)==1 "δEvaluation! head ($(head)) expects 1 more argument, not $(length(args)): '$(string(args))"
 
                 @assert args[1] isa δ "δEvaluation! head ($(head)) expects #1 to be δ, not $(typeof(args[1])): $(string(args[1]))"
 
-                # @assert args[1].expr isa δExpr "δEvaluation! head ($(head)) expects #1.expr to be δExpr, not: $(typeof(args[1].expr))"
-
-                # println("\n\nδEvaluation!($(head)), expr: $(string(d.head))\n | $(string(d.args))\n | $(string(d.expr))")
-
-                # _e = Array{δEvaluation!}([δEvaluation!(v, c) for c in args])
-                # for i in 1:length(args)
-                # #     println(string("$(i)) ", string(_e[i].head), " | ", string(_e[i].args), " | ", string(_e[i].expr)))
-                #     println(string("$(i)) $(string(δEvaluation!(v, args[i]).expr))"))
-                # end
-
-                # _deltas = Array{δ}([δ(c.head,c.args,δEvaluation!(v, c).expr, c.clocks, :eval_ready) for c in args])
-                # _expr = δConjunctify(_deltas)
                 _expr = δExprConjunctify([δEvaluation!(v, c).expr for c in args])
-
-                # println(string("\n",_expr))
-
-                # _extracted = δ(:and,args)
-                # println("..._expr: $(string(_expr))\n\n")
-
-                # _expr = δEvaluation!(v,_extracted).expr
             
             elseif head==:past
                 # :past - array of single constraints (:flatten) with each clock geq 0
@@ -93,12 +75,18 @@ module ConstraintEvaluation
 
                 _expr = δExprConjunctify([δEvaluation!(v, c).expr for c in args])
 
-
             elseif head==:disjunct
                 # :disjunct => for choices, any of these evaluations must hold
                 @assert false ∉ [d isa δ for d in args] "δEvaluation! head ($(head)) expects #1 to be Array{δ}, not $(typeof(args)): $(string(args))"
 
-                _expr = δExprDisjunctify([δEvaluation!(v, c).expr for c in args])
+                
+                @info "δEvaluation!:disjunct, args:\n$(string(join([string(string(x.head), ": ", string(x)) for x in args],"\n\n"))))"
+
+
+
+                _evals = Array{δEvaluation!}([δEvaluation!(v, c) for c in args])
+                _exprs = Array{δExpr}([c.expr for c in _evals])
+                _expr = δExprDisjunctify(_exprs)
 
             else
                 @error "δEvaluation!, unexpected head: $(head)"

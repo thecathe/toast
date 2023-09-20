@@ -36,6 +36,9 @@ module ConfigurationEvaluations
         function Evaluate!(v::Valuations,t::T) where {T<:SessionType}
             
             if t isa Choice
+
+                println("config.evaluate: choice START")
+
                 _actionable=true
                 # for interact in choice
                 _evals = Array{Evaluate!}([])
@@ -43,48 +46,57 @@ module ConfigurationEvaluations
                     push!(_evals, Evaluate!(v,i))
                 end
                
-                _not_en = false ∈ [i.enabled for i in _evals]
-                _en = !_not_en && true ∈ [i.enabled for i in _evals]
+                _en = true ∈ [i.enabled for i in _evals]
+                _fe = true ∈ [i.future_en for i in _evals]
 
-                _not_fe = false ∈ [i.future_en for i in _evals]
-                _fe = _not_fe && true ∈ [i.future_en for i in _evals]
+                println("config.evaluate: choice NEXT")
 
-                _eval = δEvaluation!(v, δ(:disjunct, Array{δ}([i.constraints for i in t])...))
-                # _eval = δEvaluation!(:disjunct, δ(:disjunct, δConjunctify([i.constraints for i in t])))
-                # _eval = δEvaluation!(:disjunct, δ(:disjunct, [e.eval for e in _evals]...))
+                _choice_constraints = Array{δ}([i.constraints for i in t])
+                _eval = δEvaluation!(v, δ(:disjunct, _choice_constraints))
+                
+                println("config.evaluate: choice POST")
 
             elseif t isa Interact
+                println("config.evaluate: interact START")
+
                 _actionable=true
-                if t.constraints.head==:flatten
-                    _constraints=t.constraints
-                else
-                    _constraints=δ(:flatten,t.constraints)
-                end
+                # if t.constraints.head==:flatten
+                _constraints=t.constraints
+                # else
+                #     _constraints=δ(:flatten,t.constraints)
+                # end
                 _eval = δEvaluation!(v,_constraints)
                 _result = eval(_eval.expr)
+
                 @assert string(_result) in ["true","false"] "Evaluate!, unexpected result (en): $(string(_result))\n\tof δEvaluation!: $(string(_eval))"
+
+                println("config.evaluate: interact NEXT")
+
+                println(string("\nInteract: $(string(_eval))"))
 
                 # future enabled if en, or
                 if string(_result)=="true"
                     _en=true
                     _fe=true
-                else
-                    _en=false
+                    println("config.evaluate: interact EN")
 
-                    # println("\nA) >|$(string(_constraints))|<")
+                else
+                    println("config.evaluate: interact FE")
+
+                    _en=false
 
                     # use weakpast to see if fe
                     _fe_constraints = δ(:past,_constraints)
-                    
-                    # println("\nB) >|$(string(_fe_constraints))|<")
-
                     _fe_eval = δEvaluation!(v,_fe_constraints)
                     _fe_result = eval(_fe_eval.expr)
+
                     @assert string(_fe_result) in ["true","false"] "Evaluate!, unexpected result (fe): $(string(_fe_result))\n\tof δEvaluation!: $(string(_fe_eval))"
 
                     # fe if true
                     _fe = string(_fe_result)=="true"
                 end
+                println("config.evaluate: interact END")
+
 
             elseif t isa Rec
                 _actionable=true

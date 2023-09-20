@@ -56,7 +56,7 @@ module ClockConstraints
     end
 
     export δ, supported_constraints
-    const supported_constraints = [:tt, :not, :and, :eq, :geq, :deq, :dgeq, :flatten, :past, :disjunct]
+    const supported_constraints = [:tt, :not, :and, :eq, :geq, :deq, :dgeq, :flatten, :flat, :past, :disjunct]
 
     struct δ
         head::Symbol
@@ -121,25 +121,29 @@ module ClockConstraints
                     
                     @assert args[1] isa δ "δ($(string(head))) expects #1 to be δ, not: $(string(typeof(args[1])))"
 
-                    # @warn args[1].head!=:flatten "δ($(head)) should not be used on already flattened δ: $(string(args[1]))"
+                    if args[1].head==:flat
+                        @warn "δ($(string(head))) should not be used on already flattened δ ($(string(args[1].head)))"
+                    end
 
                     _flat = Flatδ(args[1])
                     _clocks = Array{String}([])
                     foreach(d -> push!(_clocks, d.clocks...), _flat)
                     _expr = δConjunctify(_flat)
-                    # println("\nδ(:flatten), expr: $(string(_expr))\n")
-                    new(head, [_flat...], _expr, unique(_clocks))
+                    new(:flat, [_flat...], _expr, unique(_clocks))
 
                 elseif head==:past
                     # :past - flatten and add addition constraints for each constrained clock :geq 0
                     @assert length(args)==1 "δ($(string(head))) expects 1 args: ($(length(args))) $(string(args))"
                     
-                    if args[1].head==:flatten
-                        _flat = args[1].args
-                    else
-                        @info "δ($(head)), flattening: $(string(args[1]))"
-                        _flat = Flatδ(args[1])
-                    end
+                    # if args[1].head==:flatten
+                    #     _flat = args[1].args
+                    # else
+                    #     @info "δ($(head)), flattening: $(string(args[1]))"
+                    #     _flat = Flatδ(args[1])
+                    # end
+
+                    _flat = Array{δ}(Flatδ(args[1]))
+
                     _clocks = Array{String}([])
                     foreach(d -> push!(_clocks, d.clocks...), _flat)
 
@@ -148,45 +152,26 @@ module ClockConstraints
                         # add each constrained clock being >= 0
                         push!(_weak_past_children, δ(:geq, x, 0))
                     end
+
+                    # join flattened 
                     _expr = δConjunctify(_weak_past_children)
-                    # println("\nδ(:past), expr: $(string(_expr))\n")
                     new(head, _weak_past_children, _expr, unique(_clocks))
 
                 elseif head==:disjunct
-                    # :disjunct => 
-                    
-                    # if args[1].head==:flatten
-                    #     @assert length(args)==1 "δ($(head)), expects flattened child to be alone"
-                    #     _flat = args[1].args
-                    # else
-                    #     @info "δ($(head)), flattening: $(string(args))"
-                    #     _flat = Flatδ(args[1])
-                    # end
+                    # :disjunct => list of δ to be disjunctified (for use in choice)
+                    @assert length(args)>0 "δ($(string(head))) expects more than 0 args: ($(length(args))) $(string(args))"
 
-                    # @info "δ($(head)), "
-                    # @info "δ($(head)), args isa $(typeof(args)):\n$(join([string("\t$(string(d)) isa $(typeof(d))") for d in args],"\n"))\n"
+                # @info "δ:disjunct, args:\n$(string(join(args,"\n"))))"
 
-                    # _flats = Array{δ}([[Array{δ}(Flatδ(d))...] for d in args])
-                    _flats = Array{δ}([])
-                    for d in args
-                        push!(_flats, δ(:flatten, d))
-                        # push!(_flats, Flatδ(d)...)
-                    end
-                    # _conjs = δConjunctify(_flats)
-                    # _flat = Flatδ(_conjs)
+                    # flatten each δ
+                    _flats = Array{δ}([δ(:flatten, d) for d in args[1]])
 
+                    # get clocks from each δ (flattened)
                     _clocks = Array{String}([])
                     foreach(d -> push!(_clocks, d.clocks...), _flats)
-                    # foreach(f -> foreach(d -> push!(_clocks, d.clocks...), f), _flats)
-                    # for f in _flats
-                    #     for d in f
-                    #         push!(_clocks, d.clocks...)
-                    #     end
-                    # end
 
+                    # join flattened δ with disjuncts 
                     _expr = δDisjunctify(_flats)
-
-
                     new(head, _flats, _expr, unique(_clocks))
 
                 else
@@ -220,10 +205,13 @@ module ClockConstraints
                 string(string(d.args[1]), "-", string(d.args[2]), "=", string(d.args[3]))
             elseif head==:dgeq
                 string(string(d.args[1]), "-", string(d.args[2]), "≥", string(d.args[3]))
-            elseif head==:flatten
+            elseif head==:flat
                 string(join([string(c) for c in d.args], " ∧ "))
             elseif head==:past
                 string("↓($(string(join([string(c) for c in d.args], " ∧ "))))")
+            elseif head==:disjunct
+                # string("")
+                @warn "δ.string, :disjunct not accounted for yet..."
             else
                 @error "δ.string, unexpected head: $(string(d.head))"
             end

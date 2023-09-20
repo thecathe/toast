@@ -72,9 +72,7 @@ module SocialConfigurations
             else
                 arr_local = string(Local(c.valuations,c.type),mode,:social,:arr)
             end
-            # arr_queue = string(c.queue,mode,:arr)
-            # println("\nsocial test: $(typeof(arr_queue)): $(string(arr_queue))\n")
-            # "" adds empty line at top
+            
             arr_queue = Array{String}([string(c.queue,mode,:arr)...])
 
             # all should be same width
@@ -88,7 +86,6 @@ module SocialConfigurations
             height_local = length(arr_local)
             height_queue = length(arr_queue)
             config_height = max(height_local,height_queue)
-            # println("$(string(len_local)) >< $(string(len_queue)) = $(string(config_height))")
 
             for y in 1:config_height
                 # padd local and queue
@@ -109,7 +106,6 @@ module SocialConfigurations
             for y in 1:config_height
                 # pad current child
                 push!(arr_build, string(string(arr_local[y]), string(arr_queue[y])))
-                # push!(arr_build, string(string(arr_local[y]), string(y==len_local ? field_sep : blank_sep), string(arr_queue[y])))
                 # ^ vscode terminal will insert a space on the first line sometimes if it is too long
             end
             # how to return?

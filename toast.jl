@@ -361,7 +361,8 @@ module TOAST
                     ])
                 )
             ),
-            Interact(:send, Msg("e"), δ(:not, δ(:geq, "y", 3)), λ()),
+            # Interact(:send, Msg("e"), δ(:eq, "y", 1), λ()),
+            Interact(:send, Msg("e"), δ(:and, δ(:geq, "y", 2), δ(:not, δ(:geq, "y", 3))), λ()),
             Interact(:recv, Msg("f"), δ(:eq, "z", 3), λ(["x","y"]),
                 Choice([
                     Interact(:recv, Msg("g"), δ(:not, δ(:geq, "y", 1)), λ(),
@@ -373,7 +374,8 @@ module TOAST
                     Interact(:send, Msg("j"), δ(:geq, "x", 4), λ(["l","m","a","o"]))
                 ])
             ),
-            Interact(:send, Msg("k"), δ(:geq, "x", 3), λ()),
+            Interact(:send, Msg("k"), δ(:geq, "x", 4), λ()),
+            Interact(:recv, Msg("zero"), δ(:eq, "w", 3), λ("y"))
         ])
 
         # e = Choice(a)
@@ -415,7 +417,7 @@ module TOAST
             printlines()
         end
 
-        show_social_configuration_tests = true
+        # show_social_configuration_tests = true
         if show_social_configuration_tests || show_all_configuration_tests || show_all_tests 
             println("social configuration tests:")
 
@@ -445,10 +447,19 @@ module TOAST
         if show_evaluate_tests || show_all_configuration_tests || show_all_tests
             println("evaluate tests:")
 
-            # eval_a = Evaluate!(local_a)
-            eval_a = Evaluate!(social_a)
+            show(Evaluate!(social_a),[:full,:expand,:str])
+            printlines()
 
-            show(eval_a,[:full,:expand,:str])
+            show(TimeStep!(v_a,1))
+            printlines()
+
+            show(Evaluate!(social_a),[:full,:expand,:str])
+            printlines()
+
+            show(TimeStep!(v_a,1))
+            printlines()
+
+            show(Evaluate!(social_a),[:full,:expand,:str])
             printlines()
 
         #     clocks = Clocks([("a",1),("b",2),("c",3)])

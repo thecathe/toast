@@ -169,28 +169,11 @@ module LocalConfigurations
                 end
             end
 
-            # if height_type < config_height
-            #     # pad arrays, type
-            #     for _ in 1:config_height-height_type
-            #         push!(arr_type, repeat(" ", type_width))
-            #     end
-            # elseif height_clocks < config_height
-            #     # pad arrays, clock
-            #     for _ in 1:config_height-height_clocks
-            #         push!(arr_clocks, repeat(" ", clock_width))
-            #     end
-            # end
-
             field_sep = ", "
             blank_sep = repeat(" ", length(field_sep))
-            # config_width = type_width+clock_width+length(blank_sep)
 
             arr_build = Array{String}([])
             for y in 1:config_height
-                # if y==1||y==config_height
-                #     # add padding at top and bottom
-                #     push!(arr_build, string(repeat(" ",config_width)))
-                # else
                 # pad current child
                 push!(arr_build, string(
                     string(arr_clocks[y]), 
@@ -199,7 +182,6 @@ module LocalConfigurations
                     string(is_social ? (y==height_type-1 ? field_sep : blank_sep) : "")
                 ))
                 # ^ vscode terminal will insert a space on the first line sometimes if it is too long
-                # end
             end
 
             # how to return?
