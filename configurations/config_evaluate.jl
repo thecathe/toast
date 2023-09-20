@@ -37,7 +37,7 @@ module ConfigurationEvaluations
             
             if t isa Choice
 
-                println("config.evaluate: choice START")
+                # println("config.evaluate: choice START")
 
                 _actionable=true
                 # for interact in choice
@@ -49,15 +49,15 @@ module ConfigurationEvaluations
                 _en = true ∈ [i.enabled for i in _evals]
                 _fe = true ∈ [i.future_en for i in _evals]
 
-                println("config.evaluate: choice NEXT")
+                # println("config.evaluate: choice NEXT")
 
                 _choice_constraints = Array{δ}([i.constraints for i in t])
                 _eval = δEvaluation!(v, δ(:disjunct, _choice_constraints))
                 
-                println("config.evaluate: choice POST")
+                # println("config.evaluate: choice POST")
 
             elseif t isa Interact
-                println("config.evaluate: interact START")
+                # println("config.evaluate: interact START")
 
                 _actionable=true
                 # if t.constraints.head==:flatten
@@ -70,7 +70,7 @@ module ConfigurationEvaluations
 
                 @assert string(_result) in ["true","false"] "Evaluate!, unexpected result (en): $(string(_result))\n\tof δEvaluation!: $(string(_eval))"
 
-                println("config.evaluate: interact NEXT")
+                # println("config.evaluate: interact NEXT")
 
                 println(string("\nInteract: $(string(_eval))"))
 
@@ -78,10 +78,10 @@ module ConfigurationEvaluations
                 if string(_result)=="true"
                     _en=true
                     _fe=true
-                    println("config.evaluate: interact EN")
+                    # println("config.evaluate: interact EN")
 
                 else
-                    println("config.evaluate: interact FE")
+                    # println("config.evaluate: interact FE")
 
                     _en=false
 
@@ -95,7 +95,7 @@ module ConfigurationEvaluations
                     # fe if true
                     _fe = string(_fe_result)=="true"
                 end
-                println("config.evaluate: interact END")
+                # println("config.evaluate: interact END")
 
 
             elseif t isa Rec

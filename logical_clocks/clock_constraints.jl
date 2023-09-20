@@ -132,17 +132,19 @@ module ClockConstraints
                     new(:flat, [_flat...], _expr, unique(_clocks))
 
                 elseif head==:past
-                    # :past - flatten and add addition constraints for each constrained clock :geq 0
+                    # :past - flatten and add addition constraints for each constrained clock :geq 0, and 
                     @assert length(args)==1 "δ($(string(head))) expects 1 args: ($(length(args))) $(string(args))"
-                    
-                    # if args[1].head==:flatten
-                    #     _flat = args[1].args
-                    # else
-                    #     @info "δ($(head)), flattening: $(string(args[1]))"
-                    #     _flat = Flatδ(args[1])
-                    # end
 
-                    _flat = Array{δ}(Flatδ(args[1]))
+                    _init_flat = Array{δ}(Flatδ(args[1]))
+                    # look for any (:eq, x, n) => 
+                    # (:not (:and, (:not, (:geq, x, n)), (:eq, x, n)
+                    _flat = Array{δ}([])
+                    for f in _init_flat
+                        push!(_flat, f)
+                        if f.head==:eq
+                            push!(_flat, δ(:not, δ(:and, δ(:not, δ(:geq, f.args[1], f.args[2])), δ(:eq, f.args[1], f.args[2]))))
+                        end
+                    end
 
                     _clocks = Array{String}([])
                     foreach(d -> push!(_clocks, d.clocks...), _flat)

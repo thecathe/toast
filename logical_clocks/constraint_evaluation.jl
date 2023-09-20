@@ -73,6 +73,9 @@ module ConstraintEvaluation
                 # :past - array of single constraints (:flatten) with each clock geq 0
                 @assert false ∉ [d isa δ for d in args] "δEvaluation! head ($(head)) expects #1 to be Array{δ}, not $(typeof(args)): $(string(args))"
 
+                @info "δEvaluation!:past, args:\n$(string(join([string(string(x.head), ": ", string(x)) for x in args],"\n\n")))"
+
+
                 _expr = δExprConjunctify([δEvaluation!(v, c).expr for c in args])
 
             elseif head==:disjunct
@@ -80,7 +83,7 @@ module ConstraintEvaluation
                 @assert false ∉ [d isa δ for d in args] "δEvaluation! head ($(head)) expects #1 to be Array{δ}, not $(typeof(args)): $(string(args))"
 
                 
-                @info "δEvaluation!:disjunct, args:\n$(string(join([string(string(x.head), ": ", string(x)) for x in args],"\n\n"))))"
+                @info "δEvaluation!:disjunct, args:\n$(string(join([string(string(x.head), ": ", string(x)) for x in args],"\n\n")))"
 
 
 
