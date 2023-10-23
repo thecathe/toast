@@ -3,15 +3,15 @@ module LocalTransitionUnfold
     import Base.show
     import Base.string
 
-    using ..General
-    using ..LogicalClocks
-    using ..SessionTypes
-    using ..ClockValuations
-    using ..Configurations
+    using ...LogicalClocks
+    using ...SessionTypes
+    using ...Configurations
+
+    using ..TransitionsLocal
 
     export Unfold!
 
-    struct Unfold!
+    struct Unfold! <: LocalTransition
         def::Def
         calls::UInt
         unfolding::S

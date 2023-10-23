@@ -7,7 +7,7 @@ module LocalTransitionTick
     using ...SessionTypes
     using ...Configurations
 
-    using ..TransitionLabels
+    using ..TransitionsLocal
 
     export Tick!
     
@@ -16,7 +16,7 @@ module LocalTransitionTick
        (ν, S) \stackrel{⟶}{t} (ν+t, S)
     ```
     """
-    struct Tick!
+    struct Tick! <: LocalTransition
         old_config::Local
         time::TimeStep!
 

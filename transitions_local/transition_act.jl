@@ -3,17 +3,15 @@ module LocalTransitionAct
     import Base.show
     import Base.string
 
-    using ..General
-    using ..LogicalClocks
-    using ..SessionTypes
-    using ..SessionTypeActions
-    using ..ClockValuations
-    using ..Configurations
-    using ..Evaluate
+    using ...LogicalClocks
+    using ...SessionTypes
+    using ...Configurations
+
+    using ..TransitionsLocal
 
     export Act!
 
-    struct Act!
+    struct Act! <: LocalTransition
         success::Bool
         label::Label
         resets::Labels
