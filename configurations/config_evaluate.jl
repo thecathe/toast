@@ -124,22 +124,19 @@ module ConfigurationEvaluations
 
             if second_mode==:expand
                 # also display enabled/fe actions
-
                 return string(
                     "\nconfiguration, actionable: ", string(e.actionable), "\n", string(Local(e.valuations,e.type),args...),
                     "\nenabled: ", string(e.enabled), "\n$(string(e.eval_en, :expand))\n",
                     "\nfuture enabled: ", string(e.future_en), "\n$(string(e.eval_fe, :expand))\n"
                 )
 
-
             else
-                
+                # display summary enabled/fe actions
                 return string(
                     "\nconfiguration, actionable: ", string(e.actionable), "\n", string(Local(e.valuations,e.type),args...),
                     "\nenabled: ", string(e.enabled),
                     "\nfuture enabled: ", string(e.future_en)
                 )
-
 
             end
 
