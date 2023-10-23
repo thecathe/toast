@@ -47,6 +47,18 @@ module ClockConstraints
                 else
                     @error "δExpr.string, unexpected args: $(string(args)), $(string(args))"
                 end
+
+            elseif head==:(||)
+                if length(args)==2
+                    string("", string(args[1]), " ∨ ", string(args[2]), "")
+                elseif length(args)==1
+                    string("", string(args[1]), "")
+                elseif length(args)==0
+                    @warn "δExpr.string($(head)), 0 args"
+                else
+                    @error "δExpr.string, unexpected args: $(string(args)), $(string(args))"
+                end
+
             else
                 @error "δExpr.string, unexpected head: $(string(head)), $(string(args))"
             end
@@ -135,22 +147,43 @@ module ClockConstraints
                     # :past - flatten and add addition constraints for each constrained clock :geq 0, and 
                     @assert length(args)==1 "δ($(string(head))) expects 1 args: ($(length(args))) $(string(args))"
 
+                    @assert args[1] isa δ "δ($(string(head))) expects #1 to be δ, not: $(string(typeof(args[1])))"
+
+
+                    # @info "δ:past, args: $(string(args[1]))."
+
                     _init_flat = Array{δ}(Flatδ(args[1]))
-                    # look for any (:eq, x, n) => 
-                    # (:not (:and, (:not, (:geq, x, n)), (:eq, x, n)
+                    # look for any (:eq, x, n) or (:deq, x, y, n) or (:geq, x, n) or (:dgeq, x, y, n)
                     _flat = Array{δ}([])
                     for f in _init_flat
-                        push!(_flat, f)
                         if f.head==:eq
+                            # => (:not (:and, (:not, (:geq, x, n)), (:eq, x, n))))
                             push!(_flat, δ(:not, δ(:and, δ(:not, δ(:geq, f.args[1], f.args[2])), δ(:eq, f.args[1], f.args[2]))))
+                            
+                        elseif f.head==:deq
+                            # => (:not (:and, (:not, (:dgeq, x, y, n)), (:deq, x, y, n))))
+                            push!(_flat, δ(:not, δ(:and, δ(:not, δ(:dgeq, f.args[1], f.args[2], f.args[3])), δ(:deq, f.args[1], f.args[2], f.args[3]))))
+                            
+                        elseif f.head==:geq
+                            # => (:geq, x, 0)
+                            push!(_flat, δ(:geq, f.args[1], 0))
+                            
+                        elseif f.head==:dgeq
+                            # => (:dgeq, x, y, 0)
+                            push!(_flat, δ(:dgeq, f.args[1], f.args[2], 0))
+
+                        else
+                            @warn "δ(:past), unknown flattened head: ($(string(f.head))), args:\n$(string(join(f.args, ",\n")))"
                         end
                     end
+
+                    # @info "δ:past, _flat:\n$(string(join([string(f) for f in _flat], ",\n")))."
 
                     _clocks = Array{String}([])
                     foreach(d -> push!(_clocks, d.clocks...), _flat)
 
                     _weak_past_children = Array{δ}([_flat...])
-                    for x in _clocks
+                    for x in unique(_clocks)
                         # add each constrained clock being >= 0
                         push!(_weak_past_children, δ(:geq, x, 0))
                     end
@@ -212,8 +245,8 @@ module ClockConstraints
             elseif head==:past
                 string("↓($(string(join([string(c) for c in d.args], " ∧ "))))")
             elseif head==:disjunct
-                # string("")
-                @warn "δ.string, :disjunct not accounted for yet..."
+                string("(", string(d.args[1]), ") ∨ (", string(d.args[2]), ")")
+                # @warn "δ.string, :disjunct not accounted for yet..."
             else
                 @error "δ.string, unexpected head: $(string(d.head))"
             end
@@ -232,6 +265,7 @@ module ClockConstraints
 
     # flatten constraint tree into conjunctive list
     function flatten(d::δ, neg::Bool = false) 
+        # @warn "\n\n\nFlatδ should not be used!\n\n\n"
         if d.head==:and 
             if neg
                 Array{δ}([flatten(δ(:not,δ(d.args[1].head,d.args[1].args...)),neg)...,flatten(δ(:not,δ(d.args[2].head,d.args[2].args...)),neg)...]) 

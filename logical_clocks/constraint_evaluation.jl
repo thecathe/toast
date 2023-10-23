@@ -18,7 +18,6 @@ module ConstraintEvaluation
             head = d.head
             args = d.args
 
-            # TODO : add (:flatten) and (:past)
             # supported_constraints - see ClockConstraints
             @assert head in supported_constraints "δEvaluation!, unexpected head: $(head) ∉ '$(string(supported_constraints))'"
 
@@ -73,7 +72,7 @@ module ConstraintEvaluation
                 # :past - array of single constraints (:flatten) with each clock geq 0
                 @assert false ∉ [d isa δ for d in args] "δEvaluation! head ($(head)) expects #1 to be Array{δ}, not $(typeof(args)): $(string(args))"
 
-                @info "δEvaluation!:past, args:\n$(string(join([string(string(x.head), ": ", string(x)) for x in args],"\n\n")))"
+                # @info "δEvaluation!:past ($(string(d))), args:\n$(string(join([string(string(x.head), ": ", string(x)) for x in args],"\n\n")))"
 
 
                 _expr = δExprConjunctify([δEvaluation!(v, c).expr for c in args])
@@ -83,7 +82,7 @@ module ConstraintEvaluation
                 @assert false ∉ [d isa δ for d in args] "δEvaluation! head ($(head)) expects #1 to be Array{δ}, not $(typeof(args)): $(string(args))"
 
                 
-                @info "δEvaluation!:disjunct, args:\n$(string(join([string(string(x.head), ": ", string(x)) for x in args],"\n\n")))"
+                # @info "δEvaluation!:disjunct ($(string(d))), args:\n$(string(join([string(string(x.head), ": ", string(x)) for x in args],"\n\n")))"
 
 
 

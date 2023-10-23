@@ -53,6 +53,9 @@ module ConfigurationEvaluations
 
                 _choice_constraints = Array{δ}([i.constraints for i in t])
                 _eval = δEvaluation!(v, δ(:disjunct, _choice_constraints))
+
+                println(string("\nChoice($(string(length(t)))): $(string(_eval))."))
+
                 
                 # println("config.evaluate: choice POST")
 
@@ -72,7 +75,7 @@ module ConfigurationEvaluations
 
                 # println("config.evaluate: interact NEXT")
 
-                println(string("\nInteract: $(string(_eval))"))
+                println(string("\nInteract($(string(Action(t)))): $(string(_eval))."))
 
                 # future enabled if en, or
                 if string(_result)=="true"
@@ -85,10 +88,13 @@ module ConfigurationEvaluations
 
                     _en=false
 
+                    # @info "config.Evaluate, fe: $(string(t.constraints))."
+
                     # use weakpast to see if fe
-                    _fe_constraints = δ(:past,_constraints)
-                    _fe_eval = δEvaluation!(v,_fe_constraints)
+                    _fe_eval = δEvaluation!(v, δ(:past,t.constraints))
                     _fe_result = eval(_fe_eval.expr)
+                    
+                    println(string("\nInteract(fe:$(string(Action(t)))): $(string(_fe_eval))."))
 
                     @assert string(_fe_result) in ["true","false"] "Evaluate!, unexpected result (fe): $(string(_fe_result))\n\tof δEvaluation!: $(string(_fe_eval))"
 

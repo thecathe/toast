@@ -363,7 +363,8 @@ module TOAST
             ),
             # Interact(:send, Msg("e"), δ(:eq, "y", 1), λ()),
             Interact(:send, Msg("e"), δ(:and, δ(:geq, "y", 2), δ(:not, δ(:geq, "y", 3))), λ()),
-            Interact(:recv, Msg("f"), δ(:eq, "z", 3), λ(["x","y"]),
+            # Interact(:recv, Msg("f"), δ(:eq, "z", 3), λ(["x","y"]),
+            Interact(:recv, Msg("f"), δ(:not, δ(:geq, "z", 1)), λ(["x","y"]),
                 Choice([
                     Interact(:recv, Msg("g"), δ(:not, δ(:geq, "y", 1)), λ(),
                         Choice([
@@ -456,11 +457,18 @@ module TOAST
             show(Evaluate!(social_a),[:full,:expand,:str])
             printlines()
 
-            show(TimeStep!(v_a,1))
-            printlines()
+            # show(TimeStep!(v_a,1))
+            # printlines()
 
-            show(Evaluate!(social_a),[:full,:expand,:str])
-            printlines()
+            # show(Evaluate!(social_a),[:full,:expand,:str])
+            # printlines()
+
+
+
+
+
+
+
 
         #     clocks = Clocks([("a",1),("b",2),("c",3)])
         #     v = Valuations(clocks)
