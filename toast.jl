@@ -39,8 +39,8 @@ module TOAST
     show_social_configuration_tests=false  
     show_system_configuration_tests=false  
 
-    show_evaluate_tests=true  
-    show_enabled_actions_tests=false
+    show_evaluate_tests=false  
+    # show_enabled_actions_tests=false
 
     #
     # transition tests
@@ -379,20 +379,6 @@ module TOAST
             Interact(:recv, Msg("zero"), δ(:eq, "w", 3), λ("y"))
         ])
 
-        # e = Choice(a)
-        # f = Choice([a,b])
-        # g = Choice([a,b,c,d])
-
-        # h = μ("a",c)
-        # i = Interact(b,α("z"))
-        # j = μ("z",i)
-
-        # k = μ("z",Choice([Interact(d,g),Interact(a,e),Interact([b,a,μ("x",Choice([Interact(c,α("x")),i]))])]))
-        # l = Interact(b,k)
-        # m = Choice([Interact([a,c,d,g]),l])
-        # n = Choice([Interact([d,g]),l,Interact(b,Choice([Interact(a,k),a]))])
-
-
         v_a = Valuations([("w",3)],0)
         v_b = Valuations()
 
@@ -443,7 +429,6 @@ module TOAST
 
         end
         
-
         # evaluations
         if show_evaluate_tests || show_all_configuration_tests || show_all_tests
             println("evaluate tests:")
@@ -488,117 +473,38 @@ module TOAST
             printlines()
 
 
-
-
-
-
-
-
-        #     clocks = Clocks([("a",1),("b",2),("c",3)])
-        #     v = Valuations(clocks)
-
-        #     # show(v)
-        #     # printlines()
-
-        #     a = δ(:eq, "x", 3)
-        #     # b = δ(:not, a)
-        #     # c = δ(:and, a, δ(:geq, "y", 4))
-        #     b = δ(:not, δ(:eq, "a", 3))
-        #     c = δ(:and, δ(:eq, "a", 1), δ(:geq, "c", 2))
-        #     d = δ(:deq, "c", "y", 3)
-        #     e = δ(:and, δ(:not, δ(:and, δ(:eq, "b", 1), δ(:geq, "x", 4))), δ(:and, δ(:eq, "a", 3), δ(:geq, "z", 4)))   
-
-
-        #     show(v)
-        #     println()
-        #     show(Eval(v,a))
-        #     printlines()
-
-        #     show(v)
-        #     println()
-        #     show(Eval(v,b))
-        #     printlines()
-            
-        #     show(v)
-        #     println()
-        #     show(Eval(v,c))
-        #     printlines()
-            
-        #     show(v)
-        #     println()
-        #     show(Eval(v,d))
-        #     printlines()
-            
-        #     show(v)
-        #     println()
-        #     show(Eval(v,e))
-        #     printlines()
-
-        #     show(v)
-        #     println()
-        #     show(Eval(v,a))
-        #     printlines()
-
-        #     show(v)
-        #     println()
-        #     show(Eval(v,b))
-        #     printlines()
-            
-        #     show(v)
-        #     println()
-        #     show(Eval(v,c))
-        #     printlines()
-            
-        #     show(v)
-        #     println()
-        #     show(Eval(v,d))
-        #     printlines()
-            
-        #     show(v)
-        #     println()
-        #     show(Eval(v,e))
-        #     printlines()
-
-
         end
 
-        # # enabled actions
-        # if show_enabled_actions_tests || show_all_configuration_tests || show_all_tests
-        #     println("enabled actions tests:")
+        #
+        # operational semantics of configurations
+        #
+        include("transitions_local.jl")
+        using .TransitionsLocal
 
-            
-        #     _v = Valuations()
-        #     s_b = S(([(:send, Msg("e", Data(Int)),δ(:eq,"x",1), []  ),(:send, Msg("f", Data(String)),δ(:eq,"x",2), []  ),(:recv, Msg("g", Data(Int)),δ(:eq,"x",4), []  ),(:send, Msg("h", Data(String)),δ(:eq,"x",5), []  )]))
-        #     l_b1 = Local(_v,s_b)
+        println("operational semantic tests:")
 
-        #     show(l_b1,:local)
-        #     printlines()
+        show(social_a,[:full,:expand,:str])
+        printlines()
 
-        #     show(IsEnabled(l_b1))
-        #     printlines()
+        show(Tick!(social_a,1))
+        printlines()
 
-        #     # for i ∈ range(1,5)
+        show(social_a,[:full,:expand,:str])
+        printlines()
 
-        #     #     show(TimeStep!(l_b1,1))
-        #     #     printlines()
+        show(Tick!(social_a,1))
+        printlines()
 
-        #     #     show(IsEnabled(l_b1))
-        #     #     printlines()
+        show(social_a,[:full,:expand,:str])
+        printlines()
 
-        #     # end
-
-        # end
-
+        
     end
 
 
 
 
-    # #
-    # # operational semantics of configurations
-    # #
-    # include("transition_labels.jl")
-    # using .TransitionLabels
+
 
     # # local transitions
     # include("transitions_local/transition_tick.jl")
@@ -802,26 +708,28 @@ module TOAST
     # ~ 
     # ~ user demos
     # ~
-    export Num, Clock, λ, Valuations, ValueOf!, ResetClocks!, TimeStep!, δ, δExpr, supported_constraints
+    # export Num, Clock, λ, Valuations, ValueOf!, ResetClocks!, TimeStep!, δ, δExpr, supported_constraints
 
-    export End
-    export μ
-    export α
-    export Direction, type_direction
-    export Msg, Payload, None, SpecialPayload
-    export Interact
-    export Choice
-    export Action
-    export Actions
-    export Msgs
-    export Del
-    export Duality, dual
-    export S
+    # export End
+    # export μ
+    # export α
+    # export Direction, type_direction
+    # export Msg, Payload, None, SpecialPayload
+    # export Interact
+    # export Choice
+    # export Action
+    # export Actions
+    # export Msgs
+    # export Del
+    # export Duality, dual
+    # export S
 
-    export Configuration, Local, Social, System
-    export Queue, head!
-    export Eval, δEval
-    export IsEnabled
+    # export Configuration, Local, Social, System
+    # export Queue, head!
+    # export Eval, δEval
+    # export IsEnabled
+
+    # export Tick!
 
 
 end

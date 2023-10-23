@@ -275,6 +275,7 @@ module ClockConstraints
     #
     # weak past
     # 
+    "Returns the `weak past' of a given δ."
     struct Pastδ
         Pastδ(d::δ) = past(d)
     end
@@ -327,6 +328,7 @@ module ClockConstraints
     #
     # flatten
     #
+    "Returns a flattened δ, no more than 2 deep (for negations)."
     struct Flatδ
         Flatδ(d::δ) = flatten(d)
     end
@@ -360,6 +362,7 @@ module ClockConstraints
     #
     # conjunctify
     #
+    "Returns a single δ comprised of the conjunction of all in the given array of δ."
     struct δConjunctify
         δConjunctify(f::T) where {T<:Array{δ}} = conjunctify(f)
     end
@@ -381,6 +384,7 @@ module ClockConstraints
     #
     # disjunctify
     #
+    "Returns a single δ comprised of the discjunction of all in the given array of δ."
     struct δDisjunctify
         δDisjunctify(f::T) where {T<:Array{δ}} = disjunctify(f)
     end

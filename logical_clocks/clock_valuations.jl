@@ -195,7 +195,7 @@ module ClockValuations
 
     function Base.string(t::TimeStep!, mode::Symbol = :default)
         if mode==:default
-            string("⟶ (t=$(string(t.value)))⟶")
+            string("(t=$(string(t.value)))⟶")
         else
             @error "TimeStep!.string, unexpected mode: $(string(t))"
         end

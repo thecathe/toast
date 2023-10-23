@@ -1,5 +1,8 @@
 module Configurations
 
+    abstract type Configuration end
+    export Configuration
+
     include("configurations/config_local.jl")
     using .LocalConfigurations
     export Local

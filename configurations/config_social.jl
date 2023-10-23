@@ -6,12 +6,14 @@ module SocialConfigurations
     using ...LogicalClocks
     using ...SessionTypes
     
-    using ..LocalConfigurations
-    using ..ConfigurationQueues
+    using ..Configurations
+    # using ..LocalConfigurations
+    # using ..ConfigurationQueues
 
     export Social
 
-    struct Social
+    "Social Configurations are comprised of a Local Configuration, and a message queue."
+    struct Social <: Configuration
         valuations::Valuations
         type::T where {T<:SessionType}
         queue::Queue

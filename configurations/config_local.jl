@@ -5,13 +5,17 @@ module LocalConfigurations
 
     using ...LogicalClocks
     using ...SessionTypes
+    using ..Configurations
 
     export Local
 
-    struct Local
+    "Local Configurations are comprised of a set of clock valuations and a type."
+    struct Local <: Configuration
         valuations::Valuations
         type::T where {T<:SessionType}
         relevant_clocks::Array{String}
+
+        Local(c::T) where {T<:Configuration} = new(c.valuations,c.type)
 
         function Local(val::Valuations,type::T) where {T<:SessionType}
 

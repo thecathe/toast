@@ -1,15 +1,19 @@
 module TransitionsLocal
 
-    include("transitions_local/transition_time_steps.jl")
-    using .LocalTransitionTimeSteps
-    export TimeStep!
-    
-    include("transitions_local/transition_action_steps.jl")
-    using .LocalTransitionActionSteps
-    # export 
+    include("transition_labels.jl")
+    using .TransitionLabels
+    export transition_labels
 
-    include("transitions_local/transition_unfolds.jl")
-    using .LocalTransitionUnfolds
-    # export 
+    include("transitions_local/transition_tick.jl")
+    using .LocalTransitionTick
+    export Tick!
+    
+    # include("transitions_local/transition_act.jl")
+    # using .LocalTransitionActionSteps
+    # # export 
+
+    # include("transitions_local/transition_unfold.jl")
+    # using .LocalTransitionUnfolds
+    # # export 
 
 end

@@ -19,6 +19,7 @@ module ConfigurationEvaluations
 
     export Evaluate!
 
+    "Determines if the given Configuration is Enabled (can make a step)."
     struct Evaluate!
         valuations::Valuations
         type::T where {T<:SessionType}
