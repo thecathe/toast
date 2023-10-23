@@ -23,7 +23,8 @@ module ConfigurationEvaluations
         valuations::Valuations
         type::T where {T<:SessionType}
         #
-        eval::δEvaluation!
+        eval_en::δEvaluation!
+        eval_fe::δEvaluation!
         #
         actionable::Bool
         enabled::Q where {Q<:Union{Nothing,Bool}}
@@ -51,10 +52,16 @@ module ConfigurationEvaluations
 
                 # println("config.evaluate: choice NEXT")
 
-                _choice_constraints = Array{δ}([i.constraints for i in t])
-                _eval = δEvaluation!(v, δ(:disjunct, _choice_constraints))
+                # _choice_constraints = Array{δ}([i.constraints for i in t])
+                # _eval = δEvaluation!(v, δ(:disjunct, _choice_constraints))
 
-                println(string("\nChoice($(string(length(t)))): $(string(_eval))."))
+                _eval_en = δEvaluation!(Array{δEvaluation!}([i.eval_en for i in _evals]))
+                _eval_fe = δEvaluation!(Array{δEvaluation!}([i.eval_fe for i in _evals]))
+
+                # _eval_fe = δEvaluation!(v, δ(:disjunct, _choice_constraints))
+
+                println(string("\nChoice($(string(length(t)))): $(string(_eval_en))."))
+                println(string("\nChoice(fe:$(string(length(t)))): $(string(_eval_fe))."))
 
                 
                 # println("config.evaluate: choice POST")
@@ -68,39 +75,42 @@ module ConfigurationEvaluations
                 # else
                 #     _constraints=δ(:flatten,t.constraints)
                 # end
-                _eval = δEvaluation!(v,_constraints)
-                _result = eval(_eval.expr)
+                _eval_en = δEvaluation!(v,_constraints)
+                _result_en = eval(_eval_en.expr)
 
-                @assert string(_result) in ["true","false"] "Evaluate!, unexpected result (en): $(string(_result))\n\tof δEvaluation!: $(string(_eval))"
+                @assert string(_result_en) in ["true","false"] "Evaluate!, unexpected result (en): $(string(_result_en))\n\tof δEvaluation!: $(string(_eval_en))"
+
+                # enabled if true
+                _en = string(_result_en)=="true"
 
                 # println("config.evaluate: interact NEXT")
 
-                println(string("\nInteract($(string(Action(t)))): $(string(_eval))."))
+                println(string("\nInteract($(string(Action(t)))): $(string(_eval_en))."))
 
                 # future enabled if en, or
-                if string(_result)=="true"
-                    _en=true
-                    _fe=true
-                    # println("config.evaluate: interact EN")
+                # if string(_result)=="true"
+                #     _en=true
+                #     _fe=true
+                #     # println("config.evaluate: interact EN")
 
-                else
-                    # println("config.evaluate: interact FE")
+                # else
+                #     # println("config.evaluate: interact FE")
 
-                    _en=false
+                #     _en=false
 
                     # @info "config.Evaluate, fe: $(string(t.constraints))."
 
                     # use weakpast to see if fe
-                    _fe_eval = δEvaluation!(v, δ(:past,t.constraints))
-                    _fe_result = eval(_fe_eval.expr)
+                    _eval_fe = δEvaluation!(v, δ(:past,t.constraints))
+                    _result_fe = eval(_eval_fe.expr)
                     
-                    println(string("\nInteract(fe:$(string(Action(t)))): $(string(_fe_eval))."))
+                    println(string("\nInteract(fe:$(string(Action(t)))): $(string(_eval_fe))."))
 
-                    @assert string(_fe_result) in ["true","false"] "Evaluate!, unexpected result (fe): $(string(_fe_result))\n\tof δEvaluation!: $(string(_fe_eval))"
+                    @assert string(_result_fe) in ["true","false"] "Evaluate!, unexpected result (fe): $(string(_result_fe))\n\tof δEvaluation!: $(string(_eval_fe))"
 
                     # fe if true
-                    _fe = string(_fe_result)=="true"
-                end
+                    _fe = string(_result_fe)=="true"
+                # end
                 # println("config.evaluate: interact END")
 
 
@@ -109,27 +119,30 @@ module ConfigurationEvaluations
                 _en=nothing
                 _fe=nothing
                 # default if not actionable
-                _eval = δEvaluation!(:tt)
+                _eval_en = δEvaluation!(:tt)
+                _eval_fe = δEvaluation!(:tt)
 
             elseif t isa Call
                 _actionable=false
                 _en=nothing
                 _fe=nothing
                 # default if not actionable
-                _eval = δEvaluation!(:tt)
+                _eval_en = δEvaluation!(:tt)
+                _eval_fe = δEvaluation!(:tt)
 
             elseif t isa End
                 _actionable=false
                 _en=nothing
                 _fe=nothing
                 # default if not actionable
-                _eval = δEvaluation!(:tt)
+                _eval_en = δEvaluation!(:tt)
+                _eval_fe = δEvaluation!(:tt)
 
             else
                 @error "Evaluate!, unexpected typein Local.type: $(typeof(t))"
             end
 
-            new(v,t,_eval,_actionable,_en,_fe)
+            new(v,t,_eval_en,_eval_fe,_actionable,_en,_fe)
         end
     end
 

@@ -97,6 +97,14 @@ module ConstraintEvaluation
             new(head,[args...],_expr)
         end
 
+        # allows for a list of evaluations to be disjunctified
+        function δEvaluation!(evals::Array{δEvaluation!})
+            _exprs = Array{δExpr}([c.expr for c in evals])
+            _expr = δExprDisjunctify(_exprs)
+            
+            new(:disjunct,Array{Any}([e.args for e in evals]),_expr)
+        end
+
         function get_call_op(head::Symbol)
             if head==:eq
                 return :(==)

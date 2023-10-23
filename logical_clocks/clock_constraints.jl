@@ -50,7 +50,7 @@ module ClockConstraints
 
             elseif head==:(||)
                 if length(args)==2
-                    string("", string(args[1]), " ∨ ", string(args[2]), "")
+                    string("(", string(args[1]), ") ∨ (", string(args[2]), ")")
                 elseif length(args)==1
                     string("", string(args[1]), "")
                 elseif length(args)==0
@@ -154,39 +154,19 @@ module ClockConstraints
 
                     _init_flat = Array{δ}(Flatδ(args[1]))
                     # look for any (:eq, x, n) or (:deq, x, y, n) or (:geq, x, n) or (:dgeq, x, y, n)
-                    _flat = Array{δ}([])
-                    for f in _init_flat
-                        if f.head==:eq
-                            # => (:not (:and, (:not, (:geq, x, n)), (:eq, x, n))))
-                            push!(_flat, δ(:not, δ(:and, δ(:not, δ(:geq, f.args[1], f.args[2])), δ(:eq, f.args[1], f.args[2]))))
-                            
-                        elseif f.head==:deq
-                            # => (:not (:and, (:not, (:dgeq, x, y, n)), (:deq, x, y, n))))
-                            push!(_flat, δ(:not, δ(:and, δ(:not, δ(:dgeq, f.args[1], f.args[2], f.args[3])), δ(:deq, f.args[1], f.args[2], f.args[3]))))
-                            
-                        elseif f.head==:geq
-                            # => (:geq, x, 0)
-                            push!(_flat, δ(:geq, f.args[1], 0))
-                            
-                        elseif f.head==:dgeq
-                            # => (:dgeq, x, y, 0)
-                            push!(_flat, δ(:dgeq, f.args[1], f.args[2], 0))
+                    _past = Array{δ}([Pastδ(f) for f in _init_flat])
 
-                        else
-                            @warn "δ(:past), unknown flattened head: ($(string(f.head))), args:\n$(string(join(f.args, ",\n")))"
-                        end
-                    end
-
+                    # @info "δ:past, _past:\n$(string(join([string(f) for f in _past], ",\n")))."
                     # @info "δ:past, _flat:\n$(string(join([string(f) for f in _flat], ",\n")))."
 
                     _clocks = Array{String}([])
-                    foreach(d -> push!(_clocks, d.clocks...), _flat)
+                    foreach(d -> push!(_clocks, d.clocks...), _past)
 
-                    _weak_past_children = Array{δ}([_flat...])
-                    for x in unique(_clocks)
-                        # add each constrained clock being >= 0
-                        push!(_weak_past_children, δ(:geq, x, 0))
-                    end
+                    _weak_past_children = Array{δ}([_past...])
+                    # for x in unique(_clocks)
+                    #     # add each constrained clock being >= 0
+                    #     push!(_weak_past_children, δ(:geq, x, 0))
+                    # end
 
                     # join flattened 
                     _expr = δConjunctify(_weak_past_children)
@@ -255,6 +235,51 @@ module ClockConstraints
         end
     end
 
+    #
+    # weak past
+    # 
+    struct Pastδ
+        Pastδ(d::δ) = past(d)
+    end
+
+    # convert each constraint to bound to zero
+    function past(d::δ, neg::Bool = false)
+        if d.head==:eq
+            # => (:not (:and, (:not, (:geq, x, n)), (:eq, x, n))))
+            δ(:not, δ(:and, δ(:not, δ(:geq, d.args[1], d.args[2])), δ(:eq, d.args[1], d.args[2])))
+            
+        elseif d.head==:deq
+            # => (:not (:and, (:not, (:dgeq, x, y, n)), (:deq, x, y, n))))
+            δ(:not, δ(:and, δ(:not, δ(:dgeq, d.args[1], d.args[2], d.args[3])), δ(:deq, d.args[1], d.args[2], d.args[3])))
+            
+        elseif d.head==:geq
+            # => (:geq, x, 0)
+            if neg
+                # do not bound to 0 if part of a </≤
+                δ(:geq, d.args[1], d.args[2])
+            else
+                δ(:geq, d.args[1], 0)
+            end
+            
+        elseif d.head==:dgeq
+            # => (:dgeq, x, y, 0)
+            δ(:dgeq, d.args[1], d.args[2], 0)
+
+        elseif d.head==:not
+            # 
+            # if neg
+            # @info "neg: $(typeof(neg))"
+                δ(:not, past(d.args[1], !neg))
+            # else
+            #     δ(:not, past(d.args[1], true))
+            # end
+            # δ(:not, past(d.args[1]))
+
+
+        else
+            @warn "δ(:past), unknown flattened head: ($(string(d.head))), args:\n$(string(join(d.args, ",\n")))"
+        end
+    end
     
     #
     # flatten
@@ -278,6 +303,8 @@ module ClockConstraints
             else 
                 Array{δ}([flatten(δ(d.args[1].head,d.args[1].args...),!neg)...])
             end
+        elseif d.head==:disjunct
+            @warn "flatten(), head==:disjunct not supported."
         else
             if neg
                 Array{δ}([δ(:not,d)])
