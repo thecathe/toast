@@ -375,7 +375,7 @@ module TOAST
                     Interact(:send, Msg("j"), δ(:geq, "x", 4), λ(["l","m","a","o"]))
                 ])
             ),
-            Interact(:send, Msg("k"), δ(:geq, "x", 4), λ()),
+            Interact(:send, Msg("k"), δ(:geq, "x", 5), λ()),
             Interact(:recv, Msg("zero"), δ(:eq, "w", 3), λ("y"))
         ])
 
@@ -447,6 +447,30 @@ module TOAST
         # evaluations
         if show_evaluate_tests || show_all_configuration_tests || show_all_tests
             println("evaluate tests:")
+
+            show(Evaluate!(social_a),[:full,:expand,:str])
+            printlines()
+
+            show(TimeStep!(v_a,1))
+            printlines()
+
+            show(Evaluate!(social_a),[:full,:expand,:str])
+            printlines()
+
+            show(TimeStep!(v_a,1))
+            printlines()
+
+            show(Evaluate!(social_a),[:full,:expand,:str])
+            printlines()
+
+            show(TimeStep!(v_a,1))
+            printlines()
+
+            show(Evaluate!(social_a),[:full,:expand,:str])
+            printlines()
+
+            show(TimeStep!(v_a,1))
+            printlines()
 
             show(Evaluate!(social_a),[:full,:expand,:str])
             printlines()

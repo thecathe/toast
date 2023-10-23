@@ -283,11 +283,17 @@ module ClockConstraints
     function past(d::δ, neg::Bool = false)
         if d.head==:eq
             # => (:not (:and, (:not, (:geq, x, n)), (:eq, x, n))))
-            δ(:not, δ(:and, δ(:not, δ(:geq, d.args[1], d.args[2])), δ(:eq, d.args[1], d.args[2])))
+            # δ(:not, δ(:and, δ(:not, δ(:geq, d.args[1], d.args[2])), δ(:eq, d.args[1], d.args[2])))
+
+            # => (:not (:and, (:not, (:eq, x, n)), (:geq, x, n))))
+            δ(:not, δ(:and, δ(:not, δ(:eq, d.args[1], d.args[2])), δ(:geq, d.args[1], d.args[2])))
             
         elseif d.head==:deq
             # => (:not (:and, (:not, (:dgeq, x, y, n)), (:deq, x, y, n))))
-            δ(:not, δ(:and, δ(:not, δ(:dgeq, d.args[1], d.args[2], d.args[3])), δ(:deq, d.args[1], d.args[2], d.args[3])))
+            # δ(:not, δ(:and, δ(:not, δ(:dgeq, d.args[1], d.args[2], d.args[3])), δ(:deq, d.args[1], d.args[2], d.args[3])))
+            
+            # => (:not (:and, (:not, (:dgeq, x, y, n)), (:deq, x, y, n))))
+            δ(:not, δ(:and, δ(:not, δ(:deq, d.args[1], d.args[2], d.args[3])), δ(:dgeq, d.args[1], d.args[2], d.args[3])))
             
         elseif d.head==:geq
             # => (:geq, x, 0)
