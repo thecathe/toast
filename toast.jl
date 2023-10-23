@@ -457,11 +457,11 @@ module TOAST
             show(Evaluate!(social_a),[:full,:expand,:str])
             printlines()
 
-            # show(TimeStep!(v_a,1))
-            # printlines()
+            show(TimeStep!(v_a,1))
+            printlines()
 
-            # show(Evaluate!(social_a),[:full,:expand,:str])
-            # printlines()
+            show(Evaluate!(social_a),[:full,:expand,:str])
+            printlines()
 
 
 

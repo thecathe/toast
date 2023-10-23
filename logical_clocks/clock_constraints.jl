@@ -62,6 +62,55 @@ module ClockConstraints
             else
                 @error "δExpr.string, unexpected head: $(string(head)), $(string(args))"
             end
+
+        elseif mode in [:expand,:expand_tail]
+            
+            if head==:call
+                # :eq, :geq, :deq, :dgeq, :not, :-
+                arg_head = args[1]
+                if arg_head==:!
+                    string("¬(", string(args[2]), ")")
+
+                elseif arg_head==:(==)
+                    string(string(args[2]), "=", string(args[3]))
+
+                elseif arg_head==:(>=)
+                    string(string(args[2]), "≥", string(Integer(args[3])))
+
+                elseif arg_head==:-
+                    string(string(Number(args[2])), "-", string(Number(args[3])))
+
+                else
+                    @error "δExpr.string :call, unexpected head: $(string(arg_head)), $(string(args))"
+                end
+
+            elseif head==:(&&)
+                if length(args)==2
+                    string("", string(args[1]), " ∧ ", string(args[2],mode), "")
+                elseif length(args)==1
+                    string("", string(args[1]), "")
+                elseif length(args)==0
+                    @warn "δExpr.string($(head)), 0 args"
+                else
+                    @error "δExpr.string, unexpected args: $(string(args)), $(string(args))"
+                end
+
+            elseif head==:(||)
+                if length(args)==2
+                    string("(", string(args[1],mode), ") == $(string(eval(args[1])))\n ∨ ", string(args[2],mode), args[2].head!=:(||) ? " == $(string(eval(args[2])))" : "")
+                elseif length(args)==1
+                    string("(", string(args[1],:expand_tail), ") == $(string(eval(args[1])))")
+                elseif length(args)==0
+                    @warn "δExpr.string($(head)), 0 args"
+                else
+                    @error "δExpr.string, unexpected args: $(string(args)), $(string(args))"
+                end
+
+            else
+                @error "δExpr.string, unexpected head: $(string(head)), $(string(args))"
+            end
+
+
         else
             @error "δExpr.string, unexpected mode: $(mode), $(string(args))"
         end
@@ -149,24 +198,14 @@ module ClockConstraints
 
                     @assert args[1] isa δ "δ($(string(head))) expects #1 to be δ, not: $(string(typeof(args[1])))"
 
-
-                    # @info "δ:past, args: $(string(args[1]))."
-
                     _init_flat = Array{δ}(Flatδ(args[1]))
                     # look for any (:eq, x, n) or (:deq, x, y, n) or (:geq, x, n) or (:dgeq, x, y, n)
                     _past = Array{δ}([Pastδ(f) for f in _init_flat])
-
-                    # @info "δ:past, _past:\n$(string(join([string(f) for f in _past], ",\n")))."
-                    # @info "δ:past, _flat:\n$(string(join([string(f) for f in _flat], ",\n")))."
 
                     _clocks = Array{String}([])
                     foreach(d -> push!(_clocks, d.clocks...), _past)
 
                     _weak_past_children = Array{δ}([_past...])
-                    # for x in unique(_clocks)
-                    #     # add each constrained clock being >= 0
-                    #     push!(_weak_past_children, δ(:geq, x, 0))
-                    # end
 
                     # join flattened 
                     _expr = δConjunctify(_weak_past_children)
@@ -175,8 +214,6 @@ module ClockConstraints
                 elseif head==:disjunct
                     # :disjunct => list of δ to be disjunctified (for use in choice)
                     @assert length(args)>0 "δ($(string(head))) expects more than 0 args: ($(length(args))) $(string(args))"
-
-                # @info "δ:disjunct, args:\n$(string(join(args,"\n"))))"
 
                     # flatten each δ
                     _flats = Array{δ}([δ(:flatten, d) for d in args[1]])

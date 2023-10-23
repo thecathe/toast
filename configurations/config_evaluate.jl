@@ -37,9 +37,7 @@ module ConfigurationEvaluations
         function Evaluate!(v::Valuations,t::T) where {T<:SessionType}
             
             if t isa Choice
-
-                # println("config.evaluate: choice START")
-
+        
                 _actionable=true
                 # for interact in choice
                 _evals = Array{Evaluate!}([])
@@ -50,69 +48,28 @@ module ConfigurationEvaluations
                 _en = true ∈ [i.enabled for i in _evals]
                 _fe = true ∈ [i.future_en for i in _evals]
 
-                # println("config.evaluate: choice NEXT")
-
-                # _choice_constraints = Array{δ}([i.constraints for i in t])
-                # _eval = δEvaluation!(v, δ(:disjunct, _choice_constraints))
-
                 _eval_en = δEvaluation!(Array{δEvaluation!}([i.eval_en for i in _evals]))
                 _eval_fe = δEvaluation!(Array{δEvaluation!}([i.eval_fe for i in _evals]))
 
-                # _eval_fe = δEvaluation!(v, δ(:disjunct, _choice_constraints))
-
-                println(string("\nChoice($(string(length(t)))): $(string(_eval_en))."))
-                println(string("\nChoice(fe:$(string(length(t)))): $(string(_eval_fe))."))
-
-                
-                # println("config.evaluate: choice POST")
-
             elseif t isa Interact
-                # println("config.evaluate: interact START")
 
                 _actionable=true
-                # if t.constraints.head==:flatten
-                _constraints=t.constraints
-                # else
-                #     _constraints=δ(:flatten,t.constraints)
-                # end
-                _eval_en = δEvaluation!(v,_constraints)
+
+                # ? is enabled
+                _eval_en = δEvaluation!(v,t.constraints)
                 _result_en = eval(_eval_en.expr)
+                
+                _en = string(_result_en)=="true"
 
                 @assert string(_result_en) in ["true","false"] "Evaluate!, unexpected result (en): $(string(_result_en))\n\tof δEvaluation!: $(string(_eval_en))"
 
-                # enabled if true
-                _en = string(_result_en)=="true"
+                # ? is future enabled
+                _eval_fe = δEvaluation!(v, δ(:past,t.constraints))
+                _result_fe = eval(_eval_fe.expr)
+                
+                _fe = string(_result_fe)=="true"
 
-                # println("config.evaluate: interact NEXT")
-
-                println(string("\nInteract($(string(Action(t)))): $(string(_eval_en))."))
-
-                # future enabled if en, or
-                # if string(_result)=="true"
-                #     _en=true
-                #     _fe=true
-                #     # println("config.evaluate: interact EN")
-
-                # else
-                #     # println("config.evaluate: interact FE")
-
-                #     _en=false
-
-                    # @info "config.Evaluate, fe: $(string(t.constraints))."
-
-                    # use weakpast to see if fe
-                    _eval_fe = δEvaluation!(v, δ(:past,t.constraints))
-                    _result_fe = eval(_eval_fe.expr)
-                    
-                    println(string("\nInteract(fe:$(string(Action(t)))): $(string(_eval_fe))."))
-
-                    @assert string(_result_fe) in ["true","false"] "Evaluate!, unexpected result (fe): $(string(_result_fe))\n\tof δEvaluation!: $(string(_eval_fe))"
-
-                    # fe if true
-                    _fe = string(_result_fe)=="true"
-                # end
-                # println("config.evaluate: interact END")
-
+                @assert string(_result_fe) in ["true","false"] "Evaluate!, unexpected result (fe): $(string(_result_fe))\n\tof δEvaluation!: $(string(_eval_fe))"
 
             elseif t isa Rec
                 _actionable=true
@@ -151,13 +108,54 @@ module ConfigurationEvaluations
     Base.show(e::Evaluate!, modes::T, io::Core.IO = stdout) where {T<:Array{Symbol}}= print(io, string(e,modes...))
 
     function Base.string(e::Evaluate!, args...)
+        if length(args)==0
+            mode=:default
+        else
+            mode=args[1]
+        end
+        if length(args) < 2
+            second_mode=:not_given
+        else
+            second_mode=args[2]
+        end
 
-        return string(
-            "\nconfiguration:\n", string(Local(e.valuations,e.type),args...),
-            "\nactionable: ", string(e.actionable),
-            "\nenabled: ", string(e.enabled),
-            "\nfuture enabled: ", string(e.future_en)
-        )
+        if mode==:full
+            # display config and attributes
+
+            if second_mode==:expand
+                # also display enabled/fe actions
+
+                return string(
+                    "\nconfiguration, actionable: ", string(e.actionable), "\n", string(Local(e.valuations,e.type),args...),
+                    "\nenabled: ", string(e.enabled), "\n$(string(e.eval_en, :expand))\n",
+                    "\nfuture enabled: ", string(e.future_en), "\n$(string(e.eval_fe, :expand))\n"
+                )
+
+
+            else
+                
+                return string(
+                    "\nconfiguration, actionable: ", string(e.actionable), "\n", string(Local(e.valuations,e.type),args...),
+                    "\nenabled: ", string(e.enabled),
+                    "\nfuture enabled: ", string(e.future_en)
+                )
+
+
+            end
+
+        elseif mode==:default
+            # display attributes only
+            return string(
+                "actionable: ", string(e.actionable),
+                "\nenabled: ", string(e.enabled),
+                "\nfuture enabled: ", string(e.future_en)
+            )
+        
+        else
+            @warn "string.Evaluate!, unexpected mode: $(string(args))."
+            
+        end
+
 
     end
 

@@ -70,6 +70,8 @@ module LocalConfigurations
             if mode==:smart
                 arr_clocks = Array{String}([string(c.valuations,:smart,c.relevant_clocks)...])
                 arr_type = Array{String}([string(c.type,:full,:arr)...])
+
+                # get return mode
                 if length(args)>1 
                     if args[2]==:social
                         is_social=true

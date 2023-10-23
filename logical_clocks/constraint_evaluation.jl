@@ -72,19 +72,11 @@ module ConstraintEvaluation
                 # :past - array of single constraints (:flatten) with each clock geq 0
                 @assert false ∉ [d isa δ for d in args] "δEvaluation! head ($(head)) expects #1 to be Array{δ}, not $(typeof(args)): $(string(args))"
 
-                # @info "δEvaluation!:past ($(string(d))), args:\n$(string(join([string(string(x.head), ": ", string(x)) for x in args],"\n\n")))"
-
-
                 _expr = δExprConjunctify([δEvaluation!(v, c).expr for c in args])
 
             elseif head==:disjunct
                 # :disjunct => for choices, any of these evaluations must hold
                 @assert false ∉ [d isa δ for d in args] "δEvaluation! head ($(head)) expects #1 to be Array{δ}, not $(typeof(args)): $(string(args))"
-
-                
-                # @info "δEvaluation!:disjunct ($(string(d))), args:\n$(string(join([string(string(x.head), ": ", string(x)) for x in args],"\n\n")))"
-
-
 
                 _evals = Array{δEvaluation!}([δEvaluation!(v, c) for c in args])
                 _exprs = Array{δExpr}([c.expr for c in _evals])
@@ -123,11 +115,19 @@ module ConstraintEvaluation
 
     function Base.string(e::δEvaluation!, mode::Symbol=:default)
         if mode==:default
-            if e.head!=:not
-                return string("(",string(e.expr),") = ", string(eval(e.expr)))
+            if e.head==:not
+                return string("¬( ",string(e.expr,mode)," ) = ", string(eval(e.expr)))
             else
-                return string("",string(e.expr)," = ", string(eval(e.expr)))
+                return string("( ",string(e.expr,mode)," ) = ", string(eval(e.expr)))
             end
+
+        elseif mode==:expand
+            if e.head==:not
+                return string("¬(\n ",string(e.expr,mode),"\n) = ", string(eval(e.expr)))
+            else
+                return string("",string(e.expr,mode),"\n= ", string(eval(e.expr)))
+            end
+
         else
             @error "δEvaluation!.string, unexpected mode: $(string(mode))"
         end
