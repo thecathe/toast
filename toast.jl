@@ -503,7 +503,7 @@ module TOAST
         show(test_b,[:full,:expand,:str])
         printlines()
 
-        show(Transition!(test_b,:send,Msg("e")))
+        show(Transition!(test_b,:send,Msg("a")))
         printlines()
 
         show(test_b,[:full,:expand,:str])
@@ -515,7 +515,7 @@ module TOAST
         show(test_b,[:full,:expand,:str])
         printlines()
 
-        show(Transition!(test_b,:send,Msg("e")))
+        show(Transition!(test_b,:send,Msg("a")))
         printlines()
 
         show(test_b,[:full,:expand,:str])
