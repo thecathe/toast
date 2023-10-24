@@ -7,16 +7,17 @@ module TypeDirection
     const type_direction = [:send, :recv]
 
     struct Direction
-        child::Symbol
-        function Direction(child::Symbol)
-            @assert child in type_direction "Direction, unexpected: $(string(child))"
+        dir::Symbol
+        function Direction(dir::Symbol)
+            @assert dir in type_direction "Direction, unexpected: $(string(dir))."
 
-            new(child)
+            new(dir)
+            # return dir
         end
     end
 
     Base.show(d::Direction, io::Core.IO = stdout) = print(io, string(d))
 
-    Base.string(d::Direction) = string(d.child==:send ? "!" : "?")
+    Base.string(d::Direction) = string(d.dir==:send ? "!" : "?")
 
 end

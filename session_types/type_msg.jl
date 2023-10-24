@@ -5,7 +5,7 @@ module TypeMsg
 
     using ..SessionTypes
 
-    export Payload, SpecialPayload
+    export Payload, SpecialPayload, supported_payload_datatypes
     abstract type SpecialPayload end
 
     export None
@@ -13,7 +13,8 @@ module TypeMsg
     Base.show(none::Type{None}, io::Core.IO = stdout) = print(io, string(none))
     Base.string(none::Type{None}) = string("None")
 
-    const Payload = Union{SpecialPayload,String,Int,Bool}
+    const supported_payload_datatypes = (String,Int,Bool)
+    const Payload = Union{SpecialPayload,supported_payload_datatypes...}
 
     export Msg
 

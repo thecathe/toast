@@ -142,11 +142,13 @@ module ClockValuations
     # resets
     #
     struct ResetClocks!
-        resets::Array{String}
+        resets::λ
         #
         ResetClocks!(v::Valuations,label::String) = ResetClocks!(v,Array{String}([label]))
         #
-        function ResetClocks!(v::Valuations,resets::T) where {T<:Array{String}}
+        ResetClocks!(v::Valuations,resets::T) where {T<:Array{String}} = ResetClocks!(v,λ(resets))
+        #
+        function ResetClocks!(v::Valuations,resets::λ)
             reset = Array{String}([])
             for c ∈ v.clocks
                 if c.label ∈ resets

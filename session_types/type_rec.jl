@@ -10,7 +10,8 @@ module TypeRec
     mutable struct μ <: SessionType
         identity::String
         child::T where {T<:SessionType}
-        μ(identity::String, child::T) where {T<:SessionType} = new(identity, child)
+        iteration::UInt8
+        μ(identity::String, child::T, iteration::UInt8 = UInt8(0)) where {T<:SessionType} = new(identity, child, iteration)
     end
 
     Base.show(s::μ, io::Core.IO = stdout) = print(io, string(s))
@@ -26,7 +27,7 @@ module TypeRec
             mode=args[1]
         end
 
-        str_base = string("μα[$(s.identity)].")
+        str_base = string("μα[$(s.identity)$(s.iteration==0 ? "" : "($(s.iteration))")].")
 
         if mode in [:default,:tail]
             # :default - string

@@ -27,7 +27,7 @@ module SessionTypes
     
     include("session_types/type_msg.jl")
     using .TypeMsg
-    export Msg, Payload, None, SpecialPayload
+    export Msg, Payload, None, SpecialPayload, supported_payload_datatypes
 
     #
     # communication

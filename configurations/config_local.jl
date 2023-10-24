@@ -10,7 +10,7 @@ module LocalConfigurations
     export Local
 
     "Local Configurations are comprised of a set of clock valuations and a type."
-    struct Local <: Configuration
+    mutable struct Local <: Configuration
         valuations::Valuations
         type::T where {T<:SessionType}
         relevant_clocks::Array{String}

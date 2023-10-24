@@ -7,17 +7,10 @@ module LocalTransitionTick
     using ...SessionTypes
     using ...Configurations
 
-    using ..TransitionsLocal
-
     export Tick!
     
-    @doc raw"""
-    ```math
-       (ν, S) \stackrel{⟶}{t} (ν+t, S)
-    ```
-    """
-    struct Tick! <: LocalTransition
-        old_config::Local
+    struct Tick! 
+        # old_config::Local
         time::TimeStep!
 
         # social configs
@@ -25,15 +18,17 @@ module LocalTransitionTick
         Tick!(c::Social,t::UInt8) = Tick!(Local(c),t)
 
         # time step over clock valuations
-        Tick!(l::Local,t::Num) = TimeStep!(l,UInt8(t))
+        Tick!(l::Local,t::Num) = Tick!(l,UInt8(t))
 
         function Tick!(l::Local,t::UInt8)
 
-            old_config = l
+            config = l
+            # config = deepcopy(l)
         
-            time = TimeStep!(l.valuations,t)
+            time = TimeStep!(config.valuations,t)
 
-            new(old_config,time)
+            # new(old_config,time)
+            new(time)
         end
     end
 

@@ -478,25 +478,78 @@ module TOAST
         #
         # operational semantics of configurations
         #
-        include("transitions_local.jl")
-        using .TransitionsLocal
+        include("transitions.jl")
+        using .Transitions
 
         println("operational semantic tests:")
 
-        show(social_a,[:full,:expand,:str])
+        test_a = deepcopy(local_a)
+        test_b = deepcopy(local_a)
+        test_c = deepcopy(local_a)
+
+        # println("\ntest a:")
+        # show(test_a,[:full,:expand,:str])
+        # printlines()
+
+        # show(Transition!(test_a,:recv,Msg("zero")))
+        # printlines()
+
+        # show(test_a,[:full,:expand,:str])
+        # printlines()
+
+
+
+        println("\ntest b:")
+        show(test_b,[:full,:expand,:str])
         printlines()
 
-        show(Tick!(social_a,1))
+        show(Transition!(test_b,:send,Msg("e")))
         printlines()
 
-        show(social_a,[:full,:expand,:str])
+        show(test_b,[:full,:expand,:str])
         printlines()
 
-        show(Tick!(social_a,1))
+        show(Transition!(test_b,:t,2))
         printlines()
 
-        show(social_a,[:full,:expand,:str])
+        show(test_b,[:full,:expand,:str])
         printlines()
+
+        show(Transition!(test_b,:send,Msg("e")))
+        printlines()
+
+        show(test_b,[:full,:expand,:str])
+        printlines()
+
+
+
+        
+        # println("\ntest c:")
+        # show(test_c,[:full,:expand,:str])
+        # printlines()
+
+        # show(Transition!(local_a,:recv,Msg("zero")))
+        # printlines()
+
+        # show(test_c,[:full,:expand,:str])
+        # printlines()
+
+
+
+
+
+
+        # show(Tick!(social_a,1))
+        # printlines()
+
+        # show(social_a,[:full,:expand,:str])
+        # printlines()
+
+        # show(Tick!(social_a,1))
+        # printlines()
+
+        # show(social_a,[:full,:expand,:str])
+        # printlines()
 
         
     end

@@ -281,7 +281,7 @@ module ClockConstraints
     end
 
     # convert each constraint to bound to zero
-    function past(d::δ, neg::Bool = false)
+    function past(d::δ, neg::Bool = false)::δ
         if d.head==:eq
             # => (:not (:and, (:not, (:geq, x, n)), (:eq, x, n))))
             # δ(:not, δ(:and, δ(:not, δ(:geq, d.args[1], d.args[2])), δ(:eq, d.args[1], d.args[2])))
@@ -334,7 +334,7 @@ module ClockConstraints
     end
 
     # flatten constraint tree into conjunctive list
-    function flatten(d::δ, neg::Bool = false) 
+    function flatten(d::δ, neg::Bool = false)::Array{δ} 
         # @warn "\n\n\nFlatδ should not be used!\n\n\n"
         if d.head==:and 
             if neg
@@ -368,7 +368,7 @@ module ClockConstraints
     end
 
     # conjuctify flattned
-    function conjunctify(f::T) where {T<:Array{δ}}
+    function conjunctify(f::T)::δExpr where {T<:Array{δ}}
         if length(f)>2
             return δExpr(:&&,f[1],conjunctify(f[2:end]))
         elseif length(f)==2
@@ -390,7 +390,7 @@ module ClockConstraints
     end
 
     # disjunctify flattned
-    function disjunctify(f::T) where {T<:Array{δ}}
+    function disjunctify(f::T)::δExpr where {T<:Array{δ}}
         if length(f)>2
             return δExpr(:||,f[1],disjunctify(f[2:end]))
         elseif length(f)==2
