@@ -14,7 +14,8 @@ module LocalTransitionUnfold
     struct Unfold! <: LocalTransition
         success::Bool
         id::String
-        unfold_num::UInt8
+        iteration::Int64
+        call_num::Int64
         # unfolding::S
         # initate unfold
         function Unfold!(c::Local) 
@@ -26,13 +27,13 @@ module LocalTransitionUnfold
         function Unfold!(c::Local,type::μ)
             id = type.identity
             child = type.child
-            iteration = type.iteration + 1
+            iteration = type.iteration
 
-            tail = μ(id,deepcopy(child),iteration)
+            tail = μ(id,deepcopy(child),iteration + 1)
 
             "Recursively traverse children and unfold any matching tails."
             unfolding = unfold_tail!(type.child,id,tail)
-            unfold_num = unfolding[2]
+            call_num = unfolding[2]
 
             if unfolding[1]
                 @warn "Unfold! μ is immedaitely followed by corresponding α, this is likley unintended:\n$(string(type,:full_expanded))"
@@ -41,7 +42,7 @@ module LocalTransitionUnfold
             "Progress to next type."
             c.type = unfolding[3]
 
-            return new(true,id,unfold_num)
+            return new(true,id,iteration,call_num)
         end
 
         @doc raw"""
@@ -52,7 +53,7 @@ module LocalTransitionUnfold
             - unfold_child::Bool indicates that the child is an α and should be unfolded (replaced with the tail).
             - sum_unfolds::UInt is the total number of such unfolds (above) that occured during the child unfolding.
         """
-        function unfold_tail!(type::T,target_id::String,tail::μ)::Tuple{Bool,UInt8,T} where {T<:SessionType}
+        function unfold_tail!(type::T,target_id::String,tail::μ)::Tuple{Bool,Int64,T} where {T<:SessionType}
             "Check if found call that matches."
             if type isa α 
                 if type.identity == target_id
@@ -106,6 +107,6 @@ module LocalTransitionUnfold
     
     Base.show(unfold::Unfold!, io::Core.IO = stdout) = print(io, string(unfold))
     
-    Base.string(unfold::Unfold!) = string("μα[$(unfold.id)] #$(unfold.unfold_num)")
+    Base.string(unfold::Unfold!) = string("μα[$(unfold.id)($(unfold.iteration))]")
 
 end

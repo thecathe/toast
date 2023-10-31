@@ -42,6 +42,8 @@ module Transitions
         success::Bool
         kind::Symbol
         transition::Q where {Q<:Transition}
+        unfolded::Bool
+        unfolded_str::String
         
         function TransitionLocal!(c::Local,kind::Symbol,args...; keep::Bool = false)
 
@@ -53,7 +55,12 @@ module Transitions
             "TransitionLocal!, if recursion, then unfold first."
             if c.type isa μ
                 unfold = Unfold!(c)
-                label = "$(label)[unfold] $(string(unfold))"
+                unfolded = true
+                unfolded_str = "[unfold] $(string(unfold)) ⟶ "
+                label = "$(label)$(unfolded_str)"
+            else
+                unfolded = false
+                unfolded_str = ""
             end
 
             "Select Transition from kind."
@@ -83,7 +90,7 @@ module Transitions
                 @warn "TransitionLocal! unhandled kind: $(string(kind))."
             end
 
-            new(origin,keep,label,success,kind,transition)
+            new(origin,keep,label,success,kind,transition,unfolded,unfolded_str)
 
         end
     end
@@ -108,20 +115,6 @@ module Transitions
     using .SocialTransitionTime
     # export Time!
 
-    #
-    # system transitions
-    #
-    include("transitions/transitions_system/transition_wait.jl")
-    using .SystemTransitionWait
-    # export Que!
-
-    include("transitions/transitions_system/transition_com.jl")
-    using .SystemTransitionCom
-    # export ComL!, ComR!
-
-    include("transitions/transitions_system/transition_par.jl")
-    using .SystemTransitionPar
-    # export ParL!, ParR!
 
     struct TransitionSocial!
         origin::T where {T<:Union{Nothing,R} where {R<:Configuration}}
@@ -135,12 +128,9 @@ module Transitions
 
             @assert kind ∈ transition_labels "(Social) Transition kind ($(string(kind))) is not supported."
 
-            if keep
-                origin = c
-            else
-                origin = nothing
-            end
-
+            origin = keep ? c : nothing
+            label = ""
+            
             "Select (Social) Transition from kind."
             if kind==:t
                 @assert length(args)==1 "(Social) Transition ($(string(kind))) expects 1 argument: time value."
@@ -154,10 +144,14 @@ module Transitions
                 @assert length(args)==1 "(Social) Transition ($(string(kind))) expects 1 argument: message(label,payload)."
                 message = args[1]
                 action = Action(kind,message)
-                label = string(action)
 
                 # make transition
                 transition = Send!(c,action)
+
+                "Check if unfolding occured."
+                if transition.unfolded
+                    label = "$(label)$(transition.unfolded_str)"
+                end
 
                 success = transition.success
                 label = "$(label)[send] $(string(action)) [$(string(transition.resets)) ↦ 0]"
@@ -166,7 +160,6 @@ module Transitions
                 @assert length(args)==1 "(Social) Transition ($(string(kind))) expects 1 argument: message(label,payload)."
                 message = args[1]
                 action = Action(kind,message)
-                label = string(action)
 
                 # make transition
                 transition = Que!(c,action)
@@ -195,6 +188,22 @@ module Transitions
 
         end
     end
+
+
+    #
+    # system transitions
+    #
+    include("transitions/transitions_system/transition_wait.jl")
+    using .SystemTransitionWait
+    # export Que!
+
+    include("transitions/transitions_system/transition_com.jl")
+    using .SystemTransitionCom
+    # export ComL!, ComR!
+
+    include("transitions/transitions_system/transition_par.jl")
+    using .SystemTransitionPar
+    # export ParL!, ParR!
 
     struct Transition!
         "If has_keep, contains the original Configuration, prior to the transition."

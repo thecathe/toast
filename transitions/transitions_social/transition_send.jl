@@ -19,6 +19,9 @@ module SocialTransitionSend
         action::Action
         resets::λ
         
+        unfolded::Bool
+        unfolded_str::String
+        
         "Handle anonymous Actions."
         Send!(c::Social,a::T) where {T<:Tuple{Symbol,Msg}} = Send!(c,Action(a...))
         
@@ -31,7 +34,11 @@ module SocialTransitionSend
 
             "Elevate to Act!"
             # act = Act!(localised,a)
-            act = TransitionLocal!(localised,a.direction.dir,a.msg).transition
+            transition = TransitionLocal!(localised,a.direction.dir,a.msg)
+
+            act = transition.transition
+            unfolded = transition.unfolded
+            unfolded_str = transition.unfolded_str
 
             @assert act isa Act! "Send!, act was unexpected type ($(typeof(act)))."
 
@@ -40,7 +47,7 @@ module SocialTransitionSend
             c.type = localised.type
 
             # act = Transition!(Local(c),a)
-            new(act.success, act.action, act.resets)
+            new(act.success, act.action, act.resets, unfolded, unfolded_str)
         end
 
     end

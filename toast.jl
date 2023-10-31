@@ -485,7 +485,7 @@ module TOAST
 
         test_a = deepcopy(local_a)
         test_b = deepcopy(local_a)
-        test_c = deepcopy(social_a)
+        test_c = deepcopy(local_a)
         test_d = deepcopy(social_a)
 
         # println("\ntest a:")
@@ -556,18 +556,45 @@ module TOAST
         show(test_c,[:full,:expand,:str])
         printlines()
 
-        # show(Transition!(test_c,:t,2))
-        # printlines()
+        
 
-        # show(test_c,[:full,:expand,:str])
-        # printlines()
 
-        # show(Transition!(test_c,:send,Msg("a")))
-        # printlines()
+        TimeStep!(test_d.valuations, 2)
 
-        # show(test_c,[:full,:expand,:str])
-        # printlines()
+        println("\ntest d:")
+        show(test_d,[:full,:expand,:str])
+        printlines()
 
+        show(Transition!(test_d,:send,Msg("a")))
+        printlines()
+
+        show(test_d,[:full,:expand,:str])
+        printlines()
+
+        show(Transition!(test_d,:send,Msg("b")))
+        printlines()
+
+        show(test_d,[:full,:expand,:str])
+        printlines()
+
+        show(Transition!(test_d,:send,Msg("q")))
+        printlines()
+
+        show(test_d,[:full,:expand,:str])
+        printlines()
+
+        show(Transition!(test_d,:send,Msg("b")))
+        printlines()
+
+        show(test_d,[:full,:expand,:str])
+        printlines()
+
+
+
+
+
+
+        
 
         
         # println("\ntest c:")
