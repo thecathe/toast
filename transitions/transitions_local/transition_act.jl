@@ -7,20 +7,24 @@ module LocalTransitionAct
     using ...SessionTypes
     using ...Configurations
 
+    import ..Transitions.LocalTransition
+
     export Act!
 
-    struct Act!
+    struct Act! <: LocalTransition
         # old_config::Local
         success::Bool
         action::Action
         resets::λ
-        #
+
+        "Handle anonymous Actions."
         Act!(c::Local,a::T) where {T<:Tuple{Symbol,Msg}} = Act!(c,Action(a...))
         # 
         function Act!(c::Local,action::Action) 
-            config = c
+            Act!(c,c.type,action)
+            # config = c
             # config = deepcopy(c)
-            Act!(config,config.type,action)
+            # Act!(config,config.type,action)
         end
         #
         function Act!(c::Local,choice::Choice,action::Action) 
@@ -73,9 +77,9 @@ module LocalTransitionAct
 
     function Base.string(l::Act!) 
         if l.success
-            string("⟶ $(string(l.label)) [$(string(l.resets)) ↦ 0]")
+            string("⟶ $(string(l.action)) [$(string(l.resets)) ↦ 0]")
         else
-            string("̸⟶ $(string(l.label))")
+            string("̸⟶ $(string(l.action))")
         end
     end
 

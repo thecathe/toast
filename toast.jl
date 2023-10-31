@@ -355,8 +355,8 @@ module TOAST
             Interact(:send, Msg("a"), δ(:eq, "x", 2), λ("y"), 
                 μ("p", 
                     Choice([
-                        Interact(:recv, Msg("b"), δ(:not, δ(:geq, "y", 1)), λ()),
-                        Interact(:send, Msg("c"), δ(:eq, "y", 1), λ("y"), α("p")),
+                        Interact(:send, Msg("b"), δ(:not, δ(:geq, "y", 1)), λ("y"), Interact(:send, Msg("q"), δ(:not, δ(:geq, "z", 3)), λ("z"), α("p"))),
+                        Interact(:recv, Msg("c"), δ(:eq, "y", 1), λ()),
                         Interact(:send, Msg("d"), δ(:geq, "x", 4), λ())
                     ])
                 )
@@ -485,7 +485,8 @@ module TOAST
 
         test_a = deepcopy(local_a)
         test_b = deepcopy(local_a)
-        test_c = deepcopy(local_a)
+        test_c = deepcopy(social_a)
+        test_d = deepcopy(social_a)
 
         # println("\ntest a:")
         # show(test_a,[:full,:expand,:str])
@@ -499,28 +500,73 @@ module TOAST
 
 
 
-        println("\ntest b:")
-        show(test_b,[:full,:expand,:str])
+        # println("\ntest b:")
+        # show(test_b,[:full,:expand,:str])
+        # printlines()
+
+        # show(Transition!(test_b,:send,Msg("a")))
+        # printlines()
+
+        # show(test_b,[:full,:expand,:str])
+        # printlines()
+
+        # show(Transition!(test_b,:t,2))
+        # printlines()
+
+        # show(test_b,[:full,:expand,:str])
+        # printlines()
+
+        # show(Transition!(test_b,:send,Msg("a")))
+        # printlines()
+
+        # show(test_b,[:full,:expand,:str])
+        # printlines()
+
+
+        # temp for time step social
+        TimeStep!(test_c.valuations, 2)
+
+
+
+        println("\ntest c:")
+        show(test_c,[:full,:expand,:str])
         printlines()
 
-        show(Transition!(test_b,:send,Msg("a")))
+        show(Transition!(test_c,:send,Msg("a")))
         printlines()
 
-        show(test_b,[:full,:expand,:str])
+        show(test_c,[:full,:expand,:str])
         printlines()
 
-        show(Transition!(test_b,:t,2))
+        show(Transition!(test_c,:send,Msg("b")))
         printlines()
 
-        show(test_b,[:full,:expand,:str])
+        show(test_c,[:full,:expand,:str])
         printlines()
 
-        show(Transition!(test_b,:send,Msg("a")))
+        show(Transition!(test_c,:send,Msg("q")))
         printlines()
 
-        show(test_b,[:full,:expand,:str])
+        show(test_c,[:full,:expand,:str])
         printlines()
 
+        show(Transition!(test_c,:send,Msg("b")))
+        printlines()
+
+        show(test_c,[:full,:expand,:str])
+        printlines()
+
+        # show(Transition!(test_c,:t,2))
+        # printlines()
+
+        # show(test_c,[:full,:expand,:str])
+        # printlines()
+
+        # show(Transition!(test_c,:send,Msg("a")))
+        # printlines()
+
+        # show(test_c,[:full,:expand,:str])
+        # printlines()
 
 
         

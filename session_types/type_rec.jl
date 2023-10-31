@@ -10,8 +10,8 @@ module TypeRec
     mutable struct μ <: SessionType
         identity::String
         child::T where {T<:SessionType}
-        iteration::UInt8
-        μ(identity::String, child::T, iteration::UInt8 = UInt8(0)) where {T<:SessionType} = new(identity, child, iteration)
+        iteration::Int64
+        μ(identity::String, child::T, iteration::Int64 = Int64(0)) where {T<:SessionType} = new(identity, child, iteration)
     end
 
     Base.show(s::μ, io::Core.IO = stdout) = print(io, string(s))

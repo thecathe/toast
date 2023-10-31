@@ -7,9 +7,11 @@ module LocalTransitionTick
     using ...SessionTypes
     using ...Configurations
 
+    import ..Transitions.LocalTransition
+
     export Tick!
     
-    struct Tick! 
+    struct Tick! <: LocalTransition
         # old_config::Local
         time::TimeStep!
 

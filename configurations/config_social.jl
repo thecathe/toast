@@ -13,7 +13,7 @@ module SocialConfigurations
     export Social
 
     "Social Configurations are comprised of a Local Configuration, and a message queue."
-    struct Social <: Configuration
+    mutable struct Social <: Configuration
         valuations::Valuations
         type::T where {T<:SessionType}
         queue::Queue

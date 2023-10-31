@@ -1,4 +1,4 @@
-module SystemTransitionWait
+module SystemTransitionCom
 
     import Base.show
     import Base.string
@@ -9,11 +9,23 @@ module SystemTransitionWait
 
     import ..Transitions.SystemTransition
     # import ..Transitions.Transition!
-    using ..SocialTransitionTime
+    using ..SocialTransitionSend
+    using ..SocialTransitionQue
 
-    export Wait!
+    export ComL!, ComR!
 
-    struct Wait!
+    struct ComL!
+
+    end
+
+    struct ComR!
+
+    end
+
+    #
+    #
+    #
+    struct Com!
 
     end
 
