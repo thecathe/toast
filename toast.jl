@@ -487,6 +487,9 @@ module TOAST
         test_b = deepcopy(local_a)
         test_c = deepcopy(local_a)
         test_d = deepcopy(social_a)
+        test_e = deepcopy(social_a)
+        test_f = deepcopy(social_a)
+        test_g = deepcopy(social_a)
 
         # println("\ntest a:")
         # show(test_a,[:full,:expand,:str])
@@ -524,37 +527,35 @@ module TOAST
 
 
         # temp for time step social
-        TimeStep!(test_c.valuations, 2)
+        # TimeStep!(test_c.valuations, 2)
 
+        # println("\ntest c:")
+        # show(test_c,[:full,:expand,:str])
+        # printlines()
 
+        # show(Transition!(test_c,:send,Msg("a")))
+        # printlines()
 
-        println("\ntest c:")
-        show(test_c,[:full,:expand,:str])
-        printlines()
+        # show(test_c,[:full,:expand,:str])
+        # printlines()
 
-        show(Transition!(test_c,:send,Msg("a")))
-        printlines()
+        # show(Transition!(test_c,:send,Msg("b")))
+        # printlines()
 
-        show(test_c,[:full,:expand,:str])
-        printlines()
+        # show(test_c,[:full,:expand,:str])
+        # printlines()
 
-        show(Transition!(test_c,:send,Msg("b")))
-        printlines()
+        # show(Transition!(test_c,:send,Msg("q")))
+        # printlines()
 
-        show(test_c,[:full,:expand,:str])
-        printlines()
+        # show(test_c,[:full,:expand,:str])
+        # printlines()
 
-        show(Transition!(test_c,:send,Msg("q")))
-        printlines()
+        # show(Transition!(test_c,:send,Msg("b")))
+        # printlines()
 
-        show(test_c,[:full,:expand,:str])
-        printlines()
-
-        show(Transition!(test_c,:send,Msg("b")))
-        printlines()
-
-        show(test_c,[:full,:expand,:str])
-        printlines()
+        # show(test_c,[:full,:expand,:str])
+        # printlines()
 
         
 
@@ -591,10 +592,37 @@ module TOAST
 
 
 
+        # TODO: que
+        println("\ntest e:")
+        show(test_e,[:full,:expand,:str])
+        printlines()
 
-
-
+        show(Transition!(test_f,:recv,Msg("zero")))
+        printlines()
         
+        show(test_f,[:full,:expand,:str])
+        printlines()
+
+
+
+
+        # TODO: recv
+        println("\ntest f:")
+        show(test_f,[:full,:expand,:str])
+        printlines()
+
+        show(Transition!(test_e,:tau,Msg("zero")))
+        printlines()
+
+        show(test_f,[:full,:expand,:str])
+        printlines()
+
+
+
+        # TODO: time
+
+
+
 
         
         # println("\ntest c:")
