@@ -16,7 +16,7 @@ module Transitions
 
     const transition_labels = [:send,:recv,:ell,:tau,:t] 
 
-    export Transition!, TransitionLocal!, TransitionSocial!, TransitionSystem!
+    export Transition!, TransitionSocial!, TransitionSystem!
 
 
     #
@@ -34,67 +34,10 @@ module Transitions
     using .LocalTransitionUnfold
     export Unfold!
 
+    include("transitions/transitions_local.jl")
+    using .TransitionsLocal
+    export TransitionsLocal!
     
-    struct TransitionLocal!
-        origin::T where {T<:Union{Nothing,R} where {R<:Configuration}}
-        has_origin::Bool
-        label::String
-        success::Bool
-        kind::Symbol
-        transition::Q where {Q<:Transition}
-        unfolded::Bool
-        unfolded_str::String
-        
-        function TransitionLocal!(c::Local,kind::Symbol,args...; keep::Bool = false)
-
-            @assert kind ∈ transition_labels "TransitionLocal! kind ($(string(kind))) is not supported."
-
-            origin = keep ? c : nothing
-            label = ""
-
-            "TransitionLocal!, if recursion, then unfold first."
-            if c.type isa μ
-                unfold = Unfold!(c)
-                unfolded = true
-                unfolded_str = "[unfold] $(string(unfold)) ⟶ "
-                label = "$(label)$(unfolded_str)"
-            else
-                unfolded = false
-                unfolded_str = ""
-            end
-
-            "Select Transition from kind."
-            if kind==:t
-                @assert length(args)==1 "TransitionLocal! ($(string(kind))) expects 1 argument: time value."
-                time_value = args[1]
-                label = "$(label)[tick] t($(time_value))"
-
-                # make transition
-                transition = Tick!(c,time_value)
-                success = true
-
-            elseif kind ∈ [:send,:recv]
-                @assert length(args)==1 "TransitionLocal! ($(string(kind))) expects 1 argument: message(label,payload)."
-                message = args[1]
-                action = Action(kind,message)
-
-                # make transition
-                transition = Act!(c,action)
-
-                success = transition.success
-                label = "$(label)[act] $(string(action)) [$(string(transition.resets)) ↦ 0]"
-
-            else
-                label = "$(label)ERROR"
-                success = false
-                @warn "TransitionLocal! unhandled kind: $(string(kind))."
-            end
-
-            new(origin,keep,label,success,kind,transition,unfolded,unfolded_str)
-
-        end
-    end
-
 
     #
     # social transitions
@@ -109,7 +52,7 @@ module Transitions
     
     include("transitions/transitions_social/transition_recv.jl")
     using .SocialTransitionRecv
-    # export Recv!
+    export Recv!
     
     include("transitions/transitions_social/transition_time.jl")
     using .SocialTransitionTime
@@ -170,10 +113,10 @@ module Transitions
 
             elseif kind==:tau
                 @assert length(args)==0 "(Social) Transition ($(string(kind))) expects 0 arguments, got: $(string(args))."
-                action = Action(kind,message)
 
                 # make transition
                 transition = Recv!(c)
+                action = transition.action
 
                 success = transition.success
                 label = "$(label)[recv] $(string(action)) [$(string(transition.resets)) ↦ 0]"
@@ -218,6 +161,9 @@ module Transitions
         kind::Symbol
         "Actual Transition made."
         transition::Q where {Q<:Transition}
+
+        "Handle Actions."
+        Transition!(c::Local,a::Action,args...; keep::Bool = false) = TransitionLocal!(c,a.direction.dir,a.msg,args...;keep)
 
         "Transition for Local Configurations."
         Transition!(c::Local,kind::Symbol,args...; keep::Bool = false) = TransitionLocal!(c,kind,args...;keep)
@@ -264,6 +210,9 @@ module Transitions
         #     new(origin,keep,label,success,kind,transition)
 
         # end
+        "Handle Actions."
+        Transition!(c::Social,a::Action,args...; keep::Bool = false) = TransitionSocial!(c,a.direction.dir,a.msg,args...;keep)
+
 
         "Transition for Social Configurations."
         Transition!(c::Social,kind::Symbol,args...; keep::Bool = false) = TransitionSocial!(c,kind,args...;keep)

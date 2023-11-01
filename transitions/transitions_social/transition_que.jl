@@ -24,7 +24,7 @@ module SocialTransitionQue
             # add message to queue
             push!(c.queue,a.msg)
 
-            new(Label(string(a)))
+            new(true,a)
         end
     end
 

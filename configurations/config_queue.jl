@@ -6,6 +6,8 @@ module ConfigurationQueues
     import Base.length
     import Base.isempty
 
+    import Base.push!
+
     import Base.deleteat!
     import Base.getindex
     import Base.iterate
@@ -117,10 +119,13 @@ module ConfigurationQueues
     Base.iterate(q::Queue) = isempty(q) ? nothing : (q[1], Int(1))
     Base.iterate(q::Queue, i::Int) = i>=length(q) ? nothing : (q[i+1], i+1)
 
+    Base.push!(q::Queue,m::Msg) = push!(q.children,m)
+
     # return head (default: delete from queue)
-    function head!(q::Queue, delete_head::Bool=true)
+    function head!(q::Queue; pop::Bool=true)
+        @assert !isempty(q) "head! called on empty Queue."
         head=q[1]
-        if delete_head
+        if pop
             deleteat!(q.children,1)
         end
         return head

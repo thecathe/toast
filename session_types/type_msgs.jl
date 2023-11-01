@@ -6,6 +6,8 @@ module TypeMsgs
     import Base.length
     import Base.isempty
 
+    import Base.push!
+
     import Base.getindex
     import Base.deleteat!
     import Base.iterate
@@ -41,6 +43,8 @@ module TypeMsgs
 
     Base.getindex(m::Msgs, i::Int) = getindex(m.children,i)
     Base.deleteat!(m::Msgs, i::Int) = deleteat!(m.children,i)
+
+    Base.push!(msgs::Msgs,m::Msg) = push!(msgs.children,m)
 
     Base.iterate(m::Msgs) = isempty(m) ? nothing : (m[1], Int(1))
     Base.iterate(m::Msgs, i::Int) = i>=length(m) ? nothing : (m[i+1], i+1)

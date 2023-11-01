@@ -8,9 +8,9 @@ module SocialTransitionSend
     using ...Configurations
 
     import ..Transitions.SocialTransition
-    # import ..Transitions.Transition!
     import ..Transitions.TransitionLocal!
-    using ..LocalTransitionAct
+    # using ..LocalTransitionAct
+    import ..Transitions.Act!
 
     export Send!
 
@@ -34,7 +34,7 @@ module SocialTransitionSend
 
             "Elevate to Act!"
             # act = Act!(localised,a)
-            transition = TransitionLocal!(localised,a.direction.dir,a.msg)
+            transition = TransitionLocal!(localised,a)
 
             act = transition.transition
             unfolded = transition.unfolded
