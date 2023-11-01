@@ -16,7 +16,7 @@ module SocialTransitionSend
 
     struct Send! <: SocialTransition
         success::Bool
-        action::Action
+        action::Union{Action,Nothing}
         resets::λ
         
         unfolded::Bool

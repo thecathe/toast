@@ -122,13 +122,17 @@ module ConfigurationQueues
     Base.push!(q::Queue,m::Msg) = push!(q.children,m)
 
     # return head (default: delete from queue)
-    function head!(q::Queue; pop::Bool=true)
-        @assert !isempty(q) "head! called on empty Queue."
+    function head!(q::Queue; pop::Bool=true)::Tuple{Union{Msg,Nothing},Bool} 
+        if isempty(q) 
+            @warn "head! called on empty Queue."
+            return (Nothing(),false)
+        end
+
         head=q[1]
         if pop
             deleteat!(q.children,1)
         end
-        return head
+        return (head,true)
     end
 
 end

@@ -15,7 +15,7 @@ module SocialTransitionRecv
 
     struct Recv! <: SocialTransition
         success::Bool
-        action::Action
+        action::Union{Action,Nothing}
         resets::λ
         
         unfolded::Bool
@@ -23,14 +23,20 @@ module SocialTransitionRecv
         
         "Pop! head of Queue, then elevate to Act!"
         function Recv!(c::Social)
-            @assert !isempty(c.queue) "Recv!, Queue cannot be empty."
 
             head = head!(c.queue;pop=true)
-            action = Action(:recv,head)
+
+            "Check if message in queue."
+            if !head[2]
+                @warn "Recv! no message in queue."
+                return new(false,Nothing(),λ(),false,"")
+            end
+
+            action = Action(:recv,head[1])
 
             "Make Local Configuration."
             localised = Local(c)
-            
+
             "Elevate to Act!"
             transition = TransitionLocal!(localised,action)
 

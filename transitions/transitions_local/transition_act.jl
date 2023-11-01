@@ -26,7 +26,8 @@ module LocalTransitionAct
             # config = deepcopy(c)
             # Act!(config,config.type,action)
         end
-        #
+        
+        "Act! within a Choice."
         function Act!(c::Local,choice::Choice,action::Action) 
             # old_config = c
             "Search for corresponding Interact in Choice."

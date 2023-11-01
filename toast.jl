@@ -560,48 +560,48 @@ module TOAST
         
 
 
-        TimeStep!(test_d.valuations, 2)
+        # TimeStep!(test_d.valuations, 2)
 
-        println("\ntest d:")
-        show(test_d,[:full,:expand,:str])
-        printlines()
+        # println("\ntest d:")
+        # show(test_d,[:full,:expand,:str])
+        # printlines()
 
-        show(Transition!(test_d,:send,Msg("a")))
-        printlines()
+        # show(Transition!(test_d,:send,Msg("a")))
+        # printlines()
 
-        show(test_d,[:full,:expand,:str])
-        printlines()
+        # show(test_d,[:full,:expand,:str])
+        # printlines()
 
-        show(Transition!(test_d,:send,Msg("b")))
-        printlines()
+        # show(Transition!(test_d,:send,Msg("b")))
+        # printlines()
 
-        show(test_d,[:full,:expand,:str])
-        printlines()
+        # show(test_d,[:full,:expand,:str])
+        # printlines()
 
-        show(Transition!(test_d,:send,Msg("q")))
-        printlines()
+        # show(Transition!(test_d,:send,Msg("q")))
+        # printlines()
 
-        show(test_d,[:full,:expand,:str])
-        printlines()
+        # show(test_d,[:full,:expand,:str])
+        # printlines()
 
-        show(Transition!(test_d,:send,Msg("b")))
-        printlines()
+        # show(Transition!(test_d,:send,Msg("b")))
+        # printlines()
 
-        show(test_d,[:full,:expand,:str])
-        printlines()
+        # show(test_d,[:full,:expand,:str])
+        # printlines()
 
 
 
         # TODO: que
-        println("\ntest (que) e:")
-        show(test_e,[:full,:expand,:str])
-        printlines()
+        # println("\ntest (que) e:")
+        # show(test_e,[:full,:expand,:str])
+        # printlines()
 
-        show(Transition!(test_e,:recv,Msg("zero")))
-        printlines()
+        # show(Transition!(test_e,:recv,Msg("zero")))
+        # printlines()
         
-        show(test_e,[:full,:expand,:str])
-        printlines()
+        # show(test_e,[:full,:expand,:str])
+        # printlines()
 
 
 
