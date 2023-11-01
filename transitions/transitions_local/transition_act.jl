@@ -20,12 +20,7 @@ module LocalTransitionAct
         "Handle anonymous Actions."
         Act!(c::Local,a::T) where {T<:Tuple{Symbol,Msg}} = Act!(c,Action(a...))
         # 
-        function Act!(c::Local,action::Action) 
-            Act!(c,c.type,action)
-            # config = c
-            # config = deepcopy(c)
-            # Act!(config,config.type,action)
-        end
+        Act!(c::Local,action::Action) = Act!(c,c.type,action)
         
         "Act! within a Choice."
         function Act!(c::Local,choice::Choice,action::Action) 

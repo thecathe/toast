@@ -65,7 +65,7 @@ module Transitions
         label::String
         success::Bool
         kind::Symbol
-        transition::Q where {Q<:Transition}
+        transition::Q where {Q<:SocialTransition}
 
         function TransitionSocial!(c::Social,kind::Symbol,args...; keep::Bool = false)
 

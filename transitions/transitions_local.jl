@@ -19,10 +19,13 @@ module TransitionsLocal
     struct TransitionLocal!
         origin::T where {T<:Union{Nothing,R} where {R<:Configuration}}
         has_origin::Bool
+
         label::String
         success::Bool
         kind::Symbol
-        transition::Q where {Q<:Transition}
+
+        transition::Q where {Q<:LocalTransition}
+
         unfolded::Bool
         unfolded_str::String
 

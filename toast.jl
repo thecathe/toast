@@ -606,33 +606,33 @@ module TOAST
 
 
 
-        # TODO: recv
-        println("\ntest (recv) e:")
-        show(test_e,[:full,:expand,:str])
-        printlines()
+        # # TODO: recv
+        # println("\ntest (recv) e:")
+        # show(test_e,[:full,:expand,:str])
+        # printlines()
 
-        show(Transition!(test_e,:tau))
-        printlines()
+        # show(Transition!(test_e,:tau))
+        # printlines()
         
-        show(test_e,[:full,:expand,:str])
-        printlines()
-
-
-
-        # println("\ntest f:")
-        # show(test_f,[:full,:expand,:str])
+        # show(test_e,[:full,:expand,:str])
         # printlines()
 
-        # show(Transition!(test_e,:tau,Msg("zero")))
-        # printlines()
 
-        # show(test_f,[:full,:expand,:str])
-        # printlines()
+
 
 
 
         # TODO: time
 
+        println("\ntest f:")
+        show(test_f,[:full,:expand,:str])
+        printlines()
+
+        show(Transition!(test_f,:t,2))
+        printlines()
+
+        show(test_f,[:full,:expand,:str])
+        printlines()
 
 
 

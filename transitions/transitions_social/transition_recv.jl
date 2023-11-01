@@ -29,7 +29,7 @@ module SocialTransitionRecv
             "Check if message in queue."
             if !head[2]
                 @warn "Recv! no message in queue."
-                return new(false,Nothing(),λ(),false,"")
+                return new(false,nothing,λ(),false,"")
             end
 
             action = Action(:recv,head[1])
@@ -50,7 +50,6 @@ module SocialTransitionRecv
             c.valuations = localised.valuations
             c.type = localised.type
 
-            # act = Transition!(Local(c),a)
             new(act.success, act.action, act.resets, unfolded, unfolded_str)
         end
     end
