@@ -379,7 +379,7 @@ module TOAST
             Interact(:recv, Msg("zero"), δ(:eq, "w", 3), λ("y"))
         ])
 
-        v_a = Valuations([("w",3)],0)
+        v_a = Valuations([("w",2)],0)
         v_b = Valuations()
 
         local_a = Local(v_a, e)
@@ -593,12 +593,12 @@ module TOAST
 
 
         # TODO: que
-        # println("\ntest (que) e:")
-        # show(test_e,[:full,:expand,:str])
-        # printlines()
+        println("\ntest (que) e:")
+        show(test_e,[:full,:expand,:str])
+        printlines()
 
-        # show(Transition!(test_e,:recv,Msg("zero")))
-        # printlines()
+        show(Transition!(test_e,:recv,Msg("zero")))
+        printlines()
         
         # show(test_e,[:full,:expand,:str])
         # printlines()
@@ -607,11 +607,27 @@ module TOAST
 
 
         # TODO: recv
-        println("\ntest (recv) e:")
+        # println("\ntest (recv) e:")
+        # show(test_e,[:full,:expand,:str])
+        # printlines()
+
+        # show(Transition!(test_e,:tau))
+        # printlines()
+        
+        # show(test_e,[:full,:expand,:str])
+        # printlines()
+
+
+
+
+
+
+        # # TODO: time
+        println("\ntest (time) e:")
         show(test_e,[:full,:expand,:str])
         printlines()
 
-        show(Transition!(test_e,:tau))
+        show(Transition!(test_e,:t,2))
         printlines()
         
         show(test_e,[:full,:expand,:str])
@@ -628,11 +644,6 @@ module TOAST
 
         # show(test_f,[:full,:expand,:str])
         # printlines()
-
-
-
-        # TODO: time
-
 
 
 

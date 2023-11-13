@@ -9,10 +9,10 @@ module TypeActions
 
     struct Actions
         children::T where {T<:Array{Action}}
-        # 
-        Actions(children::T) where {T<:Array{Action}} = new(children)
         # extract from choice
         Actions(choice::T) where {T<:Choice} = Actions([Action(i) for i in choice.children])
+        # 
+        Actions(children::T) where {T<:Array{Action}} = new(children)
     end
 
     Base.show(actions::Actions, io::Core.IO = stdout) = print(io, string(actions))

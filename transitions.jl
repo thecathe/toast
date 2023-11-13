@@ -56,7 +56,7 @@ module Transitions
     
     include("transitions/transitions_social/transition_time.jl")
     using .SocialTransitionTime
-    # export Time!
+    export Time!
 
 
     struct TransitionSocial!
@@ -82,6 +82,8 @@ module Transitions
 
                 # make transition
                 transition = Time!(c,time_value)
+                success = transition.success
+                label = "[time] ($(label))"
 
             elseif kind==:send
                 @assert length(args)==1 "(Social) Transition ($(string(kind))) expects 1 argument: message(label,payload)."

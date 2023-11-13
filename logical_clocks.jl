@@ -19,7 +19,7 @@ module LogicalClocks
     #
     include("logical_clocks/clock_valuations.jl")
     using .ClockValuations
-    export Valuations, ValueOf!, ResetClocks!, TimeStep!
+    export Valuations, ValueOf!, ResetClocks!, TimeStep!, init!
     
     #
     # clock constraints

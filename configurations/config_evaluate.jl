@@ -30,6 +30,10 @@ module ConfigurationEvaluations
         actionable::Bool
         enabled::Q where {Q<:Union{Nothing,Bool}}
         future_en::R where {R<:Union{Nothing,Bool}}
+        #
+        interact_en::Array{Interact}
+        interact_fe::Array{Interact}
+        #
         # local evaluation
         Evaluate!(c::Local) = Evaluate!(c.valuations,c.type)
         # social evaluation
@@ -37,13 +41,25 @@ module ConfigurationEvaluations
         # 
         function Evaluate!(v::Valuations,t::T) where {T<:SessionType}
             
+            interact_en = Array{Interact}([])
+            interact_fe = Array{Interact}([])
+
             if t isa Choice
         
                 _actionable=true
                 # for interact in choice
                 _evals = Array{Evaluate!}([])
                 for i in t
-                    push!(_evals, Evaluate!(v,i))
+                    _eval = Evaluate!(v,i)
+                    push!(_evals, _eval)
+                    # add to list of enabled actions
+                    if _eval.enabled
+                        push!(interact_en,i)
+                        push!(interact_fe,i)
+                    elseif _eval.future_en
+                        push!(interact_fe,i)
+                    end
+
                 end
                
                 _en = true ∈ [i.enabled for i in _evals]
@@ -69,6 +85,14 @@ module ConfigurationEvaluations
                 _result_fe = eval(_eval_fe.expr)
                 
                 _fe = string(_result_fe)=="true"
+
+                # add to list of enabled actions
+                if _en
+                    push!(interact_en,t)
+                    push!(interact_fe,t)
+                elseif _fe
+                    push!(interact_fe,t)
+                end
 
                 @assert string(_result_fe) in ["true","false"] "Evaluate!, unexpected result (fe): $(string(_result_fe))\n\tof δEvaluation!: $(string(_eval_fe))"
 
@@ -100,7 +124,7 @@ module ConfigurationEvaluations
                 @error "Evaluate!, unexpected typein Local.type: $(typeof(t))"
             end
 
-            new(v,t,_eval_en,_eval_fe,_actionable,_en,_fe)
+            new(v,t,_eval_en,_eval_fe,_actionable,_en,_fe,interact_en,interact_fe)
         end
     end
 

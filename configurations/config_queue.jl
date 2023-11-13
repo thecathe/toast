@@ -41,7 +41,7 @@ module ConfigurationQueues
                 second_mode = :arr
             end
             if second_mode==:str
-                return "∅"
+                return "∅" 
             elseif second_mode==:arr
                 return Array{String}(["∅"])
             else

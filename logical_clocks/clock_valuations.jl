@@ -5,7 +5,7 @@ module ClockValuations
 
     using ..LogicalClocks
 
-    export Valuations, ValueOf!, ResetClocks!, TimeStep!
+    export Valuations, ValueOf!, ResetClocks!, TimeStep!, init!
 
     mutable struct Valuations
         clocks::Array{Clock}
@@ -104,6 +104,16 @@ module ClockValuations
 
         else
             @error "TimeStep!.string, unexpected mode: $(string(t))"
+        end
+    end
+
+    """
+    function init!(clock_label::String, valuations::Valuations)
+        instansiates a clock with given label and value of system clock, if it does not already exist
+    """
+    function init!(c::String,v::Valuations)
+        if c ∉ [x.label for x in v.clocks]
+            push!(v.clocks, Clock(c,v.system.value))
         end
     end
 

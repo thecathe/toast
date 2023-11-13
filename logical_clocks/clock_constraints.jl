@@ -117,7 +117,7 @@ module ClockConstraints
     end
 
     export δ, supported_constraints
-    const supported_constraints = [:tt, :not, :and, :eq, :geq, :deq, :dgeq, :flatten, :flat, :past, :disjunct]
+    const supported_constraints = [:tt, :not, :and, :eq, :geq, :deq, :dgeq, :flatten, :flat, :past, :disjunct, :conjunct]
 
     struct δ
         head::Symbol
@@ -226,6 +226,22 @@ module ClockConstraints
                     _expr = δDisjunctify(_flats)
                     new(head, _flats, _expr, unique(_clocks))
 
+                elseif head==:conjunct
+                    # :conjunct => list of δ to be conjunctified (for use in receive urgency)
+                    @assert length(args)>0 "δ($(string(head))) expects more than 0 args: ($(length(args))) $(string(args))"
+
+                    # flatten each δ
+                    # _flats = Array{δ}([δ(:flatten, d) for d in args[1]])
+                    _flats = Array{δ}([args...])
+
+                    # get clocks from each δ (flattened)
+                    _clocks = Array{String}([])
+                    foreach(d -> push!(_clocks, d.clocks...), _flats)
+
+                    # join flattened δ with disjuncts 
+                    _expr = δConjunctify(_flats)
+                    new(head, _flats, _expr, unique(_clocks))
+
                 else
                     if head in [:leq,:dleq]
                         @error "δ, head $(string(head)) is not supported"
@@ -264,6 +280,8 @@ module ClockConstraints
             elseif head==:disjunct
                 string("(", string(d.args[1]), ") ∨ (", string(d.args[2]), ")")
                 # @warn "δ.string, :disjunct not accounted for yet..."
+            elseif head==:conjunct
+                string("(", string(d.args[1]), ") ∧ (", string(d.args[2]), ")")
             else
                 @error "δ.string, unexpected head: $(string(d.head))"
             end
