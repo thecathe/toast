@@ -291,6 +291,166 @@ module ClockConstraints
     end
 
     #
+    # bounds of δ
+    #
+    export boundsOf
+    # function boundsof(x::String,f::δ)::Array{Tuple{Num,Union{Bool,Num}}}
+    #     @assert f.head==:flat "bounds requires flattened δ."
+    #     return boundsOf(x,Array{δ}([f.args[1]...]))
+    # end
+    function boundsOf(x::String,f::Array{δ})::Array{Tuple{Num,Union{Bool,Num}}}#::Tuple{Array{Num},Array{Union{Bool,Num}}}#::Tuple{Num,Union{Bool,Num}}
+        # lower_bound = 0
+        # upper_bound = true
+        lower_bounds = Array{Num}([])
+        upper_bounds = Array{Num}([])
+        # array of tuples indicating eq (bool indicates neg)
+        eq_constraints = Array{Tuple{Bool,Num}}([])
+        # always_enabled = false
+        # go through each δ and find ones that pertain to x
+        for d in f
+            if d.head==:tt
+                continue
+            
+            elseif d.head==:not
+                child = d.args[1]
+                # child = boundsOf(x,Array{δ}([d.args[1]]);neg=!neg)
+                # push!(lower_bounds,child[1]...)
+                # push!(upper_bounds,child[2]...)
+                if child.head==:tt
+                    continue
+                
+                elseif child.head==:not
+                    # child = boundsOf(x,Array{δ}([d.args[1]]);neg=!neg)
+                    # push!(lower_bounds,child[1]...)
+                    # push!(upper_bounds,child[2]...)
+                    @error "bounds (child), nested :not. Array{δ} should be flattened."
+
+                elseif child.head==:eq
+                    if x ∈ child.clocks
+                        @assert child.args[1]==x "bounds (child), expected args[1] to be the clock \"$(x)\", not \"$(string(child.args[1]))\"."
+                        push!(eq_constraints,(true,child.args[2]))
+                    end
+                    
+                elseif child.head==:geq
+                    if x ∈ child.clocks
+                        @assert child.args[1]==x "bounds (child), expected args[1] to be the clock \"$(x)\", not \"$(string(child.args[1]))\"."
+                        push!(upper_bounds,child.args[2])
+                    end
+
+
+                elseif child.head ∈ [:deq,:dgeq]
+                    @warn "bounds (child), $(string(child.head)) skipped."
+                    continue
+
+                else
+                    @warn "bounds (child), unhandled d.child.head: $(string(child.head))."
+                end
+
+            elseif d.head==:eq
+                if x ∈ d.clocks
+                    @assert d.args[1]==x "bounds, expected args[1] to be the clock \"$(x)\", not \"$(string(d.args[1]))\"."
+                    # push!(lower_bounds,d.args[2])
+                    # push!(upper_bounds,d.args[2])
+                    push!(eq_constraints,(false,d.args[2]))
+                end
+                
+            elseif d.head==:geq
+                if x ∈ d.clocks
+                    @assert d.args[1]==x "bounds, expected args[1] to be the clock \"$(x)\", not \"$(string(d.args[1]))\"."
+                    push!(lower_bounds,d.args[2])
+                end
+
+
+            elseif d.head ∈ [:deq,:dgeq]
+                @warn "bounds, $(string(d.head)) skipped."
+                continue
+
+            else
+                @warn "bounds, unhandled d.head: $(string(d.head))."
+            end
+        end
+        # lower_bounds = Array{Num}([])
+        # upper_bounds = Array{Union{Bool,Num}}([])
+
+        unique!(lower_bounds)
+        unique!(upper_bounds)
+
+        paired_bounds = Array{Tuple{Num,Union{Bool,Num}}}([])
+
+        # sort each list
+        sort!(lower_bounds)
+        sort!(upper_bounds)
+
+        # match each lowerbound to their nearest upper bound
+        for lb in lower_bounds
+            upper_bound = nothing
+            upper_bound_index = nothing
+            if length(upper_bounds) > 0
+                # for ub in upper_bounds
+                for ub_index in range(1, length(upper_bounds))
+                    ub = upper_bounds[ub_index]
+                    if upper_bound === nothing || ub < upper_bound && lb <= ub
+                        upper_bound = ub
+                    end
+                end
+
+                if upper_bound === nothing
+                    # no upperbound given
+                    push!(paired_bounds, (lb,true))
+                else
+                    @assert upper_bound_index !== nothing "bounds, upper_bound !== nothing but no index given."
+                    push!(paired_bounds, (lb,upper_bound))
+                    deleteat!(upper_bounds, upper_bound_index)
+                end
+            else
+                # no possible upper bounds
+                push!(paired_bounds, (lb,true))
+            end
+        end
+
+        # any remaining upper bounds are paired with 0
+        for ub in upper_bounds
+            push!(paired_bounds, (0,ub))
+        end
+
+
+        return paired_bounds
+
+        # keep_pairing = true
+        # while keep_pairing
+        #     # find lowest bound
+        #     lowest_bound = nothing
+        #     lowest_index = -1
+        #     for lb in lower_bounds.
+        #         if lowest_bound === nothing || lb < lowest_bound 
+        #             lowest_bound = lb
+        #             lowest_index = getindex()
+        #         end
+        #     end
+        #     # @assert lowest_bound !== nothing "bounds, lowest_bound is nothing."
+        #     if lowest_bound === nothing
+        #         lowest_bound = 0
+        #     else
+        #         deleteat!(lowest_bound,lowest_index)
+        #     end
+
+        #     # find lowest upper bound above lowest bound
+        #     uppest_bound = nothing
+        #     for ub in upper_bounds
+        #         if uppest_bound === nothing || ub < uppest_bound && lowest_bound <= ub
+        #             uppest_bound = ub
+        #         end
+        #     end
+        #     if uppest_bound === nothing
+        #         uppest_bound = true
+        #     end
+            
+        # end
+
+        # return (lower_bound, upper_bound)
+    end
+
+    #
     # weak past
     # 
     "Returns the `weak past' of a given δ."

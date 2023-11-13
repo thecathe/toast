@@ -114,7 +114,7 @@ module Transitions
 
 
             elseif kind==:tau
-                @assert length(args)==0 "(Social) Transition ($(string(kind))) expects 0 arguments, got: $(string(args))."
+                @assert length(args)==0 "(Social) Transition ($(string(kind))) expects 0 arguments, got: [$(string(args))] ($(length(args)))."
 
                 # make transition
                 transition = Recv!(c)

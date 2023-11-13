@@ -122,7 +122,7 @@ module ClockValuations
     #
     struct ValueOf!
         label::String
-        value::UInt8
+        value::Num
 
         function ValueOf!(v::Valuations,label::String) 
             for c ∈ v.clocks
@@ -191,11 +191,9 @@ module ClockValuations
     # time step
     #
     struct TimeStep!
-        value::UInt8
+        value::Num
         #
-        TimeStep!(v::Valuations,t::Num) = TimeStep!(v,UInt8(t))
-        #
-        function TimeStep!(v::Valuations,t::UInt8) 
+        function TimeStep!(v::Valuations,t::Num) 
             foreach(x -> x.value += t, v.clocks)
             v.system.value += t
             new(t)

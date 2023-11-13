@@ -592,13 +592,13 @@ module TOAST
 
 
 
-        # TODO: que
-        println("\ntest (que) e:")
-        show(test_e,[:full,:expand,:str])
-        printlines()
+        # # TODO: que
+        # println("\ntest (que) e:")
+        # show(test_e,[:full,:expand,:str])
+        # printlines()
 
-        show(Transition!(test_e,:recv,Msg("zero")))
-        printlines()
+        # show(Transition!(test_e,:recv,Msg("zero")))
+        # printlines()
         
         # show(test_e,[:full,:expand,:str])
         # printlines()
@@ -623,16 +623,45 @@ module TOAST
 
 
         # # TODO: time
-        println("\ntest (time) e:")
-        show(test_e,[:full,:expand,:str])
+        # println("\ntest (time) e:")
+        # show(test_e,[:full,:expand,:str])
+        # printlines()
+
+        # show(Transition!(test_e,:t,2))
+        # printlines()
+        
+        # show(test_e,[:full,:expand,:str])
+        # printlines()
+
+
+        time_test = Social(
+            Valuations([("x",1.5)]),
+            Interact(:recv, ("msg", Bool), 
+                δ(:not, δ(:and,
+                    δ(:geq, "x", 2),
+                    δ(:and,
+                        δ(:not, δ(:and,
+                            δ(:geq, "x", 3),
+                            δ(:not, δ(:geq, "x", 4))
+                        )),
+                        δ(:not, δ(:geq, "x", 5))
+                    )
+                )), λ()),
+            Queue(Msgs([Msg("msg", Bool)]))
+        ) 
+
+        println("\n(time) test:")
+        show(time_test,[:full,:expand,:str])
         printlines()
 
-        show(Transition!(test_e,:t,2))
+        show(Transition!(time_test,:t,0.5))
         printlines()
         
-        show(test_e,[:full,:expand,:str])
+        # show(Transition!(time_test,:tau))
+        # printlines()
+        
+        show(time_test,[:full,:expand,:str])
         printlines()
-
 
 
         # println("\ntest f:")
