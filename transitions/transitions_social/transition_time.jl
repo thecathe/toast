@@ -45,7 +45,10 @@ module SocialTransitionTime
             #
             "Evaluate! Local Configuration, if FE, delayed Evaluate! must be FE."
             localised_evaluate = Evaluate!(localised)
-            if localised_evaluate.future_en
+            if localised_evaluate.future_en === nothing
+                # must be End, μ, α
+                met_premise_persistency = true
+            elseif localised_evaluate.future_en
                 # @info "[time] c is fe\n$(string(localised_evaluate,:full,:expand))."
                 localised_delayed_evaluate = Evaluate!(localised_delayed)
                 if localised_delayed_evaluate.future_en

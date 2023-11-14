@@ -13,6 +13,11 @@ module ConstraintEvaluation
         head::Symbol
         args::Array{Any}
         expr::δExpr
+        # handle :tt case
+        function δEvaluation!(d::Symbol)
+            @assert d==:tt "δEvaluation!, when called with only a symbol, expects $(string(:tt)), not $(string(d))."
+            new(d,[],δExpr(:&&,Inf))
+        end
         #
         function δEvaluation!(v::Valuations,d::δ)
             head = d.head

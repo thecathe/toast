@@ -96,7 +96,7 @@ module ConfigurationEvaluations
 
                 @assert string(_result_fe) in ["true","false"] "Evaluate!, unexpected result (fe): $(string(_result_fe))\n\tof δEvaluation!: $(string(_eval_fe))"
 
-            elseif t isa Rec
+            elseif t isa μ
                 _actionable=true
                 _en=nothing
                 _fe=nothing
@@ -104,7 +104,7 @@ module ConfigurationEvaluations
                 _eval_en = δEvaluation!(:tt)
                 _eval_fe = δEvaluation!(:tt)
 
-            elseif t isa Call
+            elseif t isa α
                 _actionable=false
                 _en=nothing
                 _fe=nothing

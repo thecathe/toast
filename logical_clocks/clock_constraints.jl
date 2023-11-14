@@ -159,9 +159,9 @@ module ClockConstraints
                 elseif head ∈ [:eq,:geq]
                     @assert length(args)==2 "δ($(string(head))) expects 2 args: ($(length(args))) $(string(args))"
 
-                    @assert args[1] isa String "δ($(string(head))) expects #1 to be String, not: $(string(typeof(args[1])))"
+                    @assert args[1] isa String "δ($(string(head))) expects #1 to be String, not $(string(typeof(args[1]))): $(string(args[1]))."
                     
-                    @assert args[2] isa Num "δ($(string(head))) expects #1 to be Num, not: $(string(typeof(args[1])))"
+                    @assert args[2] isa Num "δ($(string(head))) expects #2 to be Num, not $(string(typeof(args[2]))): $(string(args[2]))."
 
                     new(head, [args...], δExpr(:call, [head==:eq ? :(==) : :(>=), args[1], args[2]]), unique(Array{String}([args[1]])))
 
@@ -201,7 +201,9 @@ module ClockConstraints
                     _init_flat = Array{δ}(Flatδ(args[1]))
                     # _init_flat = init_flat[1]
                     # look for any (:eq, x, n) or (:deq, x, y, n) or (:geq, x, n) or (:dgeq, x, y, n)
-                    _past = Array{δ}([Pastδ(f) for f in _init_flat])
+                    _init_past = Array{δ}([Pastδ(f) for f in _init_flat])
+                    _past = Array{δ}([])
+                    foreach(p -> push!(_past, Flatδ(p)...), _init_past)
                     # _past = Array{δ}([])
                     # for f in _init_flat
                     #     if 
@@ -211,6 +213,8 @@ module ClockConstraints
                     foreach(d -> push!(_clocks, d.clocks...), _past)
                     unique!(_clocks)
 
+                    # @assert !isempty(_clocks) "δ($(string(head))), no clocks found in: $(string(join([string("($(string(p)))") for p in _past], ", ")))."
+
                     # @info "δ($(string(head))), flats:...\n$(string(join([string(f) for f in _init_flat], "\n")))."
                     # @info "δ($(string(head))), clocks: $(string(_clocks))."
                     # @info "δ($(string(head))), pasts:...\n$(string(join([string(p) for p in _past], "\n")))."
@@ -218,44 +222,77 @@ module ClockConstraints
                     # now, find greatest constraint on each clock to keep
                     _weak_past_children = Array{δ}([])
                     # _weak_past_children = Array{δ}([_past...])
+                    # @info "δ($(string(head))), starting clocks."
                     for c in _clocks
+                        # @info "δ($(string(head))), A clock $(c)."
                         clock_highest_bound = nothing
                         for p in _past
+                            # @info "δ($(string(head))), $(string(p.head)): $(string(p))." 
                             # if :tt found, then any value of this clock holds
                             if p.head==:tt
                                 clock_highest_bound = true
                                 break
+                            
                             elseif p.head ∈ [:deq,:dgeq]
                                 @warn "δ($(string(head))), $(string(p.head)) skipped."
+                            
                             elseif p.head==:not
                                 child = p.args[1]
                                 if child.head==:tt
                                     clock_highest_bound = true
                                     break
+
                                 elseif child.head ∈ [:deq,:dgeq]
                                     @warn "δ($(string(head))) (child), $(string(child.head)) skipped."
+
                                 elseif child.head==:not
-                                    
-                                elseif child.head ∉ [:deq,:dgeq] && c in child.clocks && (clock_highest_bound === nothing || clock_highest_bound<child.args[2])
-                                    clock_highest_bound = child.args[2]
+                                    @error "δ($(string(head))) (child), should not have nested $(string(child.head))."
+                                
+                                elseif child.head ∈ [:eq,:geq]
+                                    if c in child.clocks && (clock_highest_bound === nothing || clock_highest_bound<child.args[2])
+                                        @assert child.args[2] isa Num "δ($(string(child.head))) expects #2 to be Num, not $(string(typeof(child.args[2]))): $(string(child.args[2]))."
+                                        clock_highest_bound = child.args[2]
+                                    # else
+                                    #     @info "δ($(string(head))) (child, $(string(child.head))), $(string(child)) is not higherbound than $(string(clock_highest_bound))."
+                                    end
+                                
                                 else
                                     @warn "δ($(string(child.head))) (child) not accounted for: $(string(child))."
                                 end
-                            elseif p.head ∉ [:deq,:dgeq] && c in p.clocks && (clock_highest_bound === nothing || clock_highest_bound<p.args[2])
-                                clock_highest_bound = p.args[2]
+                            
+                            elseif p.head ∈ [:eq,:geq]
+                                if c in p.clocks && (clock_highest_bound === nothing || clock_highest_bound<p.args[2])
+                                    @assert p.args[2] isa Num "δ($(string(p.head))) expects #2 to be Num, not $(string(typeof(p.args[2]))): $(string(p.args[2]))."
+                                    clock_highest_bound = p.args[2]
+                                # else
+                                #     @info "δ($(string(head))) ($(string(p.head))), $(string(p)) is not higherbound than $(string(clock_highest_bound))."
+                                end
                             else
                                 @warn "δ($(string(p.head))) not accounted for: $(string(p))."
                             end
                         end
+                        # @info "δ($(string(head))), B clock $(c)."
+                        # @info "δ($(string(head))), clock_highest_bound isa $(string(typeof(clock_highest_bound))): $(string(clock_highest_bound))."
                         # if not nothing, enforce upper bound
                         if clock_highest_bound !== nothing
-                            if clock_highest_bound isa Bool && clock_highest_bound
+                            if clock_highest_bound isa Num
+                                push!(_weak_past_children, δ(:not,δ(:geq,c,clock_highest_bound)))
+                                # @info "δ($(string(head))), $(c) upperbound by $(clock_highest_bound)."
+                            elseif clock_highest_bound isa Bool
+                                @assert clock_highest_bound "δ($(string(head))), found :tt, but expect this to be true."
                                 # @info "δ($(string(head))), $(c) can have any value."
                                 push!(_weak_past_children, δ(:geq, c, 0))
                             else
-                                push!(_weak_past_children, δ(:not,δ(:geq,c,clock_highest_bound)))
+                                @warn "δ($(string(head))), unexpected clock_highest_bound isa $(string(typeof(clock_highest_bound))): $(string(clock_highest_bound))."
                             end
+                        else
+                            @warn "δ($(string(head))), no highest clock bound found for $(c) in $(string(join([string(p) for p in _past], ", ")))."
                         end
+                    end
+                    # @info "δ($(string(head))), finished clocks."
+
+                    if isempty(_weak_past_children)
+                        @warn "δ($(string(head)), $(string(join([string("($(string(_d)))") for _d in _init_flat], ", ")))), expected _weak_past_children ($(string(join([string(c) for c in _clocks], ", ")))) to be non-empty.\npast: $(string(join([string(p) for p in _past], ", ")))."
                     end
 
                     # join flattened 
@@ -486,11 +523,11 @@ module ClockConstraints
     # convert each constraint to bound to zero
     function past(d::δ, neg::Bool = false)::δ
         if d.head==:eq
-            # => (:not (:and, (:not, (:geq, x, n)), (:eq, x, n))))
-            # δ(:not, δ(:and, δ(:not, δ(:geq, d.args[1], d.args[2])), δ(:eq, d.args[1], d.args[2])))
-
-            # => (:not (:and, (:not, (:eq, x, n)), (:geq, x, n))))
-            return δ(:not, δ(:and, δ(:not, δ(:eq, d.args[1], d.args[2])), δ(:geq, d.args[1], d.args[2])))
+            return δ(:not, δ(:and, 
+                δ(:geq, d.args[1], d.args[2]),
+                δ(:not, δ(:eq, d.args[1], d.args[2])), 
+            ))
+            # return δ(:not, δ(:and, δ(:not, δ(:eq, d.args[1], d.args[2])), δ(:geq, d.args[1], d.args[2])))
             
         # elseif d.head==:deq
         #     # => (:not (:and, (:not, (:dgeq, x, y, n)), (:deq, x, y, n))))
@@ -508,8 +545,8 @@ module ClockConstraints
                 return d
             else
                 # if not neg, then is always true
-                return δ(:tt)
-                # return δ(:geq, d.args[1], 0)
+                # return δ(:tt)
+                return δ(:geq, d.args[1], 0)
             end
             
         # elseif d.head==:dgeq

@@ -526,6 +526,22 @@ module TOAST
         # printlines()
 
 
+        # for i in range(1,4)
+
+        #     show(Transition!(test_b,:send,Msg("b")))
+        #     printlines()
+
+        #     show(test_b,[:full,:expand,:str])
+        #     printlines()
+
+        #     show(Transition!(test_b,:send,Msg("q")))
+        #     printlines()
+
+        #     show(test_b,[:full,:expand,:str])
+        #     printlines()
+
+        # end
+
         # temp for time step social
         # TimeStep!(test_c.valuations, 2)
 
@@ -679,6 +695,69 @@ module TOAST
         show(time_test,[:full,:expand,:str])
         printlines()
         
+        show(Transition!(time_test,:tau))
+        printlines()
+
+        show(time_test,[:full,:expand,:str])
+        printlines()
+        
+        show(Transition!(time_test,:t,0.1))
+        printlines()
+
+        show(time_test,[:full,:expand,:str])
+        printlines()
+        
+        show(Transition!(time_test,:t,100))
+        printlines()
+
+        show(time_test,[:full,:expand,:str])
+        printlines()
+        
+
+
+
+
+        # println("\ntest d:")
+        # show(test_d,[:full,:expand,:str])
+        # printlines()
+
+        # show(Transition!(test_d,:send,Msg("a")))
+        # printlines()
+
+        # show(test_d,[:full,:expand,:str])
+        # printlines()
+
+        # show(Transition!(test_d,:t,2))
+        # printlines()
+
+        # show(test_d,[:full,:expand,:str])
+        # printlines()
+
+        # show(Transition!(test_d,:send,Msg("a")))
+        # printlines()
+
+        # show(test_d,[:full,:expand,:str])
+        # printlines()
+
+
+        # for i in range(1,4)
+
+        #     show(Transition!(test_d,:send,Msg("b")))
+        #     printlines()
+
+        #     show(test_d,[:full,:expand,:str])
+        #     printlines()
+
+        #     show(Transition!(test_d,:send,Msg("q")))
+        #     printlines()
+
+        #     show(test_d,[:full,:expand,:str])
+        #     printlines()
+
+        # end
+
+
+
 
         # println("\ntest f:")
         # show(test_f,[:full,:expand,:str])
