@@ -40,5 +40,5 @@ module TypeDuality
         end
     end
     
-    dual(direction::Direction) = Direction(direction.child==:send ? :recv : :send)
+    dual(direction::Direction) = Direction(direction.dir==:send ? :recv : :send)
 end

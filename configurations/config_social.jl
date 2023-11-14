@@ -111,10 +111,10 @@ module SocialConfigurations
                 # ^ vscode terminal will insert a space on the first line sometimes if it is too long
             end
             # how to return?
-            if format_mode==:arr
+            if format_mode==:arr && :brackets ∉ args
                 return arr_build
 
-            elseif format_mode==:str
+            elseif format_mode==:str || :brackets ∈ args
                 config_height = length(arr_build)
 
                 if config_height==1
@@ -145,6 +145,11 @@ module SocialConfigurations
                         push!(arr_lines, string(lhs_buff, line, rhs_buff))
                     end
                 end
+
+                if :brackets ∈ args
+                    return arr_lines
+                end
+
                 return string("\n",join(arr_lines, "\n"))
             else
                 @error "Social.string, unexpected mode: $(string(args))"

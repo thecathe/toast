@@ -650,71 +650,77 @@ module TOAST
         # printlines()
 
 
-        time_test = Social(
-            Valuations([("x",2.5)]),
-            Interact(:recv, ("msg", Bool), 
-                δ(:not, δ(:and,
-                    δ(:and,
-                        δ(:geq, "x", 2),
-                        δ(:not, δ(:and,
-                            δ(:geq, "x", 3),
-                            δ(:not, δ(:geq, "x", 4))
-                        )),
-                    ),
-                    δ(:not, δ(:geq, "x", 5))
-                )), λ()),
-                # δ(:not, δ(:and,
-                #     δ(:geq, "x", 2),
-                #     δ(:and,
-                #         δ(:not, δ(:and,
-                #             δ(:geq, "x", 3),
-                #             δ(:not, δ(:geq, "x", 4))
-                #         )),
-                #         δ(:not, δ(:geq, "x", 5))
-                #     )
-                # )), λ()),
-            Queue(Msgs([Msg("msg", Bool)]))
-        ) 
+        # time_test = Social(
+        #     Valuations([("x",2.5)]),
+        #     Interact(:recv, ("msg", Bool), 
+        #         δ(:not, δ(:and,
+        #             δ(:and,
+        #                 δ(:geq, "x", 2),
+        #                 δ(:not, δ(:and,
+        #                     δ(:geq, "x", 3),
+        #                     δ(:not, δ(:geq, "x", 4))
+        #                 )),
+        #             ),
+        #             δ(:not, δ(:geq, "x", 5))
+        #         )), λ()),
+        #         # δ(:not, δ(:and,
+        #         #     δ(:geq, "x", 2),
+        #         #     δ(:and,
+        #         #         δ(:not, δ(:and,
+        #         #             δ(:geq, "x", 3),
+        #         #             δ(:not, δ(:geq, "x", 4))
+        #         #         )),
+        #         #         δ(:not, δ(:geq, "x", 5))
+        #         #     )
+        #         # )), λ()),
+        #     Queue(Msgs([Msg("msg", Bool)]))
+        # ) 
 
-        println("\n(time) test:")
-        show(time_test,[:full,:expand,:str])
-        printlines()
+        # println("\n(time) test:")
+        # show(time_test,[:full,:expand,:str])
+        # printlines()
 
-        show(Transition!(time_test,:t,0.5))
-        printlines()
+        # show(Transition!(time_test,:t,0.5))
+        # printlines()
+        
+        # # show(Transition!(time_test,:tau))
+        # # printlines()
+        
+        # show(time_test,[:full,:expand,:str])
+        # printlines()
+
+        # show(Transition!(time_test,:t,0.1))
+        # printlines()
+
+        # show(time_test,[:full,:expand,:str])
+        # printlines()
         
         # show(Transition!(time_test,:tau))
         # printlines()
+
+        # show(time_test,[:full,:expand,:str])
+        # printlines()
         
-        show(time_test,[:full,:expand,:str])
-        printlines()
+        # show(Transition!(time_test,:t,0.1))
+        # printlines()
 
-        show(Transition!(time_test,:t,0.1))
-        printlines()
-
-        show(time_test,[:full,:expand,:str])
-        printlines()
+        # show(time_test,[:full,:expand,:str])
+        # printlines()
         
-        show(Transition!(time_test,:tau))
-        printlines()
+        # show(Transition!(time_test,:t,100))
+        # printlines()
 
-        show(time_test,[:full,:expand,:str])
-        printlines()
-        
-        show(Transition!(time_test,:t,0.1))
-        printlines()
-
-        show(time_test,[:full,:expand,:str])
-        printlines()
-        
-        show(Transition!(time_test,:t,100))
-        printlines()
-
-        show(time_test,[:full,:expand,:str])
-        printlines()
+        # show(time_test,[:full,:expand,:str])
+        # printlines()
         
 
 
+
+        a_sys = System(test_e)
+
+        show(a_sys,[:full,:expand,:str])
+        printlines()
+        
 
 
         # println("\ntest d:")
