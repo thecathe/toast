@@ -635,18 +635,28 @@ module TOAST
 
 
         time_test = Social(
-            Valuations([("x",1.5)]),
+            Valuations([("x",2.5)]),
             Interact(:recv, ("msg", Bool), 
                 δ(:not, δ(:and,
-                    δ(:geq, "x", 2),
                     δ(:and,
+                        δ(:geq, "x", 2),
                         δ(:not, δ(:and,
                             δ(:geq, "x", 3),
                             δ(:not, δ(:geq, "x", 4))
                         )),
-                        δ(:not, δ(:geq, "x", 5))
-                    )
+                    ),
+                    δ(:not, δ(:geq, "x", 5))
                 )), λ()),
+                # δ(:not, δ(:and,
+                #     δ(:geq, "x", 2),
+                #     δ(:and,
+                #         δ(:not, δ(:and,
+                #             δ(:geq, "x", 3),
+                #             δ(:not, δ(:geq, "x", 4))
+                #         )),
+                #         δ(:not, δ(:geq, "x", 5))
+                #     )
+                # )), λ()),
             Queue(Msgs([Msg("msg", Bool)]))
         ) 
 
@@ -663,6 +673,12 @@ module TOAST
         show(time_test,[:full,:expand,:str])
         printlines()
 
+        show(Transition!(time_test,:t,0.1))
+        printlines()
+
+        show(time_test,[:full,:expand,:str])
+        printlines()
+        
 
         # println("\ntest f:")
         # show(test_f,[:full,:expand,:str])

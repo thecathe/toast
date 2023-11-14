@@ -199,13 +199,64 @@ module ClockConstraints
                     @assert args[1] isa δ "δ($(string(head))) expects #1 to be δ, not: $(string(typeof(args[1])))"
 
                     _init_flat = Array{δ}(Flatδ(args[1]))
+                    # _init_flat = init_flat[1]
                     # look for any (:eq, x, n) or (:deq, x, y, n) or (:geq, x, n) or (:dgeq, x, y, n)
                     _past = Array{δ}([Pastδ(f) for f in _init_flat])
+                    # _past = Array{δ}([])
+                    # for f in _init_flat
+                    #     if 
+                    # end
 
                     _clocks = Array{String}([])
                     foreach(d -> push!(_clocks, d.clocks...), _past)
+                    unique!(_clocks)
 
-                    _weak_past_children = Array{δ}([_past...])
+                    # @info "δ($(string(head))), flats:...\n$(string(join([string(f) for f in _init_flat], "\n")))."
+                    # @info "δ($(string(head))), clocks: $(string(_clocks))."
+                    # @info "δ($(string(head))), pasts:...\n$(string(join([string(p) for p in _past], "\n")))."
+
+                    # now, find greatest constraint on each clock to keep
+                    _weak_past_children = Array{δ}([])
+                    # _weak_past_children = Array{δ}([_past...])
+                    for c in _clocks
+                        clock_highest_bound = nothing
+                        for p in _past
+                            # if :tt found, then any value of this clock holds
+                            if p.head==:tt
+                                clock_highest_bound = true
+                                break
+                            elseif p.head ∈ [:deq,:dgeq]
+                                @warn "δ($(string(head))), $(string(p.head)) skipped."
+                            elseif p.head==:not
+                                child = p.args[1]
+                                if child.head==:tt
+                                    clock_highest_bound = true
+                                    break
+                                elseif child.head ∈ [:deq,:dgeq]
+                                    @warn "δ($(string(head))) (child), $(string(child.head)) skipped."
+                                elseif child.head==:not
+                                    
+                                elseif child.head ∉ [:deq,:dgeq] && c in child.clocks && (clock_highest_bound === nothing || clock_highest_bound<child.args[2])
+                                    clock_highest_bound = child.args[2]
+                                else
+                                    @warn "δ($(string(child.head))) (child) not accounted for: $(string(child))."
+                                end
+                            elseif p.head ∉ [:deq,:dgeq] && c in p.clocks && (clock_highest_bound === nothing || clock_highest_bound<p.args[2])
+                                clock_highest_bound = p.args[2]
+                            else
+                                @warn "δ($(string(p.head))) not accounted for: $(string(p))."
+                            end
+                        end
+                        # if not nothing, enforce upper bound
+                        if clock_highest_bound !== nothing
+                            if clock_highest_bound isa Bool && clock_highest_bound
+                                # @info "δ($(string(head))), $(c) can have any value."
+                                push!(_weak_past_children, δ(:geq, c, 0))
+                            else
+                                push!(_weak_past_children, δ(:not,δ(:geq,c,clock_highest_bound)))
+                            end
+                        end
+                    end
 
                     # join flattened 
                     _expr = δConjunctify(_weak_past_children)
@@ -381,6 +432,9 @@ module ClockConstraints
         sort!(lower_bounds)
         sort!(upper_bounds)
 
+        # @info "bounds, lower:\n$(string(join([string(l) for l in lower_bounds], ", ")))."
+        # @info "bounds, upper:\n$(string(join([string(u) for u in upper_bounds], ", ")))."
+
         # match each lowerbound to their nearest upper bound
         for lb in lower_bounds
             upper_bound = nothing
@@ -389,8 +443,9 @@ module ClockConstraints
                 # for ub in upper_bounds
                 for ub_index in range(1, length(upper_bounds))
                     ub = upper_bounds[ub_index]
-                    if upper_bound === nothing || ub < upper_bound && lb <= ub
+                    if (upper_bound === nothing || ub < upper_bound) && lb <= ub
                         upper_bound = ub
+                        upper_bound_index = ub_index
                     end
                 end
 
@@ -398,6 +453,7 @@ module ClockConstraints
                     # no upperbound given
                     push!(paired_bounds, (lb,true))
                 else
+                    # @info "bounds, upper_bound = \"$(upper_bound_index)\""
                     @assert upper_bound_index !== nothing "bounds, upper_bound !== nothing but no index given."
                     push!(paired_bounds, (lb,upper_bound))
                     deleteat!(upper_bounds, upper_bound_index)
@@ -413,6 +469,7 @@ module ClockConstraints
             push!(paired_bounds, (0,ub))
         end
 
+        @debug "bounds, pairs: $(string(join([string("($(p[1]), $(p[2]))") for p in paired_bounds],"; ")))."
 
         return paired_bounds
 
@@ -465,38 +522,44 @@ module ClockConstraints
             # δ(:not, δ(:and, δ(:not, δ(:geq, d.args[1], d.args[2])), δ(:eq, d.args[1], d.args[2])))
 
             # => (:not (:and, (:not, (:eq, x, n)), (:geq, x, n))))
-            δ(:not, δ(:and, δ(:not, δ(:eq, d.args[1], d.args[2])), δ(:geq, d.args[1], d.args[2])))
+            return δ(:not, δ(:and, δ(:not, δ(:eq, d.args[1], d.args[2])), δ(:geq, d.args[1], d.args[2])))
             
-        elseif d.head==:deq
-            # => (:not (:and, (:not, (:dgeq, x, y, n)), (:deq, x, y, n))))
-            # δ(:not, δ(:and, δ(:not, δ(:dgeq, d.args[1], d.args[2], d.args[3])), δ(:deq, d.args[1], d.args[2], d.args[3])))
+        # elseif d.head==:deq
+        #     # => (:not (:and, (:not, (:dgeq, x, y, n)), (:deq, x, y, n))))
+        #     # δ(:not, δ(:and, δ(:not, δ(:dgeq, d.args[1], d.args[2], d.args[3])), δ(:deq, d.args[1], d.args[2], d.args[3])))
             
-            # => (:not (:and, (:not, (:dgeq, x, y, n)), (:deq, x, y, n))))
-            δ(:not, δ(:and, δ(:not, δ(:deq, d.args[1], d.args[2], d.args[3])), δ(:dgeq, d.args[1], d.args[2], d.args[3])))
+        #     # => (:not (:and, (:not, (:dgeq, x, y, n)), (:deq, x, y, n))))
+        #     δ(:not, δ(:and, δ(:not, δ(:deq, d.args[1], d.args[2], d.args[3])), δ(:dgeq, d.args[1], d.args[2], d.args[3])))
             
         elseif d.head==:geq
             # => (:geq, x, 0)
             if neg
-                # do not bound to 0 if part of a </≤
-                δ(:geq, d.args[1], d.args[2])
+                # if neg, is lessthan. past of < is the same
+                # return δ(:not, δ(:and, δ(:not, δ(:eq, d.args[1], d.args[2])), δ(:geq, d.args[1], d.args[2])))
+                # return δ(:geq, d.args[1], d.args[2])
+                return d
             else
-                δ(:geq, d.args[1], 0)
+                # if not neg, then is always true
+                return δ(:tt)
+                # return δ(:geq, d.args[1], 0)
             end
             
-        elseif d.head==:dgeq
-            # => (:dgeq, x, y, 0)
-            δ(:dgeq, d.args[1], d.args[2], 0)
+        # elseif d.head==:dgeq
+        #     # => (:dgeq, x, y, 0)
+        #     δ(:dgeq, d.args[1], d.args[2], 0)
 
         elseif d.head==:not
             # 
             # if neg
             # @info "neg: $(typeof(neg))"
-                δ(:not, past(d.args[1], !neg))
+                return δ(:not, past(d.args[1], !neg))
             # else
             #     δ(:not, past(d.args[1], true))
             # end
             # δ(:not, past(d.args[1]))
 
+        elseif d.head ∈ [:deq,:dgeq]
+            return d
 
         else
             @warn "δ(:past), unknown flattened head: ($(string(d.head))), args:\n$(string(join(d.args, ",\n")))"
@@ -508,32 +571,132 @@ module ClockConstraints
     #
     "Returns a flattened δ, no more than 2 deep (for negations)."
     struct Flatδ
-        Flatδ(d::δ) = flatten(d)
+        function Flatδ(d::δ) 
+            flat =  flatten(d)
+
+            if flat[2]%2>0
+                return Array{δ}([δ(:not, f) for f in flat[1]])
+            else
+                return Array{δ}([flat[1]...])
+            end
+        end
     end
 
     # flatten constraint tree into conjunctive list
-    function flatten(d::δ, neg::Bool = false)::Array{δ} 
+    function flatten(d::δ; neg::Int64 = 0)::Tuple{Array{δ},Int64}
+    # function flatten(d::δ; neg::Bool = false)::Array{δ} 
         # @warn "\n\n\nFlatδ should not be used!\n\n\n"
+        #
+        #
+        #
+        # ! this needs redoing, :not must be wrapped arond the outside of each return of flatten
+        #
         if d.head==:and 
-            if neg
-                Array{δ}([flatten(δ(:not,δ(d.args[1].head,d.args[1].args...)),neg)...,flatten(δ(:not,δ(d.args[2].head,d.args[2].args...)),neg)...]) 
-            else 
-                Array{δ}([flatten(δ(d.args[1].head,d.args[1].args...),neg)...,flatten(δ(d.args[2].head,d.args[2].args...),neg)...]) 
+            lhs = δ(d.args[1].head,d.args[1].args...)
+            rhs = δ(d.args[2].head,d.args[2].args...)
+
+            f_lhs = flatten(lhs;neg=neg)
+            f_rhs = flatten(rhs;neg=neg)
+
+            # @info "Flattening (neg=$(neg)): $(string(d))."
+
+            # return (Array{δ}([
+            #     [(f_lhs[2]%2>0) ? [δ(:not,f) for f in f_lhs[1]]... : f_lhs...]...,
+            #     [(f_rhs[2]%2>0) ? [δ(:not,f) for f in f_rhs[1]]... : f_rhs...]...
+            # ]),neg)
+
+            if f_lhs[2]%2>0
+                a_lhs = Array{δ}([[δ(:not,f) for f in f_lhs[1]]...])
+            else
+                a_lhs = Array{δ}([f_lhs[1]...])
             end
+
+            if f_rhs[2]%2>0
+                a_rhs = Array{δ}([[δ(:not,f) for f in f_rhs[1]]...])
+            else
+                a_rhs = Array{δ}([f_rhs[1]...])
+            end
+
+            # @info "Flattened (neg=$(neg)): $(string(d)),
+            #     lhs: $(string(join([string(l) for l in a_lhs],", "))),
+            #     rhs: $(string(join([string(r) for r in a_rhs],", ")))."
+
+            return (Array{δ}([a_lhs...,a_rhs...
+                # Array{δ}([a_lhs...])...,
+                # Array{δ}([a_rhs...])...
+            ]),0)
+
+
+            # if neg>0
+            #     return Array{δ}([[δ(:not, f) for f in f_lhs]...,[δ(:not, f) for f in f_rhs]...])
+            # else
+            #     return Array{δ}([f_lhs...,f_rhs...])
+            # end
+            # if neg
+            #     Array{δ}([
+            #         flatten(δ(:not,δ(d.args[1].head,d.args[1].args...)),!neg)...,
+            #         flatten(δ(:not,δ(d.args[2].head,d.args[2].args...)),!neg)...
+            #         ]) 
+            # else 
+            #     Array{δ}([
+            #         flatten(δ(d.args[1].head,d.args[1].args...),!neg)...,
+            #         flatten(δ(d.args[2].head,d.args[2].args...),!neg)...
+            #         ]) 
+            # end
+            
         elseif d.head==:not
-            if neg
-                Array{δ}([flatten(δ(:not,δ(d.args[1].head,d.args[1].args...)),!neg)...])
-            else 
-                Array{δ}([flatten(δ(d.args[1].head,d.args[1].args...),!neg)...])
-            end
+            # return Array{δ}([[δ()]])
+            # "Call flatten with modulo the number of current negations, to keep them trimmed."
+            # new_neg = (neg+1)%2
+            flat = flatten(δ(d.args[1].head,d.args[1].args...);neg=neg+1)
+
+            return flat
+
+            # # is the root of a neg-tree?
+            # if neg==0
+            #     # return (Array{δ}([
+            #     #     (flat[2]%2>0) ? [δ(:not,f) for f in flat[1]] : flat...
+            #     # ]),0)
+
+            #     if flat[2]%2>0
+            #         return (Array{δ}([[δ(:not,f) for f in flat[1]]...]),0)
+            #     else
+            #         return (Array{δ}([flat...]),0)
+            #     end
+            # else
+            #     # is just part of a larger neg tree, pass upwards
+            #     return (Array{δ}([flat[1]...]),flat[2]+1)
+            # end
+
+            # if new_neg>0
+            #     return Array{δ}([[δ(:not, f) for f in flat]...])
+            # else
+            #     return Array{δ}([flat...])
+            # end
+            # if neg
+            #     return Array{δ}([[f for f in flatten(δ(d.args[1].head,d.args[1].args...);neg=neg+1)]...])
+            # else
+            #     return Array{δ}([[δ(:not, f) for f in flatten(δ(d.args[1].head,d.args[1].args...);neg=neg+1)]...])
+            # end
+
+            # if neg
+            #     Array{δ}([
+            #         flatten(δ(:not,δ(d.args[1].head,d.args[1].args...)),!neg)...
+            #     ])
+            # else 
+            #     Array{δ}([
+            #         flatten(δ(d.args[1].head,d.args[1].args...),!neg)...
+            #     ])
+            # end
         elseif d.head==:disjunct
             @warn "flatten(), head==:disjunct not supported."
         else
-            if neg
-                Array{δ}([δ(:not,d)])
-            else 
-                Array{δ}([d])
-            end
+            return (Array{δ}([d]),neg)
+            # if neg>0
+            #     Array{δ}([δ(:not,d)])
+            # else 
+            #     Array{δ}([d])
+            # end
         end
     end
 
@@ -555,7 +718,7 @@ module ClockConstraints
             # return f[1]
             return δExpr(:&&,f[1])
         else
-            @error "δConjunctify, called with empty list"
+            @error "δConjunctify, called with empty list."
         end
     end
 

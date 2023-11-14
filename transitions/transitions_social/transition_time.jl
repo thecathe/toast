@@ -46,12 +46,13 @@ module SocialTransitionTime
             "Evaluate! Local Configuration, if FE, delayed Evaluate! must be FE."
             localised_evaluate = Evaluate!(localised)
             if localised_evaluate.future_en
-                @info "[time] c is fe\n$(string(localised_evaluate,:full,:expand))."
+                # @info "[time] c is fe\n$(string(localised_evaluate,:full,:expand))."
                 localised_delayed_evaluate = Evaluate!(localised_delayed)
                 if localised_delayed_evaluate.future_en
                     met_premise_persistency = true
+                    # @info "[time] (delayed) c is fe\n$(string(localised_delayed_evaluate,:full,:expand))."
                 else
-                    @warn "[time] delayed not fe\n$(string(localised_delayed_evaluate,:full,:expand))."
+                    @warn "[time] (delayed) not fe\n$(string(localised_delayed_evaluate,:full,:expand))."
                     met_premise_persistency = false
                 end
             else
@@ -149,15 +150,23 @@ module SocialTransitionTime
                             lb = b[1]
                             ub = b[2]
                             if ub isa Bool
-                                push!(intersections, (lb < clock_ub) && (lb > clock_lb))
+                                @debug "[time] (urgency), bounds($(x)): $(lb < clock_ub) = ($(lb) < $(clock_ub))."
+                                @debug "[time] (urgency), bounds($(x)): $(lb < clock_lb) = ($(lb) < $(clock_lb))."
+                                
+                                push!(intersections, (lb < clock_ub))
+                                push!(intersections, (lb < clock_lb))
                             else
-                                push!(intersections, (lb < clock_ub && clock_ub < ub) && (lb > clock_lb && clock_lb > ub))
+                                @debug "[time] (urgency), bounds($(x)): $(lb < clock_ub && clock_ub < ub) = ($(lb) < $(clock_ub) && $(clock_ub) < $(ub))."
+                                @debug "[time] (urgency), bounds($(x)): $(lb < clock_lb && clock_lb < ub) = ($(lb) < $(clock_lb) && $(clock_lb) < $(ub))."
+                                
+                                push!(intersections, (lb < clock_ub && clock_ub < ub))
+                                push!(intersections, (lb < clock_lb && clock_lb < ub))
                             end
                         end
 
                     end
 
-                    met_premise_urgency = !(false ∈ intersections)
+                    met_premise_urgency = !(true ∈ intersections)
 
                     # # get upper and lower bounds for each clock given the relevant constraint
                     # flattened = δ(:flatten, relevant_constraints)
@@ -199,12 +208,14 @@ module SocialTransitionTime
 
 
             met_premise = Array{Bool}([met_premise_configuration,met_premise_persistency,met_premise_urgency])
-            @info "[time] $(string(met_premise))."
+            # @info "[time] $(string(met_premise))."
             success = false ∉ met_premise
 
             # move clocks if success
             if success
                 c.valuations = localised_delayed.valuations
+            else
+                @info "[time] (configuration: $(string(met_premise[1]))) (persistency: $(string(met_premise[2]))) (urgency: $(string(met_premise[3])))."
             end
 
             new(success, met_premise, unfolded, unfolded_str)
