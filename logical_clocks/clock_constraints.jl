@@ -473,38 +473,6 @@ module ClockConstraints
 
         return paired_bounds
 
-        # keep_pairing = true
-        # while keep_pairing
-        #     # find lowest bound
-        #     lowest_bound = nothing
-        #     lowest_index = -1
-        #     for lb in lower_bounds.
-        #         if lowest_bound === nothing || lb < lowest_bound 
-        #             lowest_bound = lb
-        #             lowest_index = getindex()
-        #         end
-        #     end
-        #     # @assert lowest_bound !== nothing "bounds, lowest_bound is nothing."
-        #     if lowest_bound === nothing
-        #         lowest_bound = 0
-        #     else
-        #         deleteat!(lowest_bound,lowest_index)
-        #     end
-
-        #     # find lowest upper bound above lowest bound
-        #     uppest_bound = nothing
-        #     for ub in upper_bounds
-        #         if uppest_bound === nothing || ub < uppest_bound && lowest_bound <= ub
-        #             uppest_bound = ub
-        #         end
-        #     end
-        #     if uppest_bound === nothing
-        #         uppest_bound = true
-        #     end
-            
-        # end
-
-        # return (lower_bound, upper_bound)
     end
 
     #

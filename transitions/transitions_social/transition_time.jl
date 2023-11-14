@@ -105,13 +105,6 @@ module SocialTransitionTime
                     before_clocks = Array{Clock}([x for x in localised.valuations.clocks if x.label ∈ relevant_clocks])
                     after_clocks = Array{Clock}([x for x in localised_delayed.valuations.clocks if x.label ∈ relevant_clocks])
 
-                    # create set of constraints for the possible valuation of each clock
-                    # list_of_clock_constraints = Array{Tuple{String,δ}}([])
-                    # list_of_clock_constraints = Array{δ}([relevant_interact.constraints])
-
-                    # # assume fails
-                    # met_premise_urgency = false
-
                     intersections = Array{Bool}([])
 
                     for x in relevant_clocks
@@ -133,11 +126,6 @@ module SocialTransitionTime
                         end
                         @assert after_clock isa Clock "[time] (urgency) after_clock \"$(x)\" is expected to be a Clock, not $(typeof(after_clock))...:\n$(string(after_clocks))"
                         
-                        # push!(list_of_clock_constraints, (x, δ(:and, 
-                        #         δ(:geq, before_clock.label, before_clock.value), 
-                        #         δ(:not, δ(:geq, after_clock.label, after_clock.value))
-                        #     )))
-
 
                         # get upper and lower bounds for each clock given the relevant constraint
                         flattened = δ(:flatten, relevant_constraints)
@@ -167,42 +155,6 @@ module SocialTransitionTime
                     end
 
                     met_premise_urgency = !(true ∈ intersections)
-
-                    # # get upper and lower bounds for each clock given the relevant constraint
-                    # flattened = δ(:flatten, relevant_constraints)
-                    # for x in relevant_clocks
-                    #     bounds = boundsOf(x,flattened)
-                    #     # check if clock lb or ub falls inbetween ANY pair of bounds
-                    # end
-
-
-                        # lower_bound = 0
-                        # upper_bound = true
-                        # always_enabled = false
-                        # for f in flattened.args
-                        #     @assert f isa δ "[time] (urgency), flattened args expected to be δ, not $(typeof(f))."
-                        #     if f.head ∈ [:deq,:dgeq,:tt]
-                        #         always_enabled = true
-                        #     elseif f.head==:eq
-
-                        #     else
-                        #         @warn "[time] (urgency), unhandled f.head: $(string(f.head))."
-                        #     end
-                        # end
-
-
-
-
-                    # # make single δ
-                    # clock_constraints = δ(:conjunct, list_of_clock_constraints...)
-                    # # evaluate (use current valuations to ensure urgency)
-                    # conjunct_eval = δEvaluation!(localised.valuations,clock_constraints)
-                    # eval_result = eval(conjunct_eval.expr)
-
-                    # @info "[time] (urgency), evaluation: $(string(eval_result)) =\n$(string(conjunct_eval.expr))\n$(string(clock_constraints))."
-
-                    # # condition met if eval yields false, as constraints do not overlap
-                    # met_premise_urgency = string(eval_result)=="false"
                 end
             end
 
