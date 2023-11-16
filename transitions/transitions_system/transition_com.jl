@@ -9,7 +9,6 @@ module SystemTransitionCom
     using ...Configurations
 
     import ..Transitions.SystemTransition
-    # import ..Transitions.Transition!
     using ..SocialTransitionSend
     using ..SocialTransitionQue
 

@@ -8,7 +8,6 @@ module SystemTransitionPar
     using ...Configurations
 
     import ..Transitions.SystemTransition
-    # import ..Transitions.Transition!
     using ..SocialTransitionRecv
 
     export Par!, ParL!, ParR!
