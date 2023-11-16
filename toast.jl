@@ -733,6 +733,31 @@ module TOAST
         show(a_sys,[:full,:expand,:str])
         printlines()
         
+        send_b = false
+
+        for _ in range(1,20)
+
+            if rand(1:2)==1
+                if send_b==false
+                    global send_b=true
+                    show(Transition!(a_sys,:tau,Msg("b")))
+                    printlines()
+                else
+                    global send_b=false
+                    show(Transition!(a_sys,:tau,Msg("q")))
+                    printlines()
+                end
+            else
+                show(Transition!(a_sys,:tau))
+                printlines()
+            end
+        
+            show(a_sys,[:full,:expand,:str])
+            printlines()
+
+        end
+        
+
 
 
         # println("\ntest d:")

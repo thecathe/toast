@@ -77,7 +77,7 @@ module Transitions
 
     include("transitions/transitions_system/transition_par.jl")
     using .SystemTransitionPar
-    # export ParL!, ParR!
+    export Par!#, ParL!, ParR!
 
     include("transitions/transitions_system.jl")
     using .TransitionsSystem

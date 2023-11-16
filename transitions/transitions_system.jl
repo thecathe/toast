@@ -90,26 +90,32 @@ module TransitionsSystem
 
                     transition = Par!(c)
                     success = transition.success
-                    lhs_success = transition.lhs_success
-                    rhs_success = transition.rhs_success
+                    
+                    lhs_taken = transition.lhs_taken
+                    rhs_taken = transition.rhs_taken
 
                     "Check if unfolding occured."
-                    if transition.lhs_unfolded
-                        label = "$(label)(l)$(transition.lhs_unfolded_str)"
-                    end
-                    if transition.rhs_unfolded
-                        label = "$(label)(r)$(transition.rhs_unfolded_str)"
+                    if transition.unfolded
+                        label = "$(label)(l)$(transition.unfolded_str)"
                     end
 
 
-                    if lhs_success && rhs_success
+                    if lhs_taken && rhs_taken
                         label = "$(label)[par-x]"
-                    elseif lhs_success
+                        lhs_success = success
+                        rhs_success = success
+                    elseif lhs_taken
                         label = "$(label)[par-l]"
-                    elseif rhs_success
+                        lhs_success = success
+                        rhs_success = true
+                    elseif rhs_taken
                         label = "$(label)[par-r]"
+                        lhs_success = true
+                        rhs_success = success
                     else
                         label = "$(label)[par]"
+                        lhs_success = false
+                        rhs_success = false
                     end
 
                 end

@@ -28,7 +28,7 @@ module SocialTransitionRecv
 
             "Check if message in queue."
             if !head[2]
-                @warn "Recv! no message in queue."
+                @debug "Recv! no message in queue."
                 return new(false,Nothing(),λ(),false,"")
             end
 
