@@ -15,6 +15,8 @@ module LocalConfigurations
         type::T where {T<:SessionType}
         relevant_clocks::Array{String}
 
+        Local(c::T) where {T<:SessionType} = Local(Valuations(),c)
+        
         Local(c::T) where {T<:Configuration} = new(c.valuations,c.type)
 
         function Local(val::Valuations,type::T) where {T<:SessionType}
@@ -53,6 +55,7 @@ module LocalConfigurations
     Base.show(c::Local, mode::Symbol, io::Core.IO = stdout) = print(io, string(c, mode))
     Base.show(c::Local, modes::T, io::Core.IO = stdout) where {T<:Array{Symbol}}= print(io, string(c, modes...))
 
+    # TODO: fix the mods in these kinds of functions
     function Base.string(c::Local, args...)
         # get mode
         if length(args)==0

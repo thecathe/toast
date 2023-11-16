@@ -2,6 +2,11 @@ module DemoTOAST
 
     include("toast.jl")
     using .TOAST
+    export Interact, Choice, End, μ, α
+    export Local, Social, System
+    export Transition!
+    export Evaluate!
+    export Valuations
 
     export example_types
     
