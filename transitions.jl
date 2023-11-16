@@ -16,7 +16,7 @@ module Transitions
 
     const transition_labels = [:send,:recv,:ell,:tau,:t] 
 
-    export Transition!, TransitionSocial!, TransitionSystem!
+    export Transition!
 
 
     #

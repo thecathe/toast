@@ -74,6 +74,10 @@ module TOAST
     #
     include("logical_clocks.jl")
     using .LogicalClocks
+    export Clock, λ
+    export Valuations, ValueOf!, ResetClocks!, TimeStep!
+    export δ
+    export δExpr, δEvaluation
 
     if show_clock_tests || show_all_clock_tests || show_all_tests
 
@@ -172,6 +176,9 @@ module TOAST
     #
     include("session_types.jl")
     using .SessionTypes
+    export End, μ, α, Interact, Choice
+    export Msg, Payload, Del
+    export SessionType, S, Duality
     
     if show_type_tests || show_all_type_tests || show_all_tests
 
@@ -336,6 +343,8 @@ module TOAST
     #
     include("configurations.jl")
     using .Configurations
+    export Local, Social, System
+    export Queue, Evaluate!
 
     # include("evaluate.jl")
     # using .Evaluate
@@ -480,8 +489,9 @@ module TOAST
         #
         include("transitions.jl")
         using .Transitions
+        export Transition!
 
-        println("operational semantic tests:")
+        # println("operational semantic tests:")
 
         test_a = deepcopy(local_a)
         test_b = deepcopy(local_a)
@@ -715,47 +725,54 @@ module TOAST
         
 
 
+        # !
+        # !
+        # !
+        # !
+        # !
+        # !
+        # !
 
-        a_sys = System(test_e)
+        # a_sys = System(test_e)
 
-        show(a_sys,[:full,:expand,:str])
-        printlines()
+        # show(a_sys,[:full,:expand,:str])
+        # printlines()
         
-        show(Transition!(a_sys,:t,2))
-        printlines()
+        # show(Transition!(a_sys,:t,2))
+        # printlines()
 
-        show(a_sys,[:full,:expand,:str])
-        printlines()
+        # show(a_sys,[:full,:expand,:str])
+        # printlines()
         
-        show(Transition!(a_sys,:tau,Msg("a")))
-        printlines()
+        # show(Transition!(a_sys,:tau,Msg("a")))
+        # printlines()
 
-        show(a_sys,[:full,:expand,:str])
-        printlines()
+        # show(a_sys,[:full,:expand,:str])
+        # printlines()
         
-        send_b = false
+        # send_b = false
 
-        for _ in range(1,20)
+        # for _ in range(1,20)
 
-            if rand(1:2)==1
-                if send_b==false
-                    global send_b=true
-                    show(Transition!(a_sys,:tau,Msg("b")))
-                    printlines()
-                else
-                    global send_b=false
-                    show(Transition!(a_sys,:tau,Msg("q")))
-                    printlines()
-                end
-            else
-                show(Transition!(a_sys,:tau))
-                printlines()
-            end
+        #     if rand(1:2)==1
+        #         if send_b==false
+        #             global send_b=true
+        #             show(Transition!(a_sys,:tau,Msg("b")))
+        #             printlines()
+        #         else
+        #             global send_b=false
+        #             show(Transition!(a_sys,:tau,Msg("q")))
+        #             printlines()
+        #         end
+        #     else
+        #         show(Transition!(a_sys,:tau))
+        #         printlines()
+        #     end
         
-            show(a_sys,[:full,:expand,:str])
-            printlines()
+        #     show(a_sys,[:full,:expand,:str])
+        #     printlines()
 
-        end
+        # end
         
 
 
