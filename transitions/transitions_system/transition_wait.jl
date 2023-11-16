@@ -17,8 +17,8 @@ module SystemTransitionWait
     struct Wait! <: SystemTransition
         success::Bool
 
-        lhs::Bool
-        rhs::Bool
+        lhs_success::Bool
+        rhs_success::Bool
         
         lhs_unfolded::Bool
         lhs_unfolded_str::String

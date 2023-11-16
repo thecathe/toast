@@ -727,6 +727,12 @@ module TOAST
         show(a_sys,[:full,:expand,:str])
         printlines()
         
+        show(Transition!(a_sys,:tau,Msg("a")))
+        printlines()
+
+        show(a_sys,[:full,:expand,:str])
+        printlines()
+        
 
 
         # println("\ntest d:")

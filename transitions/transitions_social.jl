@@ -80,6 +80,11 @@ module TransitionsSocial
                 transition = Recv!(c)
                 action = transition.action
 
+                "Check if unfolding occured."
+                if transition.unfolded
+                    label = "$(label)$(transition.unfolded_str)"
+                end
+
                 success = transition.success
                 label = "$(label)[recv] $(string(action)) [$(string(transition.resets)) ↦ 0]"
 

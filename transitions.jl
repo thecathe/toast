@@ -73,7 +73,7 @@ module Transitions
 
     include("transitions/transitions_system/transition_com.jl")
     using .SystemTransitionCom
-    # export ComL!, ComR!
+    export Com!#, ComL!, ComR!
 
     include("transitions/transitions_system/transition_par.jl")
     using .SystemTransitionPar
