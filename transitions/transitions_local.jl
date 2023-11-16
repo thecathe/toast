@@ -50,6 +50,8 @@ module TransitionsLocal
             if kind==:t
                 @assert length(args)==1 "TransitionLocal! ($(string(kind))) expects 1 argument: time value."
                 time_value = args[1]
+                @assert time_value isa Num "(Local) Transition ($(string(kind))) expects a Number, not $(typeof(time_value))."
+                @assert time_value >= 0 "(Local) Transition ($(string(kind))) expects a Positive Number, not $(string(time_value))."
                 label = "$(label)[tick] t($(time_value))"
 
                 # make transition

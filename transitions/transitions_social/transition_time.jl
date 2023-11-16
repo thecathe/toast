@@ -24,7 +24,7 @@ module SocialTransitionTime
         unfolded::Bool
         unfolded_str::String
 
-        "Pop! head of Queue, then elevate to Act!"
+        "Check premises of [time], then elevate to [tick]"
         function Time!(c::Social,t::Num)
 
             

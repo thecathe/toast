@@ -12,20 +12,20 @@ module SystemTransitionCom
     using ..SocialTransitionSend
     using ..SocialTransitionQue
 
-    export ComL!, ComR!
+    export Com!, ComL!, ComR!
 
-    struct ComL!
-
-    end
-
-    struct ComR!
+    struct ComL! <: SystemTransition
 
     end
 
+    struct ComR! <: SystemTransition
+
+    end
+
     #
     #
     #
-    struct Com!
+    struct Com! <: SystemTransition
 
     end
 

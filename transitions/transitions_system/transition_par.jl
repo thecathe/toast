@@ -11,20 +11,20 @@ module SystemTransitionPar
     # import ..Transitions.Transition!
     using ..SocialTransitionRecv
 
-    export ParL!, ParR!
+    export Par!, ParL!, ParR!
 
-    struct ParL!
-
-    end
-
-    struct ParR!
+    struct ParL! <: SystemTransition
 
     end
 
+    struct ParR! <: SystemTransition
+
+    end
+
     #
     #
     #
-    struct Par!
+    struct Par! <: SystemTransition
 
     end
 

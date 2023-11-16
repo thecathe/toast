@@ -69,7 +69,7 @@ module Transitions
     #
     include("transitions/transitions_system/transition_wait.jl")
     using .SystemTransitionWait
-    # export Que!
+    export Wait!
 
     include("transitions/transitions_system/transition_com.jl")
     using .SystemTransitionCom
@@ -79,6 +79,13 @@ module Transitions
     using .SystemTransitionPar
     # export ParL!, ParR!
 
+    include("transitions/transitions_system.jl")
+    using .TransitionsSystem
+    export TransitionsSystem!
+    
+    #
+    # handles all transitions
+    #
     struct Transition!
         "If has_keep, contains the original Configuration, prior to the transition."
         origin::T where {T<:Union{Nothing,R} where {R<:Configuration}}
@@ -147,6 +154,13 @@ module Transitions
 
         "Transition for Social Configurations."
         Transition!(c::Social,kind::Symbol,args...; keep::Bool = false) = TransitionSocial!(c,kind,args...;keep)
+
+        "Handle Actions."
+        Transition!(c::System,a::Action,args...; keep::Bool = false) = TransitionSystem!(c,a.direction.dir,a.msg,args...;keep)
+
+
+        "Transition for Social Configurations."
+        Transition!(c::System,kind::Symbol,args...; keep::Bool = false) = TransitionSystem!(c,kind,args...;keep)
         # function Transition!(c::Social,kind::Symbol,args...; keep::Bool = false)
 
         #     @assert kind ∈ transition_labels "(Social) Transition kind ($(string(kind))) is not supported."
@@ -224,5 +238,9 @@ module Transitions
     Base.show(t::TransitionSocial!,io::Core.IO = stdout) = print(io, string(t))
 
     Base.string(t::TransitionSocial!, args...) = string("↪$(t.label) $(t.success ? "⟶" : "̸⟶")")
+
+    Base.show(t::TransitionSystem!,io::Core.IO = stdout) = print(io, string(t))
+
+    Base.string(t::TransitionSystem!, args...) = string("↪$(t.label) $(t.success ? "⟶" : "̸⟶")")
 
 end
