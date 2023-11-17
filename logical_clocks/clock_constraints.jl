@@ -393,16 +393,23 @@ module ClockConstraints
     #     @assert f.head==:flat "bounds requires flattened δ."
     #     return boundsOf(x,Array{δ}([f.args[1]...]))
     # end
-    function boundsOf(x::String,f::Array{δ})::Array{Tuple{Num,Union{Bool,Num}}}#::Tuple{Array{Num},Array{Union{Bool,Num}}}#::Tuple{Num,Union{Bool,Num}}
+    # function boundsOf(x::String,f::Array{δ})::Array{Tuple{Num,Union{Bool,Num}}}#::Tuple{Array{Num},Array{Union{Bool,Num}}}#::Tuple{Num,Union{Bool,Num}}
+    function boundsOf(x::String,f::δ)::Array{Tuple{Num,Union{Bool,Num}}}#::Tuple{Array{Num},Array{Union{Bool,Num}}}#::Tuple{Num,Union{Bool,Num}}
         # lower_bound = 0
         # upper_bound = true
         lower_bounds = Array{Num}([])
         upper_bounds = Array{Num}([])
         # array of tuples indicating eq (bool indicates neg)
+        # TODO change this to instead add to the lb and ub (if neg, )
+        # ? maybe this kind of thing needs to be overhauled, to be able to show if it is inclusive or exclusive ?
         eq_constraints = Array{Tuple{Bool,Num}}([])
+
+
+
         # always_enabled = false
         # go through each δ and find ones that pertain to x
         for d in f
+            @debug "bounds, for: $(string(d))."
             if d.head==:tt
                 continue
             
@@ -476,8 +483,8 @@ module ClockConstraints
         sort!(lower_bounds)
         sort!(upper_bounds)
 
-        # @info "bounds, lower:\n$(string(join([string(l) for l in lower_bounds], ", ")))."
-        # @info "bounds, upper:\n$(string(join([string(u) for u in upper_bounds], ", ")))."
+        @debug "bounds, lower:\n$(string(join([string(l) for l in lower_bounds], ", ")))."
+        @debug "bounds, upper:\n$(string(join([string(u) for u in upper_bounds], ", ")))."
 
         # match each lowerbound to their nearest upper bound
         for lb in lower_bounds

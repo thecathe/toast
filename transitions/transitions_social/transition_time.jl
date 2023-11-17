@@ -131,9 +131,10 @@ module SocialTransitionTime
                         
 
                         # get upper and lower bounds for each clock given the relevant constraint
-                        flattened = δ(:flatten, relevant_constraints)
-                        flat = Array{δ}([flattened.args...])
-                        bounds = boundsOf(x,flat)
+                        # TODO without using flattened
+                        # flattened = δ(:flatten, relevant_constraints)
+                        # flat = Array{δ}([flattened.args...])
+                        bounds = boundsOf(x,relevant_constraints)
                         # check if clock lb or ub falls inbetween ANY pair of bounds
                         for b in bounds
                             clock_lb = before_clock.value

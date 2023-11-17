@@ -1,3 +1,5 @@
+ENV["JULIA_DEBUG"] = "all"
+
 module TOAST
 
     function printlines() 
@@ -648,7 +650,7 @@ module TOAST
 
 
 
-        # # TODO: time
+        # # # TODO: time
         # println("\ntest (time) e:")
         # show(test_e,[:full,:expand,:str])
         # printlines()
@@ -660,50 +662,50 @@ module TOAST
         # printlines()
 
 
-        # time_test = Social(
-        #     Valuations([("x",2.5)]),
-        #     Interact(:recv, ("msg", Bool), 
-        #         δ(:not, 
-        #             δ(:and,
-        #                 δ(:not, 
-        #                     δ(:and,
-        #                         δ(:geq, "x", 2),
-        #                         δ(:not, 
-        #                             δ(:and,
-        #                                 δ(:geq, "x", 3),
-        #                                 δ(:not, δ(:geq, "x", 4))
-        #                             )
-        #                         )
-        #                     )
-        #                 ),
-        #                 δ(:not, δ(:geq, "x", 5))
-        #             )
-        #         ), λ()),
-        #         # δ(:not, δ(:and,
-        #         #     δ(:geq, "x", 2),
-        #         #     δ(:and,
-        #         #         δ(:not, δ(:and,
-        #         #             δ(:geq, "x", 3),
-        #         #             δ(:not, δ(:geq, "x", 4))
-        #         #         )),
-        #         #         δ(:not, δ(:geq, "x", 5))
-        #         #     )
-        #         # )), λ()),
-        #     Queue(Msgs([Msg("msg", Bool)]))
-        # ) 
+        time_test = Social(
+            Valuations([("x",2.5)]),
+            Interact(:recv, ("msg", Bool), 
+                δ(:not, 
+                    δ(:and,
+                        δ(:not, 
+                            δ(:and,
+                                δ(:geq, "x", 2),
+                                δ(:not, 
+                                    δ(:and,
+                                        δ(:geq, "x", 3),
+                                        δ(:not, δ(:geq, "x", 4))
+                                    )
+                                )
+                            )
+                        ),
+                        δ(:not, δ(:geq, "x", 5))
+                    )
+                ), λ()),
+                # δ(:not, δ(:and,
+                #     δ(:geq, "x", 2),
+                #     δ(:and,
+                #         δ(:not, δ(:and,
+                #             δ(:geq, "x", 3),
+                #             δ(:not, δ(:geq, "x", 4))
+                #         )),
+                #         δ(:not, δ(:geq, "x", 5))
+                #     )
+                # )), λ()),
+            Queue(Msgs([Msg("msg", Bool)]))
+        ) 
 
-        # println("\n(time) test:")
-        # show(time_test,[:full,:expand,:str])
-        # printlines()
+        println("\n(time) test:")
+        show(time_test,[:full,:expand,:str])
+        printlines()
 
-        # show(Transition!(time_test,:t,1.5))
+        show(Transition!(time_test,:t,0.1))
+        printlines()
+        
+        # show(Transition!(time_test,:tau))
         # printlines()
         
-        # # show(Transition!(time_test,:tau))
-        # # printlines()
-        
-        # show(time_test,[:full,:expand,:str])
-        # printlines()
+        show(time_test,[:full,:expand,:str])
+        printlines()
 
         # show(Transition!(time_test,:t,0.1))
         # printlines()
