@@ -215,9 +215,9 @@ module ClockConstraints
 
                     # @assert !isempty(_clocks) "δ($(string(head))), no clocks found in: $(string(join([string("($(string(p)))") for p in _past], ", ")))."
 
-                    # @info "δ($(string(head))), flats:...\n$(string(join([string(f) for f in _init_flat], "\n")))."
-                    # @info "δ($(string(head))), clocks: $(string(_clocks))."
-                    # @info "δ($(string(head))), pasts:...\n$(string(join([string(p) for p in _past], "\n")))."
+                    @debug "δ($(string(head))), flats:...\n$(string(join([string(f) for f in _init_flat], "\n")))."
+                    @debug "δ($(string(head))), clocks: $(string(_clocks))."
+                    @debug "δ($(string(head))), pasts:...\n$(string(join([string(p) for p in _past], "\n")))."
 
                     # now, find greatest constraint on each clock to keep
                     _weak_past_children = Array{δ}([])
@@ -261,9 +261,16 @@ module ClockConstraints
                                 end
                             
                             elseif p.head ∈ [:eq,:geq]
-                                if c in p.clocks && (clock_highest_bound === nothing || clock_highest_bound<p.args[2])
-                                    @assert p.args[2] isa Num "δ($(string(p.head))) expects #2 to be Num, not $(string(typeof(p.args[2]))): $(string(p.args[2]))."
-                                    clock_highest_bound = p.args[2]
+                                if c in p.clocks 
+                                    # check if past :geq (x ≥ 0)
+                                    if p.head==:geq && p.args[2]==0
+                                        clock_highest_bound = true
+                                        break
+
+                                    elseif (clock_highest_bound === nothing || clock_highest_bound<p.args[2])
+                                        @assert p.args[2] isa Num "δ($(string(p.head))) expects #2 to be Num, not $(string(typeof(p.args[2]))): $(string(p.args[2]))."
+                                        clock_highest_bound = p.args[2]
+                                    end
                                 # else
                                 #     @info "δ($(string(head))) ($(string(p.head))), $(string(p)) is not higherbound than $(string(clock_highest_bound))."
                                 end
@@ -272,7 +279,7 @@ module ClockConstraints
                             end
                         end
                         # @info "δ($(string(head))), B clock $(c)."
-                        # @info "δ($(string(head))), clock_highest_bound isa $(string(typeof(clock_highest_bound))): $(string(clock_highest_bound))."
+                        @debug "δ($(string(head))), clock_highest_bound isa $(string(typeof(clock_highest_bound))): $(string(clock_highest_bound))."
                         # if not nothing, enforce upper bound
                         if clock_highest_bound !== nothing
                             if clock_highest_bound isa Num
