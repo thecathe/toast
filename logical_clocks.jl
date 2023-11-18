@@ -19,14 +19,14 @@ module LogicalClocks
     #
     include("logical_clocks/clock_valuations.jl")
     using .ClockValuations
-    export Valuations, ValueOf!, ResetClocks!, TimeStep!
+    export Valuations, ValueOf!, ResetClocks!, TimeStep!, init!
     
     #
     # clock constraints
     #
     include("logical_clocks/clock_constraints.jl")
     using .ClockConstraints
-    export δ, δExpr, δConjunctify, supported_constraints
+    export δ, δExpr, δConjunctify, supported_constraints, boundsOf
 
     #
     # constraint evaluation

@@ -21,6 +21,9 @@ module TypeInteract
         # anonymous direction
         Interact(d::Symbol,msg::Msg,constraints::δ,resets::λ,child::T=End()) where {T<:SessionType} = Interact(Direction(d),msg,constraints,resets,child)
         
+        # anonymous msg
+        Interact(d::Symbol,msg::String,constraints::δ,resets::λ,child::T=End()) where {T<:SessionType} = Interact(Direction(d),Msg(msg,None),constraints,resets,child)
+        
         # anonymous direction
         # anonymous message
         Interact(d::Symbol,msg::Tuple{String,DataType},constraints::δ,resets::λ,child::T=End()) where {T<:SessionType} = Interact(Direction(d),Msg(msg...),constraints,resets,child)

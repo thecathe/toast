@@ -16,13 +16,13 @@ module LocalTransitionTick
         time::TimeStep!
 
         # social configs
-        Tick!(c::Social,t::Num) = Tick!(Local(c),UInt8(t))
-        Tick!(c::Social,t::UInt8) = Tick!(Local(c),t)
+        # Tick!(c::Social,t::Num) = Tick!(Local(c),UInt8(t))
+        # Tick!(c::Social,t::UInt8) = Tick!(Local(c),t)
 
         # time step over clock valuations
-        Tick!(l::Local,t::Num) = Tick!(l,UInt8(t))
+        # Tick!(l::Local,t::Num) = Tick!(l,UInt8(t))
 
-        function Tick!(l::Local,t::UInt8)
+        function Tick!(l::Local,t::Num)
 
             config = l
             # config = deepcopy(l)

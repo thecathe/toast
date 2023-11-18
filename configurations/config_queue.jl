@@ -41,7 +41,7 @@ module ConfigurationQueues
                 second_mode = :arr
             end
             if second_mode==:str
-                return "∅"
+                return "∅" 
             elseif second_mode==:arr
                 return Array{String}(["∅"])
             else
@@ -124,7 +124,7 @@ module ConfigurationQueues
     # return head (default: delete from queue)
     function head!(q::Queue; pop::Bool=true)::Tuple{Union{Msg,Nothing},Bool} 
         if isempty(q) 
-            @warn "head! called on empty Queue."
+            @debug "head! called on empty Queue."
             return (Nothing(),false)
         end
 

@@ -28,8 +28,8 @@ module SocialTransitionRecv
 
             "Check if message in queue."
             if !head[2]
-                @warn "Recv! no message in queue."
-                return new(false,nothing,λ(),false,"")
+                @debug "Recv! no message in queue."
+                return new(false,Nothing(),λ(),false,"")
             end
 
             action = Action(:recv,head[1])

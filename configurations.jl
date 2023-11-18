@@ -15,9 +15,9 @@ module Configurations
     using .SocialConfigurations
     export Social
 
-    # include("configurations/config_system.jl")
-    # using .SystemConfigurations
-    # export System
+    include("configurations/config_system.jl")
+    using .SystemConfigurations
+    export System
     
     include("configurations/config_evaluate.jl")
     using .ConfigurationEvaluations

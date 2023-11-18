@@ -11,9 +11,9 @@ module LogicalClock
         label::String
         value::Num
         #
-        Clock(label::String,value::Num) = new(label,UInt8(value))
+        Clock(label::String,value::Num) = new(label,Num(value))
         # swapped
-        Clock(value::Num,label::String) = new(label,UInt8(value))
+        Clock(value::Num,label::String) = new(label,Num(value))
     end
 
     Base.show(c::Clock, io::Core.IO = stdout) = print(io, string(c))

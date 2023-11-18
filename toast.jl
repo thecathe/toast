@@ -1,3 +1,5 @@
+ENV["JULIA_DEBUG"] = "all"
+
 module TOAST
 
     function printlines() 
@@ -74,6 +76,10 @@ module TOAST
     #
     include("logical_clocks.jl")
     using .LogicalClocks
+    export Clock, λ
+    export Valuations, ValueOf!, ResetClocks!, TimeStep!
+    export δ
+    export δExpr, δEvaluation
 
     if show_clock_tests || show_all_clock_tests || show_all_tests
 
@@ -172,6 +178,9 @@ module TOAST
     #
     include("session_types.jl")
     using .SessionTypes
+    export End, μ, α, Interact, Choice
+    export Msg, Payload, Del
+    export SessionType, S, Duality
     
     if show_type_tests || show_all_type_tests || show_all_tests
 
@@ -336,6 +345,8 @@ module TOAST
     #
     include("configurations.jl")
     using .Configurations
+    export Local, Social, System
+    export Queue, Evaluate!
 
     # include("evaluate.jl")
     # using .Evaluate
@@ -379,7 +390,7 @@ module TOAST
             Interact(:recv, Msg("zero"), δ(:eq, "w", 3), λ("y"))
         ])
 
-        v_a = Valuations([("w",3)],0)
+        v_a = Valuations([("w",2)],0)
         v_b = Valuations()
 
         local_a = Local(v_a, e)
@@ -480,8 +491,9 @@ module TOAST
         #
         include("transitions.jl")
         using .Transitions
+        export Transition!
 
-        println("operational semantic tests:")
+        # println("operational semantic tests:")
 
         test_a = deepcopy(local_a)
         test_b = deepcopy(local_a)
@@ -525,6 +537,22 @@ module TOAST
         # show(test_b,[:full,:expand,:str])
         # printlines()
 
+
+        # for i in range(1,4)
+
+        #     show(Transition!(test_b,:send,Msg("b")))
+        #     printlines()
+
+        #     show(test_b,[:full,:expand,:str])
+        #     printlines()
+
+        #     show(Transition!(test_b,:send,Msg("q")))
+        #     printlines()
+
+        #     show(test_b,[:full,:expand,:str])
+        #     printlines()
+
+        # end
 
         # temp for time step social
         # TimeStep!(test_c.valuations, 2)
@@ -592,7 +620,7 @@ module TOAST
 
 
 
-        # TODO: que
+        # # TODO: que
         # println("\ntest (que) e:")
         # show(test_e,[:full,:expand,:str])
         # printlines()
@@ -606,7 +634,7 @@ module TOAST
 
 
 
-        # # TODO: recv
+        # TODO: recv
         # println("\ntest (recv) e:")
         # show(test_e,[:full,:expand,:str])
         # printlines()
@@ -622,17 +650,192 @@ module TOAST
 
 
 
-        # TODO: time
+        # # # TODO: time
+        # println("\ntest (time) e:")
+        # show(test_e,[:full,:expand,:str])
+        # printlines()
 
-        println("\ntest f:")
-        show(test_f,[:full,:expand,:str])
+        # show(Transition!(test_e,:t,2))
+        # printlines()
+        
+        # show(test_e,[:full,:expand,:str])
+        # printlines()
+
+
+        time_test = Social(
+            Valuations([("x",2.5)]),
+            Interact(:recv, ("msg", Bool), 
+                δ(:not, 
+                    δ(:and,
+                        δ(:not, 
+                            δ(:and,
+                                δ(:geq, "x", 2),
+                                δ(:not, 
+                                    δ(:and,
+                                        δ(:geq, "x", 3),
+                                        δ(:not, δ(:geq, "x", 4))
+                                    )
+                                )
+                            )
+                        ),
+                        δ(:not, δ(:geq, "x", 5))
+                    )
+                ), λ()),
+                # δ(:not, δ(:and,
+                #     δ(:geq, "x", 2),
+                #     δ(:and,
+                #         δ(:not, δ(:and,
+                #             δ(:geq, "x", 3),
+                #             δ(:not, δ(:geq, "x", 4))
+                #         )),
+                #         δ(:not, δ(:geq, "x", 5))
+                #     )
+                # )), λ()),
+            Queue(Msgs([Msg("msg", Bool)]))
+        ) 
+
+        println("\n(time) test:")
+        show(time_test,[:full,:expand,:str])
         printlines()
 
-        show(Transition!(test_f,:t,2))
+        show(Transition!(time_test,:t,0.1))
+        printlines()
+        
+        # show(Transition!(time_test,:tau))
+        # printlines()
+        
+        show(time_test,[:full,:expand,:str])
         printlines()
 
-        show(test_f,[:full,:expand,:str])
-        printlines()
+        # show(Transition!(time_test,:t,0.1))
+        # printlines()
+
+        # show(time_test,[:full,:expand,:str])
+        # printlines()
+        
+        # show(Transition!(time_test,:tau))
+        # printlines()
+
+        # show(time_test,[:full,:expand,:str])
+        # printlines()
+        
+        # show(Transition!(time_test,:t,0.1))
+        # printlines()
+
+        # show(time_test,[:full,:expand,:str])
+        # printlines()
+        
+        # show(Transition!(time_test,:t,100))
+        # printlines()
+
+        # show(time_test,[:full,:expand,:str])
+        # printlines()
+        
+
+
+        # !
+        # !
+        # !
+        # !
+        # !
+        # !
+        # !
+
+        # a_sys = System(test_e)
+
+        # show(a_sys,[:full,:expand,:str])
+        # printlines()
+        
+        # show(Transition!(a_sys,:t,2))
+        # printlines()
+
+        # show(a_sys,[:full,:expand,:str])
+        # printlines()
+        
+        # show(Transition!(a_sys,:tau,Msg("a")))
+        # printlines()
+
+        # show(a_sys,[:full,:expand,:str])
+        # printlines()
+        
+        # send_b = false
+
+        # for _ in range(1,20)
+
+        #     if rand(1:2)==1
+        #         if send_b==false
+        #             global send_b=true
+        #             show(Transition!(a_sys,:tau,Msg("b")))
+        #             printlines()
+        #         else
+        #             global send_b=false
+        #             show(Transition!(a_sys,:tau,Msg("q")))
+        #             printlines()
+        #         end
+        #     else
+        #         show(Transition!(a_sys,:tau))
+        #         printlines()
+        #     end
+        
+        #     show(a_sys,[:full,:expand,:str])
+        #     printlines()
+
+        # end
+        
+
+
+
+        # println("\ntest d:")
+        # show(test_d,[:full,:expand,:str])
+        # printlines()
+
+        # show(Transition!(test_d,:send,Msg("a")))
+        # printlines()
+
+        # show(test_d,[:full,:expand,:str])
+        # printlines()
+
+        # show(Transition!(test_d,:t,2))
+        # printlines()
+
+        # show(test_d,[:full,:expand,:str])
+        # printlines()
+
+        # show(Transition!(test_d,:send,Msg("a")))
+        # printlines()
+
+        # show(test_d,[:full,:expand,:str])
+        # printlines()
+
+
+        # for i in range(1,4)
+
+        #     show(Transition!(test_d,:send,Msg("b")))
+        #     printlines()
+
+        #     show(test_d,[:full,:expand,:str])
+        #     printlines()
+
+        #     show(Transition!(test_d,:send,Msg("q")))
+        #     printlines()
+
+        #     show(test_d,[:full,:expand,:str])
+        #     printlines()
+
+        # end
+
+
+
+
+        # println("\ntest f:")
+        # show(test_f,[:full,:expand,:str])
+        # printlines()
+
+        # show(Transition!(test_e,:tau,Msg("zero")))
+        # printlines()
+
+        # show(test_f,[:full,:expand,:str])
+        # printlines()
 
 
 

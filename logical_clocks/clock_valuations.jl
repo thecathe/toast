@@ -5,7 +5,7 @@ module ClockValuations
 
     using ..LogicalClocks
 
-    export Valuations, ValueOf!, ResetClocks!, TimeStep!
+    export Valuations, ValueOf!, ResetClocks!, TimeStep!, init!
 
     mutable struct Valuations
         clocks::Array{Clock}
@@ -107,12 +107,22 @@ module ClockValuations
         end
     end
 
+    """
+    function init!(clock_label::String, valuations::Valuations)
+        instansiates a clock with given label and value of system clock, if it does not already exist
+    """
+    function init!(c::String,v::Valuations)
+        if c ∉ [x.label for x in v.clocks]
+            push!(v.clocks, Clock(c,v.system.value))
+        end
+    end
+
     #
     # value
     #
     struct ValueOf!
         label::String
-        value::Real
+        value::Num
 
         function ValueOf!(v::Valuations,label::String) 
             for c ∈ v.clocks
@@ -181,11 +191,9 @@ module ClockValuations
     # time step
     #
     struct TimeStep!
-        value::Real
+        value::Num
         #
-        TimeStep!(v::Valuations,t::Num) = TimeStep!(v,Real(t))
-        #
-        function TimeStep!(v::Valuations,t::Real) 
+        function TimeStep!(v::Valuations,t::Num) 
             foreach(x -> x.value += t, v.clocks)
             v.system.value += t
             new(t)

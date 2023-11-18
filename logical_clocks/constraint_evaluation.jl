@@ -13,6 +13,11 @@ module ConstraintEvaluation
         head::Symbol
         args::Array{Any}
         expr::δExpr
+        # handle :tt case
+        function δEvaluation!(d::Symbol)
+            @assert d==:tt "δEvaluation!, when called with only a symbol, expects $(string(:tt)), not $(string(d))."
+            new(d,[],δExpr(:&&,Inf))
+        end
         #
         function δEvaluation!(v::Valuations,d::δ)
             head = d.head
@@ -82,8 +87,16 @@ module ConstraintEvaluation
                 _exprs = Array{δExpr}([c.expr for c in _evals])
                 _expr = δExprDisjunctify(_exprs)
 
+            elseif head==:conjunct
+                # :conjunct => list of δ to be conjunctified (for use in receive urgency)
+                @assert false ∉ [d isa δ for d in args] "δEvaluation! head ($(head)) expects #1 to be Array{δ}, not $(typeof(args)): $(string(args))"
+
+                _evals = Array{δEvaluation!}([δEvaluation!(v, c) for c in args])
+                _exprs = Array{δExpr}([c.expr for c in _evals])
+                _expr = δExprConjunctify(_exprs)
+
             else
-                @error "δEvaluation!, unexpected head: $(head)"
+                @error "δEvaluation!, unexpected (but supported) head: $(head)"
             end
 
             new(head,[args...],_expr)
