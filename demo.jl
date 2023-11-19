@@ -216,16 +216,22 @@ module Demo
                     if e_sent
                         show(config,[:full,:expand,:str])
                         println()
-                        show(Transition!(config,:tau,Msg("f")))
+                        send_f = Transition!(config,:tau,Msg("f"))
+                        show(send_f)
                         println()
-                        e_sent = false
+                        if send_f.success
+                            e_sent = false
+                        end
 
                     else
                         show(config,[:full,:expand,:str])
                         println()
-                        show(Transition!(config,:tau,Msg("e")))
+                        send_e = Transition!(config,:tau,Msg("e"))
+                        show(send_e)
                         println()
-                        e_sent = true
+                        if send_e.success
+                            e_sent = true
+                        end
 
                     end
 
