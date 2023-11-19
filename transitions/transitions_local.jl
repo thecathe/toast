@@ -24,7 +24,7 @@ module TransitionsLocal
         success::Bool
         kind::Symbol
 
-        transition::Q where {Q<:LocalTransition}
+        transition::Q where {Q<:Transition}
 
         unfolded::Bool
         unfolded_str::String

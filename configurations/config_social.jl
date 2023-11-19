@@ -14,13 +14,13 @@ module SocialConfigurations
 
     "Social Configurations are comprised of a Local Configuration, and a message queue."
     mutable struct Social <: Configuration
-        valuations::Valuations
+        valuations::ν
         type::T where {T<:SessionType}
         queue::Queue
         # from local
         Social(l::Local,q::Queue=Queue()) = new(l.valuations,l.type,q)
         # 
-        function Social(v::Valuations,t::T,q::Queue=Queue()) where {T<:SessionType}
+        function Social(v::ν,t::T,q::Queue=Queue()) where {T<:SessionType}
             # init via local
             _ = Local(v,t)
 

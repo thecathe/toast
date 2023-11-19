@@ -5,27 +5,27 @@ module ClockValuations
 
     using ..LogicalClocks
 
-    export Valuations, ValueOf!, ResetClocks!, TimeStep!, init!
+    export ν, ValueOf!, ResetClocks!, TimeStep!, init!
 
-    mutable struct Valuations
+    mutable struct ν
         clocks::Array{Clock}
         system::Clock
         #
-        Valuations(children::T,offset::Num = 0) where {T<:Array{Clock}} = new(children,Clock("𝒢",UInt8(offset)))
+        ν(children::T,offset::Num = 0) where {T<:Array{Clock}} = new(children,Clock("𝒢",UInt8(offset)))
         # empty
-        Valuations(offset::Num = 0) = Valuations(Array{Clock}([]),offset)
+        ν(offset::Num = 0) = ν(Array{Clock}([]),offset)
         # single
-        Valuations(child::Clock) = Valuations(Array{Clock}([child]))
+        ν(child::Clock) = ν(Array{Clock}([child]))
         # anonymous clock
-        Valuations(child::T,offset::Num = 0) where {T<:Tuple{String,Num}} = Valuations(Array{Clock}([Clock(child...)]), offset)
+        ν(child::T,offset::Num = 0) where {T<:Tuple{String,Num}} = ν(Array{Clock}([Clock(child...)]), offset)
         # anonymous clocks
-        Valuations(children::Array{T},offset::Num = 0) where {T<:Tuple{String,Num}} = Valuations(Array{Clock}([Clock(c...) for c in children]), offset)
+        ν(children::Array{T},offset::Num = 0) where {T<:Tuple{String,Num}} = ν(Array{Clock}([Clock(c...) for c in children]), offset)
     end
 
-    Base.show(t::Valuations, io::Core.IO = stdout) = print(io, string(t))
-    Base.show(t::Valuations, mode::Symbol, io::Core.IO = stdout) = print(io, string(t, mode))
+    Base.show(t::ν, io::Core.IO = stdout) = print(io, string(t))
+    Base.show(t::ν, mode::Symbol, io::Core.IO = stdout) = print(io, string(t, mode))
 
-    function Base.string(t::Valuations, args...)
+    function Base.string(t::ν, args...)
         arg_len = length(args)
         if arg_len==0
             mode = :default
@@ -65,13 +65,13 @@ module ClockValuations
             elseif second_mode==:str
                 return string(join(arr_build), "\n")
             else
-                @error "Valuations.string, unexpected second mode: $(string(args))"
+                @error "ν.string, unexpected second mode: $(string(args))"
             end
 
         elseif mode==:smart
             # :smart - next arg is list of clocks to include (always include system)
-            @assert length(args)==2 "Valuations.string, mode :smart expects two parameters"
-            @assert args[2] isa Array{String} "Valuations.string, mode :smart expects Array{String}, not: $(typeof(args[2]))"
+            @assert length(args)==2 "ν.string, mode :smart expects two parameters"
+            @assert args[2] isa Array{String} "ν.string, mode :smart expects Array{String}, not: $(typeof(args[2]))"
 
             relevant_labels = Array{String}([args[2]...])
 
@@ -99,7 +99,7 @@ module ClockValuations
             elseif second_mode==:str
                 return string(join(arr_build), "\n")
             else
-                @error "Valuations.string, unexpected second mode: $(string(args))"
+                @error "ν.string, unexpected second mode: $(string(args))"
             end
 
         else
@@ -108,10 +108,10 @@ module ClockValuations
     end
 
     """
-    function init!(clock_label::String, valuations::Valuations)
+    function init!(clock_label::String, valuations::ν)
         instansiates a clock with given label and value of system clock, if it does not already exist
     """
-    function init!(c::String,v::Valuations)
+    function init!(c::String,v::ν)
         if c ∉ [x.label for x in v.clocks]
             push!(v.clocks, Clock(c,v.system.value))
         end
@@ -124,7 +124,7 @@ module ClockValuations
         label::String
         value::Num
 
-        function ValueOf!(v::Valuations,label::String) 
+        function ValueOf!(v::ν,label::String) 
             for c ∈ v.clocks
                 if c.label==label
                     return new(label,c.value)
@@ -154,11 +154,11 @@ module ClockValuations
     struct ResetClocks!
         resets::λ
         #
-        ResetClocks!(v::Valuations,label::String) = ResetClocks!(v,Array{String}([label]))
+        ResetClocks!(v::ν,label::String) = ResetClocks!(v,Array{String}([label]))
         #
-        ResetClocks!(v::Valuations,resets::T) where {T<:Array{String}} = ResetClocks!(v,λ(resets))
+        ResetClocks!(v::ν,resets::T) where {T<:Array{String}} = ResetClocks!(v,λ(resets))
         #
-        function ResetClocks!(v::Valuations,resets::λ)
+        function ResetClocks!(v::ν,resets::λ)
             reset = Array{String}([])
             for c ∈ v.clocks
                 if c.label ∈ resets
@@ -193,7 +193,7 @@ module ClockValuations
     struct TimeStep!
         value::Num
         #
-        function TimeStep!(v::Valuations,t::Num) 
+        function TimeStep!(v::ν,t::Num) 
             foreach(x -> x.value += t, v.clocks)
             v.system.value += t
             new(t)

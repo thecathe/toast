@@ -1,4 +1,4 @@
-ENV["JULIA_DEBUG"] = "all"
+# ENV["JULIA_DEBUG"] = "all"
 
 module TOAST
 
@@ -77,7 +77,7 @@ module TOAST
     include("logical_clocks.jl")
     using .LogicalClocks
     export Clock, λ
-    export Valuations, ValueOf!, ResetClocks!, TimeStep!
+    export ν, ValueOf!, ResetClocks!, TimeStep!
     export δ
     export δExpr, δEvaluation
 
@@ -88,10 +88,10 @@ module TOAST
         c = Clock("c", 3)
         d = Clock("d", 4)
 
-        e = Valuations([("x",3),("y",4)])
+        e = ν([("x",3),("y",4)])
 
-        u = Valuations(a)
-        v = Valuations([a,b,c,d])
+        u = ν(a)
+        v = ν([a,b,c,d])
 
         # logical clocks
         if show_logical_clock_tests || show_all_clock_tests || show_all_tests
@@ -140,7 +140,7 @@ module TOAST
         c = δ(:and, δ(:eq, "x", 3), δ(:geq, "y", 4))
         d = δ(:deq, "x", "y", 3)
         e = δ(:and, δ(:not, δ(:and, δ(:eq, "w", 3), δ(:geq, "x", 4))), δ(:and, δ(:eq, "y", 3), δ(:geq, "z", 4))) 
-        f = δ(:flatten,e)
+        # f = δ(:flatten,e)
 
         # clock constraints
         if show_clock_constraints_tests || show_all_clock_tests || show_all_tests
@@ -390,8 +390,8 @@ module TOAST
             Interact(:recv, Msg("zero"), δ(:eq, "w", 3), λ("y"))
         ])
 
-        v_a = Valuations([("w",2)],0)
-        v_b = Valuations()
+        v_a = ν([("w",2)],0)
+        v_b = ν()
 
         local_a = Local(v_a, e)
         social_a = Social(v_a, e)
@@ -662,35 +662,27 @@ module TOAST
         # printlines()
 
 
+        # time_c_a = δ(:not, δ(:and,
+        #                     δ(:not, 
+        #                         δ(:and,
+        #                             δ(:geq, "x", 2),
+        #                             δ(:not, 
+        #                                 δ(:and,
+        #                                     δ(:geq, "x", 3),
+        #                                     δ(:not, δ(:geq, "x", 4))
+        #                                 )
+        #                             )
+        #                         )
+        #                     ),
+        #                     δ(:not, δ(:geq, "x", 5))
+        #                 )
+        #             )
+
+        time_c_b = δ(:and, δ(:or, δ(:or, δ(:leq,"x",2), δ(:and, δ(:geq,"x",3), δ(:leq,"x",4))), δ(:geq,"x",5)), δ(:deq, "x", "y", 2))
+
         time_test = Social(
-            Valuations([("x",2.5)]),
-            Interact(:recv, ("msg", Bool), 
-                δ(:not, 
-                    δ(:and,
-                        δ(:not, 
-                            δ(:and,
-                                δ(:geq, "x", 2),
-                                δ(:not, 
-                                    δ(:and,
-                                        δ(:geq, "x", 3),
-                                        δ(:not, δ(:geq, "x", 4))
-                                    )
-                                )
-                            )
-                        ),
-                        δ(:not, δ(:geq, "x", 5))
-                    )
-                ), λ()),
-                # δ(:not, δ(:and,
-                #     δ(:geq, "x", 2),
-                #     δ(:and,
-                #         δ(:not, δ(:and,
-                #             δ(:geq, "x", 3),
-                #             δ(:not, δ(:geq, "x", 4))
-                #         )),
-                #         δ(:not, δ(:geq, "x", 5))
-                #     )
-                # )), λ()),
+            ν([("x",2.5),("y",0.5)]),
+            Interact(:recv, ("msg", Bool), time_c_b, λ()),
             Queue(Msgs([Msg("msg", Bool)]))
         ) 
 
@@ -698,7 +690,7 @@ module TOAST
         show(time_test,[:full,:expand,:str])
         printlines()
 
-        show(Transition!(time_test,:t,0.1))
+        show(Transition!(time_test,:t,4))
         printlines()
         
         # show(Transition!(time_test,:tau))
@@ -925,7 +917,7 @@ module TOAST
     #         if show_local_tick_test || show_all_local_transition_tests ||show_all_tests
     #             println("local transition tick tests:")
 
-    #             _v = Valuations()
+    #             _v = ν()
     #             s_b = S(([(:send, Msg("e", Data(Int)),δ(:eq,"x",1), []  ),(:send, Msg("f", Data(String)),δ(:eq,"x",2), []  ),(:recv, Msg("g", Data(Int)),δ(:eq,"x",4), []  ),(:send, Msg("h", Data(String)),δ(:eq,"x",5), []  )]))
     #             l_b1 = Local(_v,s_b)
 
@@ -950,7 +942,7 @@ module TOAST
     #         if show_local_unfold_test || show_all_local_transition_tests ||show_all_tests
     #             println("local transition unfold tests:")
 
-    #             _v = Valuations()
+    #             _v = ν()
     #             s_b = S(Def("a", (:send, Msg("a", Data(Int)), δ(:tt), [], ([
     #                 (:send, Msg("e", Data(Int)),δ(:eq,"x",1), []  ),
     #                 (:send, Msg("f", Data(String)),δ(:eq,"x",2), [], Call("a")  ),
@@ -972,7 +964,7 @@ module TOAST
     #         if show_local_act_test || show_all_local_transition_tests ||show_all_tests
     #             println("local transition act tests:")
 
-    #             _v = Valuations()
+    #             _v = ν()
     #             s_b = S(([(:send, Msg("e", Data(Int)),δ(:eq,"x",1), Labels(["x"])  ),(:send, Msg("f", Data(String)),δ(:eq,"x",2), Labels([])  ),(:recv, Msg("g", Data(Int)),δ(:eq,"x",4),Labels([])  ),(:send, Msg("h", Data(String)),δ(:eq,"x",5), Labels([])  )]))
     #             l_b1 = Local(_v,s_b)
 
@@ -1010,7 +1002,7 @@ module TOAST
     #         if show_social_que_test || show_all_social_transition_tests || show_all_tests
     #             println("social transition que tests:")
 
-    #             _v = Valuations()
+    #             _v = ν()
     #             s_b = S(([(:send, Msg("e", Data(Int)),δ(:eq,"x",1), Labels(["x"])  ),(:send, Msg("f", Data(String)),δ(:eq,"x",2), Labels([])  ),(:recv, Msg("g", Data(Int)),δ(:eq,"x",4),Labels([])  ),(:send, Msg("h", Data(String)),δ(:eq,"x",5), Labels([])  )]))
     #             l_b1 = Local(_v,s_b)
 
@@ -1077,7 +1069,7 @@ module TOAST
     # ~ 
     # ~ user demos
     # ~
-    # export Num, Clock, λ, Valuations, ValueOf!, ResetClocks!, TimeStep!, δ, δExpr, supported_constraints
+    # export Num, Clock, λ, ν, ValueOf!, ResetClocks!, TimeStep!, δ, δExpr, supported_constraints
 
     # export End
     # export μ

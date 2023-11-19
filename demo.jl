@@ -6,7 +6,7 @@ module DemoTOAST
     export Local, Social, System
     export Transition!
     export Evaluate!
-    export Valuations
+    export ν
 
     export example_types
     

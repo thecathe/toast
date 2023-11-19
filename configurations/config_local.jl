@@ -11,15 +11,15 @@ module LocalConfigurations
 
     "Local Configurations are comprised of a set of clock valuations and a type."
     mutable struct Local <: Configuration
-        valuations::Valuations
+        valuations::ν
         type::T where {T<:SessionType}
         relevant_clocks::Array{String}
 
-        Local(c::T) where {T<:SessionType} = Local(Valuations(),c)
+        Local(c::T) where {T<:SessionType} = Local(ν(),c)
         
         Local(c::T) where {T<:Configuration} = new(c.valuations,c.type)
 
-        function Local(val::Valuations,type::T) where {T<:SessionType}
+        function Local(val::ν,type::T) where {T<:SessionType}
 
             if type isa Choice || type isa Interact
                 # populate immediately relevant clocks
@@ -32,7 +32,8 @@ module LocalConfigurations
                 _relevant_clocks = Array{String}([])
                 for i in _t.children
                     # get labels from flattened constraint of each interaction
-                    push!(_relevant_clocks, [string(d) for d in δ(:flatten,i.constraints).clocks]...)
+                    push!(_relevant_clocks, [string(d) for d in i.constraints.clocks]...)
+                    # push!(_relevant_clocks, [string(d) for d in δ(:flatten,i.constraints).clocks]...)
                     # add resets
                     push!(_relevant_clocks, [string(x) for x in i.resets]...)
                 end

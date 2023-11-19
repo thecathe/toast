@@ -21,7 +21,7 @@ module ConfigurationEvaluations
 
     "Determines if the given Configuration is Enabled (can make a step)."
     struct Evaluate!
-        valuations::Valuations
+        valuations::ν
         type::T where {T<:SessionType}
         #
         eval_en::δEvaluation!
@@ -39,7 +39,7 @@ module ConfigurationEvaluations
         # social evaluation
         Evaluate!(c::Social) = Evaluate!(c.valuations,c.type)
         # 
-        function Evaluate!(v::Valuations,t::T) where {T<:SessionType}
+        function Evaluate!(v::ν,t::T) where {T<:SessionType}
             
             interact_en = Array{Interact}([])
             interact_fe = Array{Interact}([])
@@ -72,8 +72,11 @@ module ConfigurationEvaluations
 
                 _actionable=true
 
+                @debug "Evaluate!, en: $(string(t.constraints))."
+
                 # ? is enabled
                 _eval_en = δEvaluation!(v,t.constraints)
+                @debug "Evaluate!, en eval: $(string(_eval_en))."
                 _result_en = eval(_eval_en.expr)
                 
                 _en = string(_result_en)=="true"
@@ -81,7 +84,12 @@ module ConfigurationEvaluations
                 @assert string(_result_en) in ["true","false"] "Evaluate!, unexpected result (en): $(string(_result_en))\n\tof δEvaluation!: $(string(_eval_en))"
 
                 # ? is future enabled
-                _eval_fe = δEvaluation!(v, δ(:past,t.constraints))
+                past = δ⬇(t.constraints;normalise=true)
+
+                @debug "Evaluate!, past: $(string(past))."
+
+                _eval_fe = δEvaluation!(v, past.past)
+                @debug "Evaluate!, past eval: $(string(_eval_fe))."
                 _result_fe = eval(_eval_fe.expr)
                 
                 _fe = string(_result_fe)=="true"
@@ -151,8 +159,10 @@ module ConfigurationEvaluations
                 # also display enabled/fe actions
                 return string(
                     "\nconfiguration, actionable: ", string(e.actionable), "\n", string(Local(e.valuations,e.type),args...,:str),
-                    "\nenabled: ", string(e.enabled), "\n$(string(e.eval_en, :expand))\n",
-                    "\nfuture enabled: ", string(e.future_en), "\n$(string(e.eval_fe, :expand))\n"
+                    "\nenabled: ", string(e.enabled), "\n$(string(e.eval_en, :expand))...",
+                    "\n\t$(string(join([string(i) for i in e.interact_en], "\n\t")))",
+                    "\nfuture enabled: ", string(e.future_en), "\n$(string(e.eval_fe, :expand))...",
+                    "\n\t$(string(join([string(i) for i in e.interact_fe], "\n\t"))).",
                 )
 
             else
