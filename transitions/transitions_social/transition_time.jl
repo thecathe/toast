@@ -24,7 +24,35 @@ module SocialTransitionTime
         unfolded::Bool
         unfolded_str::String
 
-        "Check premises of [time], then elevate to [tick]"
+        """
+            Time!(c, t)
+
+        Makes a transition via [time] if each of the premises (configuration, persistency, urgency) are adhered to.
+
+        If each premise is a success, then the transition is elevated to [tick].
+
+        # Premises of [time]
+        ## Configuration
+        Simply elevates to [tick].
+
+        ## Persistency
+        If the configruation is future-enabled prior to the delay, then it should still be future-enabled after the delay.
+
+        ## Urgency
+            ∀ t' < t : (ν+t', S, M)⟶̸ τ (via [recv])
+        Checks that no message can be received from the queue at a point earlier than the delay.
+        ### Methodology
+        - If the queue is empty, this holds.
+        - If the queue is non-empty:
+            - Does the message in the queue correspond to some future-enabled action? If yes, continue. Else, this holds (as it cannot apply).
+            - For each clock, generate each bounded-region where its constraints are satisfied. Then:
+                - First check: are either the starting or ending valuation within one of these regions? If yes, this premise fails.
+                - Second check: generate the *intermediate* regions that encompass the starting and ending valuations of clocks. If these are not the same, then the time delay has jumped over a region where receiving was viable; this premise fails.
+
+        # Arguments
+        - `c::Social`: the social configuration transitioning via [time].
+        - `t::Num`: the amount of time to step.
+        """
         function Time!(c::Social,t::Num)
 
             met_premise_configuration = false
@@ -53,11 +81,11 @@ module SocialTransitionTime
                 # must be End, μ, α
                 met_premise_persistency = true
             elseif localised_evaluate.future_en
-                # @info "[time] c is fe\n$(string(localised_evaluate,:full,:expand))."
+                @debug "[time] c is fe\n$(string(localised_evaluate,:full,:expand))."
                 localised_delayed_evaluate = Evaluate!(localised_delayed)
                 if localised_delayed_evaluate.future_en
                     met_premise_persistency = true
-                    # @info "[time] (delayed) c is fe\n$(string(localised_delayed_evaluate,:full,:expand))."
+                    @debug "[time] (delayed) c is fe\n$(string(localised_delayed_evaluate,:full,:expand))."
                 else
                     @warn "[time] (delayed) not fe...\n$(string(localised_delayed_evaluate,:full,:expand))."
                     met_premise_persistency = false
@@ -69,15 +97,6 @@ module SocialTransitionTime
             #
             # ~ (urgency) premise
             #
-            """ rule [time] (urgency) premise
-            ∀ t' < t : (ν+t', S, M)⟶̸ τ
-            ---
-            if,
-                - the queue is non-empty
-                - the message corresponds to some future-enabled action
-                - the constraints of the action intersect with the valuation of clocks between now and the time step
-            then, this condition is NOT met.
-            """
             if isempty(c.queue)
                 met_premise_urgency = true
             else
@@ -114,16 +133,10 @@ module SocialTransitionTime
 
                     intersections = Array{Bool}([])
 
-                    # TODO
-                    # check :deq,:dgeq => must be false
-                    # diag_constraints = Array{}
-
                     bounds = δBounds(relevant_constraints;normalise=true)
 
                     # @info "[time], bounds: $(string(bounds))."
                     @debug "[time], bounds: $(string(bounds))."
-
-
 
                     # for x in b
                     for x in bounds.clocks
@@ -239,14 +252,17 @@ module SocialTransitionTime
                             @assert before_region!==nothing "[time] (urgency), before_region cannot be nothing."
                             @debug "[time] (urgency), before_region: ($(before_region[1]), $(before_region[2]))."
 
-                            @assert after_region!==nothing "[time] (urgency), after_region cannot be nothing."
-                            @debug "[time] (urgency), after_region: ($(after_region[1]), $(after_region[2]))."
+                            if after_region===nothing
+                                @debug "[time] (urgency), after_region is nothing. Delay likely yields same intermediate region."
+                            else
+                                @debug "[time] (urgency), after_region: ($(after_region[1]), $(after_region[2]))."
 
-                            jumped_over_enabled_region = !(before_region[1]==after_region[1] && before_region[2]==after_region[2])
-                            met_premise_urgency_jump = jumped_over_enabled_region
+                                jumped_over_enabled_region = !(before_region[1]==after_region[1] && before_region[2]==after_region[2])
+                                met_premise_urgency_jump = jumped_over_enabled_region
 
-                            push!(clock_intersections,jumped_over_enabled_region)
+                                push!(clock_intersections,jumped_over_enabled_region)
 
+                            end
                         end
 
 

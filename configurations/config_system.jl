@@ -17,7 +17,7 @@ module SystemConfigurations
 
         # construct from one type (using dual of other)
         System(lhs::Local) = System(Social(lhs))
-        System(lhs::Social) = System(lhs,Social(lhs.valuations,Duality(lhs.type).dual,lhs.queue))
+        System(lhs::Social) = System(lhs,Social(lhs.valuations,Duality(lhs.type).dual,Queue()))
 
         System(lhs::Social,rhs::Social) = new(lhs,rhs)
 

@@ -229,11 +229,11 @@ module LocalConfigurations
                 end
                 return string(join(arr_lines, "\n"))
             else
-                @error "Local.string, unexpected mode: $(string(args))"
+                @error "Local.string, unexpected format_mode: $(string(args))."
             end
 
         else
-            @error "Local.string, unexpected mode: $(string(args))"
+            @error "Local.string, unexpected mode: $(string(mode)); $(string(args))."
         end
     end
 

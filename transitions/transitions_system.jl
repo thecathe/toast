@@ -84,6 +84,8 @@ module TransitionsSystem
                     else
                         label = "$(label)[com]"
                     end
+                    # add message label
+                    label = "$(label) ($(string(args[1])))"
 
                 else
                     # must be par

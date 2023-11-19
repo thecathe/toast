@@ -43,7 +43,7 @@ module ClockConstraints
                     string(string(Number(args[2])), "-", string(Number(args[3])))
 
                 else
-                    @error "δExpr.string :call, unexpected head: $(string(arg_head)), $(string(args))."
+                    @error "δExpr.string :call, unexpected head $(string(arg_head)): $(string(join([string(a) for a in args])))."
                 end
 
             elseif head==:(&&)

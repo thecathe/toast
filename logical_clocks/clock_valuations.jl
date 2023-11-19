@@ -169,7 +169,7 @@ module ClockValuations
             # check for non-existant clocks
             for l ∈ resets
                 if l ∉ reset
-                    push!(v.clocks,Clock(l,v.global_clock))
+                    push!(v.clocks,Clock(l,v.system.value))
                 end
             end
             new(resets)
