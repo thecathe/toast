@@ -186,12 +186,19 @@ module SocialTransitionTime
                             end
                         end
 
+                        push!(intersections, clock_intersections...)
+
                         # if looks viable, check harsher constraints
                         if !(true ∈ intersections)
                             clocks_to_check = [clock_lb,clock_ub]
                             before_region = nothing
                             after_region = nothing
                             for c_index in range(1,length(clocks_to_check))
+                                if c_index==1
+                                    @debug "[time] (urgency), before region..."
+                                else
+                                    @debug "[time] (urgency), after region..."
+                                end
                                 _clock = clocks_to_check[c_index]
                                 # check if "jumped over" viable zone  
                                 for b_lb_index in range(1,length(bounds.bounds[x]))
@@ -241,6 +248,8 @@ module SocialTransitionTime
                                                     after_region = (b_lb_ub,b_ub_lb)
                                                 end
                                                 break
+                                            else
+                                                @debug "[time] (urgency), skipped $(c_index==1 ? "lb" : "ub"): ($(string(b_lb_ub)), $(string(b_ub_lb)))."
                                             end
                                         end
                                     end
@@ -248,25 +257,25 @@ module SocialTransitionTime
 
                             end
 
-                            
-                            @assert before_region!==nothing "[time] (urgency), before_region cannot be nothing."
-                            @debug "[time] (urgency), before_region: ($(before_region[1]), $(before_region[2]))."
-
-                            if after_region===nothing
-                                @debug "[time] (urgency), after_region is nothing. Delay likely yields same intermediate region."
+                            if before_region===nothing
+                                @debug "[time] (urgency), before_region is nothing. Likely within existing region."
                             else
-                                @debug "[time] (urgency), after_region: ($(after_region[1]), $(after_region[2]))."
+                                @debug "[time] (urgency), before_region: ($(before_region[1]), $(before_region[2]))."
 
-                                jumped_over_enabled_region = !(before_region[1]==after_region[1] && before_region[2]==after_region[2])
-                                met_premise_urgency_jump = jumped_over_enabled_region
+                                if after_region===nothing
+                                    @debug "[time] (urgency), after_region is nothing. Delay likely yields same intermediate region."
+                                else
+                                    @debug "[time] (urgency), after_region: ($(after_region[1]), $(after_region[2]))."
 
-                                push!(clock_intersections,jumped_over_enabled_region)
+                                    jumped_over_enabled_region = !(before_region[1]==after_region[1] && before_region[2]==after_region[2])
+                                    met_premise_urgency_jump = jumped_over_enabled_region
 
+                                    push!(intersections,jumped_over_enabled_region)
+
+                                end
                             end
                         end
 
-
-                        push!(intersections, clock_intersections...)
 
                     end
 
