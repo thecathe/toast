@@ -11,12 +11,12 @@ module TypeDuality
         type::T where {T<:SessionType}
         dual::Q where {Q<:SessionType}
 
-        Duality(type::T) where {T<:End} = new(type,type)
-        Duality(type::T) where {T<:α} = new(type,type)
+        Duality(type::T) where {T<:End} = new(type,deepcopy(type))
+        Duality(type::T) where {T<:α} = new(type,deepcopy(type))
 
-        Duality(type::T) where {T<:μ} = new(type,μ(type.identity,Duality(type.child).dual))
+        Duality(type::T) where {T<:μ} = new(type,μ(deepcopy(type.identity),Duality(type.child).dual))
 
-        Duality(type::T) where {T<:Interact} = new(type, Interact(dual(type.direction), type.msg, type.constraints, type.resets, Duality(type.child).dual))
+        Duality(type::T) where {T<:Interact} = new(type, Interact(dual(type.direction), deepcopy(type.msg), deepcopy(type.constraints), deepcopy(type.resets), Duality(type.child).dual))
 
         Duality(type::T) where {T<:Choice} = new(type, Choice([Duality(i).dual for i in type.children]))
 

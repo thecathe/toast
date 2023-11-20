@@ -86,13 +86,13 @@ module TransitionsSystem
                     end
                     # add message label
                     label = "$(label) ($(string(args[1])))"
-                    if !lhs_success
-                        label = "$(label) (lhs-fail)"
-                    end
+                    # if !lhs_success
+                    #     label = "$(label) (lhs-fail)"
+                    # end
                     
-                    if !rhs_success
-                        label = "$(label) (rhs-fail)"
-                    end
+                    # if !rhs_success
+                    #     label = "$(label) (rhs-fail)"
+                    # end
 
                 else
                     # must be par

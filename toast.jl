@@ -47,6 +47,139 @@ module TOAST
         println()
     end
 
+
+    
+
+    function C()
+        exa_type_c = Interact(:recv, ("start"), δ(), λ("x"),
+    μ("z", Choice([
+        Interact(:send, ("a"), δ(:eq,"x",2), λ("x"),
+            Interact(:recv, ("b",String), δ(:eq,"x",2), λ(), End())),
+        Interact(:send, ("c"), δ(:not,δ(:geq,"y",2)), λ("y"),
+            Interact(:recv, ("d",String), δ(:geq,"x",2), λ(), End())),
+        # Interact(:recv, ("e"), δ(:and,δ(:not,δ(:geq,"x",5)),δ(:geq,"x",3)), λ("y"),
+        #     Interact(:send, ("f",String), δ(:eq,"y",2),λ(), End())),
+        Interact(:recv, ("e"), δ(:geq,"x",2), λ("y"),
+            Interact(:send, ("f",String), δ(:eq,"y",0), λ(), α("z")))
+    ]))
+)
+
+
+        exa_local_config_c = Local(ν(), exa_type_c)
+
+
+        config = System(Social(exa_local_config_c))
+
+        config = System(Social(exa_local_config_c))
+
+            show(config,[:full,:expand,:str])
+            println("\n\n")
+            show(Transition!(config,:tau,Msg("start")))
+            println()
+
+            show(config,[:full,:expand,:str])
+            println("\n\n")
+            show(Transition!(config,:tau))
+            println()
+
+            show(config,[:full,:expand,:str])
+            println("\n\n")
+            show(Transition!(config,:t,3))
+            println()
+                
+            e_sent = false
+
+            for _ in range(1,12)
+
+                if rand(1:3)<3
+                    if e_sent
+                        show(config,[:full,:expand,:str])
+                        println("\n\n")
+                        send_f = Transition!(config,:tau,Msg("f"))
+                        show(send_f)
+                        println()
+                        if send_f.success
+                            e_sent = false
+                        end
+
+                    else
+                        show(config,[:full,:expand,:str])
+                        println("\n\n")
+                        send_e = Transition!(config,:tau,Msg("e"))
+                        show(send_e)
+                        println()
+                        if send_e.success
+                            e_sent = true
+                        end
+
+                    end
+
+                else
+                    show(config,[:full,:expand,:str])
+                    println("\n\n")
+                    show(Transition!(config,:tau))
+                    println()
+
+                end
+
+            end
+            
+            show(config,[:full,:expand,:str])
+            println("\n\n")
+
+    end
+
+    C()
+
+
+
+
+
+    # time_c_b = δ(:and, δ(:or, δ(:or, δ(:leq,"x",2), δ(:and, δ(:geq,"x",3), δ(:leq,"x",4))), δ(:geq,"x",5)), δ(:deq, "x", "y", 2))
+
+    # time_test = Social(
+    #     ν([("x",2.5),("y",0.5)]),
+    #     Interact(:recv, ("msg", Bool), time_c_b, λ()),
+    #     Queue(Msgs([Msg("msg", Bool)]))
+    # ) 
+
+    # println("\n(time) test:")
+    # show(time_test,[:full,:expand,:str])
+    # printlines()
+
+    # show(Transition!(time_test,:t,0.5))
+    # printlines()
+    
+    # # show(Transition!(time_test,:tau))
+    # # printlines()
+    
+    # show(time_test,[:full,:expand,:str])
+    # printlines()
+
+    # show(Transition!(time_test,:t,0.1))
+    # printlines()
+
+    # show(time_test,[:full,:expand,:str])
+    # printlines()
+    
+    # show(Transition!(time_test,:tau))
+    # printlines()
+
+    # show(time_test,[:full,:expand,:str])
+    # printlines()
+    
+    # show(Transition!(time_test,:t,0.1))
+    # printlines()
+
+    # show(time_test,[:full,:expand,:str])
+    # printlines()
+    
+    # show(Transition!(time_test,:t,100))
+    # printlines()
+
+    # show(time_test,[:full,:expand,:str])
+    # printlines()
+
     show_all_tests=false
     show_tests=false
 

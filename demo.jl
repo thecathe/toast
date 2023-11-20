@@ -123,34 +123,34 @@ module Demo
         end
 
         show(config,[:full,:expand,:str])
-        println()
+        println("\n\n")
         show(Transition!(config,:t,2))
         println()
 
         show(config,[:full,:expand,:str])
-        println()
+        println("\n\n")
         show(Transition!(config,:send,Msg("a")))
         println()
 
         show(config,[:full,:expand,:str])
-        println()
+        println("\n\n")
         show(Transition!(config,:t,2))
         println()
                 
         show(config,[:full,:expand,:str])
-        println()
+        println("\n\n")
         show(Transition!(config,:recv,Msg("b")))
         println()
 
         if mode==:social
             show(config,[:full,:expand,:str])
-            println()
+            println("\n\n")
             show(Transition!(config,:tau))
             println()
         end
         
         show(config,[:full,:expand,:str])
-        println()
+        println("\n\n")
 
     end
 
@@ -164,29 +164,29 @@ module Demo
         end
 
         show(config,[:full,:expand,:str])
-        println()
+        println("\n\n")
         show(Transition!(config,:send,Msg("a")))
         println()
 
         show(config,[:full,:expand,:str])
-        println()
+        println("\n\n")
         show(Transition!(config,:t,2))
         println()
         
         show(config,[:full,:expand,:str])
-        println()
+        println("\n\n")
         show(Transition!(config,:recv,Msg("b")))
         println()
 
         if mode==:social
             show(config,[:full,:expand,:str])
-            println()
+            println("\n\n")
             show(Transition!(config,:tau))
             println()
         end
 
         show(config,[:full,:expand,:str])
-        println()
+        println("\n\n")
     end
     
     function C(;mode::Symbol = :system, loop::Int = 3)
@@ -194,17 +194,17 @@ module Demo
             config = System(Social(exa_local_config_c))
 
             show(config,[:full,:expand,:str])
-            println()
+            println("\n\n")
             show(Transition!(config,:tau,Msg("start")))
             println()
 
             show(config,[:full,:expand,:str])
-            println()
+            println("\n\n")
             show(Transition!(config,:tau))
             println()
 
             show(config,[:full,:expand,:str])
-            println()
+            println("\n\n")
             show(Transition!(config,:t,3))
             println()
                 
@@ -212,10 +212,10 @@ module Demo
 
             for _ in range(1,loop)
 
-                if rand(1:2)==1
+                if rand(1:3)<3
                     if e_sent
                         show(config,[:full,:expand,:str])
-                        println()
+                        println("\n\n")
                         send_f = Transition!(config,:tau,Msg("f"))
                         show(send_f)
                         println()
@@ -225,7 +225,7 @@ module Demo
 
                     else
                         show(config,[:full,:expand,:str])
-                        println()
+                        println("\n\n")
                         send_e = Transition!(config,:tau,Msg("e"))
                         show(send_e)
                         println()
@@ -237,7 +237,7 @@ module Demo
 
                 else
                     show(config,[:full,:expand,:str])
-                    println()
+                    println("\n\n")
                     show(Transition!(config,:tau))
                     println()
 
@@ -246,7 +246,7 @@ module Demo
             end
             
             show(config,[:full,:expand,:str])
-            println()
+            println("\n\n")
 
         else
             @error "Mode $(string(mode)) is not supported for this example."

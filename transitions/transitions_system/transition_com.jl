@@ -9,8 +9,11 @@ module SystemTransitionCom
     using ...Configurations
 
     import ..Transitions.SystemTransition
-    using ..SocialTransitionSend
-    using ..SocialTransitionQue
+    import ..Transitions.SocialTransition
+    import ..Transitions.Send!
+    import ..Transitions.Que!
+    # using ..SocialTransitionSend
+    # using ..SocialTransitionQue
 
     export Com!, ComL!, ComR!
 
@@ -34,6 +37,9 @@ module SystemTransitionCom
             lhs_success = lhs_send.success
             rhs_success = rhs_que.success
             success = lhs_success && rhs_success
+
+            # @debug "[ComL] ($(string(m))) lhs_success==$(lhs_success)."
+            # @debug "[ComL] ($(string(m))) rhs_success==$(rhs_success)."
 
             unfolded = lhs_send.unfolded
             unfolded_str = lhs_send.unfolded_str
@@ -69,6 +75,9 @@ module SystemTransitionCom
             lhs_success = lhs_que.success
             rhs_success = rhs_Send.success
             success = lhs_success && rhs_success
+
+            @debug "[ComR] ($(string(m))) lhs_success==$(lhs_success)."
+            @debug "[ComR] ($(string(m))) rhs_success==$(rhs_success)."
 
             unfolded = rhs_Send.unfolded
             unfolded_str = rhs_Send.unfolded_str
@@ -117,6 +126,9 @@ module SystemTransitionCom
             l_success = l_com.success
             r_success = r_com.success
             success = l_success || r_success
+
+            @debug "[Com!] l_success==$(l_success)."
+            @debug "[Com!] r_success==$(r_success)."
 
             if l_success && r_success
                 if rand(1:2)==1

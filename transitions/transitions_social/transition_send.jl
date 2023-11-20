@@ -40,6 +40,9 @@ module SocialTransitionSend
             unfolded = transition.unfolded
             unfolded_str = transition.unfolded_str
 
+            @debug "[Send!] ($(string(a)))."
+            @debug "[Send!], unfolded = $(unfolded)."
+
             @assert act isa Act! "Send!, act was unexpected type ($(typeof(act)))."
 
             "Bring back changes to Social Configuration."

@@ -25,16 +25,20 @@ module LocalTransitionAct
         "Act! within a Choice."
         function Act!(c::Local,choice::Choice,action::Action) 
             # old_config = c
+            _c = deepcopy(c)
             "Search for corresponding Interact in Choice."
             for interact in choice
-                act = Act!(c,interact,action)
+                @debug "[act] choice, testing: $(string(interact))."
+                act = Act!(_c,interact,action)
                 "Interact successful?"
                 if act.success
+                    c.valuations = _c.valuations
+                    c.type = _c.type
                     return act
                 end
             end
 
-            "Loop finished and no interact found."
+            @debug "[act] Loop finished and no interact found."
             # new(old_config,false,action,[])
             new(false,action,λ())
         end
@@ -44,11 +48,13 @@ module LocalTransitionAct
 
             "Check if actions match."
             interact_action = Action(interact)
-            if interact_action==action
+            if interact_action.direction.dir==action.direction.dir && interact_action.msg.label==action.msg.label && typeof(interact_action.msg.payload)==typeof(action.msg.payload)
                 "Resets of interaction."
                 resets = interact.resets
                 "Check if constraints satisfied."
-                if Evaluate!(c.valuations,interact).enabled
+                evaluation = Evaluate!(c.valuations,interact)
+                @debug "[act] ($(string(interact_action))), evaluate: $(string(evaluation,:full,:expand))."
+                if evaluation.enabled
                     "Reset Clocks."
                     ResetClocks!(c.valuations,resets)
 
@@ -57,12 +63,16 @@ module LocalTransitionAct
                     
                     "Constraints satisfied, clocks reset, and type progressed."
                     # return new(old_config,true,action,resets)
+                    @debug "[act] ($(string(action))) success!"
                     return new(true,action,resets)
                 else
                     "Constraints not satisfied, do nothing."
+                    @debug "[act] ($(string(interact_action))), constraints not satisfied: $(string(evaluation,:full,:expand))."
                     # return new(old_config,false,action,resets)
                     return new(false,action,resets)
                 end
+            else
+                @debug "[act] actions do not match: $(string(interact_action)) ≠ $(string(action))...\n\t(dirs: $(interact_action.direction.dir==action.direction.dir))\n\t(label: $(interact_action.msg.label==action.msg.label))\n\t(payload: $(typeof(interact_action.msg.payload)==typeof(action.msg.payload)))."
             end
             "Interaction not able to act."
             new(false,action,λ())
