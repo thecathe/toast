@@ -25,10 +25,10 @@ module Demo
         μ("z", Choice([
             Interact(:send, ("a"), δ(:eq,"x",2), λ("x"),
                 Interact(:recv, ("b",String), δ(:eq,"x",2), λ(), End())),
+
             Interact(:send, ("c"), δ(:not,δ(:geq,"y",2)), λ("y"),
                 Interact(:recv, ("d",String), δ(:geq,"x",2), λ(), End())),
-            # Interact(:recv, ("e"), δ(:and,δ(:not,δ(:geq,"x",5)),δ(:geq,"x",3)), λ("y"),
-            #     Interact(:send, ("f",String), δ(:eq,"y",2),λ(), End())),
+                
             Interact(:recv, ("e"), δ(:geq,"x",2), λ("y"),
                 Interact(:send, ("f",String), δ(:eq,"y",0), λ(), α("z")))
         ]))
@@ -111,7 +111,7 @@ module Demo
     # run
     #
     export runExample
-    export A, B, C
+    export A, B, C, D
 
     function A(;mode::Symbol = :local, loop::Int = 0) 
         if mode==:local
@@ -257,6 +257,109 @@ module Demo
         println("starting example...\n")
         func(;loop=loop)
         println("\nexample finished.")
+    end
+
+
+    function D(;loop::Int=1)
+        if loop!=1
+            @info "This example is only intended to be run once, so it will not be looped."
+        end
+
+
+        time_c_b = δ(:and, δ(:or, δ(:or, δ(:leq,"x",2), δ(:and, δ(:geq,"x",3), δ(:leq,"x",4))), δ(:geq,"x",5)), δ(:deq, "x", "y", 2))
+
+        time_test = Social(
+            ν([("x",2.5),("y",0.5)]),
+            Interact(:recv, ("msg", Bool), time_c_b, λ()),
+            Queue(Msgs([Msg("msg", Bool)]))
+        ) 
+
+        
+        show(time_test,[:full,:expand,:str])
+        println("\n\n")
+        @info "The transition above failed as we cannot delay receiving the message."
+        show(Transition!(time_test,:t,1))
+        println()
+
+
+        show(time_test,[:full,:expand,:str])
+        println("\n\n")
+        @info "The transition above failed as we cannot receive the message yet."
+        show(Transition!(time_test,:tau))
+        println()
+
+
+        show(time_test,[:full,:expand,:str])
+        println("\n\n")
+        @info "The transition above succeeds as we have not had a chance to receive yet."
+        show(Transition!(time_test,:t,0.1))
+        println()
+
+
+        show(time_test,[:full,:expand,:str])
+        println("\n\n")
+        @info "The transition above failed as we tried to \"jump\" over the viable region (3≤x≤4)."
+        show(Transition!(time_test,:t,2))
+        println()
+
+
+        show(time_test,[:full,:expand,:str])
+        println("\n\n")
+        @info "The transition above succeeds, and we are now able to receive."
+
+        show(Transition!(time_test,:t,0.4))
+        println()
+
+        show(time_test,[:full,:expand,:str])
+        println("\n\n")
+        show(Transition!(time_test,:tau))
+        println()
+
+        show(time_test,[:full,:expand,:str])
+        println("\n\n")
+        show(Transition!(time_test,:t,0.1))
+        println()
+
+        show(time_test,[:full,:expand,:str])
+        println("\n\n")
+        show(Transition!(time_test,:t,100))
+        println()
+
+        show(time_test,[:full,:expand,:str])
+        println("\n\n")
+
+    end
+
+
+    # runExample(;func=C,loop=9)
+
+    # D()
+
+
+
+    function PresentationExamples()
+
+        δ(:tt)
+
+        δ(:gtr,"x",1)
+
+        δ(:eq,"x",1)
+
+        δ(:dgtr,"x","y",1)
+
+        δ(:deq,"x","y",1)
+
+        # δ(:not,δ(...))
+
+        # δ(:and,δ(...),δ(...))
+
+        Interact(:send,Msg("a",Bool),δ(:gtr,"x",2),λ("x"),End())
+
+        Choice([
+            Interact(:send,Msg("a",Bool),δ(:gtr,"x",2),λ("x"),End()),
+            Interact(:recv,Msg("b",None),δ(:eq,"y",1),λ("y"),End())
+        ])
+
     end
 
 end

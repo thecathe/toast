@@ -67,9 +67,9 @@ module ConstraintEvaluation
                 
                 _expr = δExpr(:call, [get_call_op(head), Number(ValueOf!(v,args[1]).value), Integer(args[2])]...)
 
-            elseif head in [:deq,:dgeq]
+            elseif head in [:deq,:dgtr]
                 # :deq => x - y = n
-                # :dgeq => x - y ≥ n
+                # :dgtr => x - y ≥ n
                 @assert length(args)==3 "δEvaluation! head ($(head)) expects 3 more arguments, not $(length(args)): \"$(string(args))\"."
                 
                 _expr = δExpr(:call, [get_call_op(head), δExpr(:call, :-, Number(ValueOf!(v,args[1]).value), Number(ValueOf!(v,args[2]).value)), Integer(args[3])]...)
@@ -133,8 +133,8 @@ module ConstraintEvaluation
                 return :(<)
             elseif head==:deq
                 return :(==)
-            elseif head==:dgeq
-                return :(>=)
+            elseif head==:dgtr
+                return :(>)
             end
         end
     end

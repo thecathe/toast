@@ -19,7 +19,7 @@ module ClockConstraints
             # if head==:tt
             #     string("true")
             if head==:call
-                # :eq, :geq, :deq, :dgeq, :not, :-
+                # :eq, :geq, :deq, :dgtr, :not, :-
                 arg_head = args[1]
                 if arg_head==:!
                     string("¬(", string(args[2]), ")")
@@ -75,7 +75,7 @@ module ClockConstraints
         elseif mode in [:expand,:expand_tail]
             
             if head==:call
-                # :eq, :geq, :deq, :dgeq, :not, :-
+                # :eq, :geq, :deq, :dgtr, :not, :-
                 arg_head = args[1]
                 if arg_head==:!
                     string("¬(", string(args[2]), ")")
@@ -86,11 +86,20 @@ module ClockConstraints
                 elseif arg_head==:(>=)
                     string(string(args[2]), "≥", string(Integer(args[3])))
 
+                elseif arg_head==:(>)
+                    string(string(args[2]), ">", string(Integer(args[3])))
+
+                elseif arg_head==:(<=)
+                    string(string(args[2]), "≤", string(Integer(args[3])))
+
+                elseif arg_head==:(<)
+                    string(string(args[2]), "<", string(Integer(args[3])))
+
                 elseif arg_head==:-
                     string(string(Number(args[2])), "-", string(Number(args[3])))
 
                 else
-                    @error "δExpr.string :call, unexpected head: $(string(arg_head)), $(string(args))"
+                    @error "δExpr.string :call, unexpected head $(string(arg_head)): $(string(join([string(a) for a in args])))."
                 end
 
             elseif head==:(&&)
@@ -126,7 +135,7 @@ module ClockConstraints
     end
 
     export δ, supported_constraints
-    const supported_constraints = [:tt, :not, :and, :eq, :geq, :deq, :dgeq, :or, :leq, :les, :gtr]
+    const supported_constraints = [:tt, :not, :and, :eq, :geq, :deq, :dgtr, :or, :leq, :les, :gtr]
     const supported_formats = [:disjunct, :conjunct]
 
     mutable struct δ
@@ -220,7 +229,7 @@ module ClockConstraints
 
                 end
 
-            elseif head ∈ [:deq,:dgeq]
+            elseif head ∈ [:deq,:dgtr]
                 @assert length(args)==3 "δ($(string(head))) expects 3 args: ($(length(args))) $(string(args))."
 
                 @assert args[1] isa String "δ($(string(head))) expects #1 to be String, not: $(string(typeof(args[1])))."
@@ -229,7 +238,7 @@ module ClockConstraints
                 
                 @assert args[3] isa Num "δ($(string(head))) expects #1 to be Num, not: $(string(typeof(args[1])))."
 
-                new(head, [args...], δExpr(:call, [head==:deq ? :(==) : :(>=), δExpr(:call, [:-, args[1], args[2]]), args[3]]), unique(Array{String}([args[1],args[2]])), Array{ν}([]))
+                new(head, [args...], δExpr(:call, [head==:deq ? :(==) : :(>), δExpr(:call, [:-, args[1], args[2]]), args[3]]), unique(Array{String}([args[1],args[2]])), Array{ν}([]))
 
             # elseif head==:flatten
             #     # :flatten - restructure δ to be flat conjunction
@@ -429,8 +438,8 @@ module ClockConstraints
                 string(string(d.args[1]), "<", string(d.args[2]))
             elseif head==:deq
                 string(string(d.args[1]), "-", string(d.args[2]), "=", string(d.args[3]))
-            elseif head==:dgeq
-                string(string(d.args[1]), "-", string(d.args[2]), "≥", string(d.args[3]))
+            elseif head==:dgtr
+                string(string(d.args[1]), "-", string(d.args[2]), ">", string(d.args[3]))
             # elseif head==:flat
             #     string(join([string(c) for c in d.args], " ∧ "))
             # elseif head==:past

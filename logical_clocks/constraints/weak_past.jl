@@ -44,7 +44,7 @@ module WeakPast
             elseif head ∈ [:or,:and]
                 return δ(head,pastOf(d.args[1]),pastOf(d.args[2]))
 
-            elseif head ∈ [:deq,:dgeq]
+            elseif head ∈ [:deq,:dgtr]
                 return d
 
             else

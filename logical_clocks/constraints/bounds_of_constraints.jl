@@ -279,7 +279,7 @@ module BoundsOfConstraints
                     end
 
 
-                elseif child.head ∈ [:deq,:dgeq]
+                elseif child.head ∈ [:deq,:dgtr]
                     @warn "bounds (child), $(string(child.head)) skipped."
                     continue
 
@@ -302,7 +302,7 @@ module BoundsOfConstraints
                 end
 
 
-            elseif d.head ∈ [:deq,:dgeq]
+            elseif d.head ∈ [:deq,:dgtr]
                 @warn "bounds, $(string(d.head)) skipped."
                 continue
 

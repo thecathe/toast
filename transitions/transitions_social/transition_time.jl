@@ -87,7 +87,8 @@ module SocialTransitionTime
                     met_premise_persistency = true
                     @debug "[time] (delayed) c is fe\n$(string(localised_delayed_evaluate,:full,:expand))."
                 else
-                    @warn "[time] (delayed) not fe...\n$(string(localised_delayed_evaluate,:full,:expand))."
+                    # TODO CHECK THIS EXAMPLE D
+                    # @warn "[time] (delayed) not fe...\n$(string(localised_delayed_evaluate,:full,:expand))."
                     met_premise_persistency = false
                 end
             else

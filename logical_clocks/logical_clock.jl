@@ -10,9 +10,7 @@ module LogicalClock
     mutable struct Clock
         label::String
         value::Num
-        #
         Clock(label::String,value::Num) = new(label,Num(value))
-        # swapped
         Clock(value::Num,label::String) = new(label,Num(value))
     end
 
