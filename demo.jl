@@ -333,7 +333,7 @@ module Demo
 
     # runExample(;func=C,loop=9)
 
-    # D()
+    D()
 
 
 
