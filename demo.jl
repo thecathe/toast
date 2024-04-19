@@ -331,9 +331,9 @@ module Demo
     end
 
 
-    # runExample(;func=C,loop=9)
+    runExample(;func=C,loop=9)
 
-    D()
+    # D()
 
 
 

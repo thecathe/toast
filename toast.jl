@@ -656,44 +656,44 @@ module TOAST
 
 
 
-            # println("\ntest b:")
-            # show(test_b,[:full,:expand,:str])
-            # printlines()
+            println("\ntest b:")
+            show(test_b,[:full,:expand,:str])
+            printlines()
 
-            # show(Transition!(test_b,:send,Msg("a")))
-            # printlines()
+            show(Transition!(test_b,:send,Msg("a")))
+            printlines()
 
-            # show(test_b,[:full,:expand,:str])
-            # printlines()
+            show(test_b,[:full,:expand,:str])
+            printlines()
 
-            # show(Transition!(test_b,:t,2))
-            # printlines()
+            show(Transition!(test_b,:t,2))
+            printlines()
 
-            # show(test_b,[:full,:expand,:str])
-            # printlines()
+            show(test_b,[:full,:expand,:str])
+            printlines()
 
-            # show(Transition!(test_b,:send,Msg("a")))
-            # printlines()
+            show(Transition!(test_b,:send,Msg("a")))
+            printlines()
 
-            # show(test_b,[:full,:expand,:str])
-            # printlines()
+            show(test_b,[:full,:expand,:str])
+            printlines()
 
 
-            # for i in range(1,4)
+            for i in range(1,4)
 
-            #     show(Transition!(test_b,:send,Msg("b")))
-            #     printlines()
+                show(Transition!(test_b,:send,Msg("b")))
+                printlines()
 
-            #     show(test_b,[:full,:expand,:str])
-            #     printlines()
+                show(test_b,[:full,:expand,:str])
+                printlines()
 
-            #     show(Transition!(test_b,:send,Msg("q")))
-            #     printlines()
+                show(Transition!(test_b,:send,Msg("q")))
+                printlines()
 
-            #     show(test_b,[:full,:expand,:str])
-            #     printlines()
+                show(test_b,[:full,:expand,:str])
+                printlines()
 
-            # end
+            end
 
             # temp for time step social
             # TimeStep!(test_c.valuations, 2)
