@@ -761,52 +761,76 @@ module TOAST
 
 
 
-            # # TODO: que
-            println("\ntest (que) e:")
-            show(test_e,[:full,:expand,:str])
-            printlines()
+            # # # TODO: que
+            # println("\ntest (que) e:")
+            # show(test_e,[:full,:expand,:str])
+            # printlines()
 
-            show(Transition!(test_e,:recv,Msg("zero")))
-            printlines()
+            # show(Transition!(test_e,:recv,Msg("zero")))
+            # printlines()
             
-            show(test_e,[:full,:expand,:str])
-            printlines()
+            # show(test_e,[:full,:expand,:str])
+            # printlines()
 
 
 
 
-            # TODO: recv
-            println("\ntest (recv) e:")
-            show(test_e,[:full,:expand,:str])
-            printlines()
+            # # TODO: recv
+            # println("\ntest (recv) e:")
+            # show(test_e,[:full,:expand,:str])
+            # printlines()
 
-            show(Transition!(test_e,:tau))
-            printlines()
+            # show(Transition!(test_e,:tau))
+            # printlines()
             
-            show(test_e,[:full,:expand,:str])
-            printlines()
+            # show(test_e,[:full,:expand,:str])
+            # printlines()
 
 
 
 
 
 
-            # # TODO: time
-            println("\ntest (time) e:")
-            show(test_e,[:full,:expand,:str])
-            printlines()
+            # # # TODO: time
+            # println("\ntest (time) e:")
+            # show(test_e,[:full,:expand,:str])
+            # printlines()
 
-            show(Transition!(test_e,:t,1))
-            printlines()
+            # show(Transition!(test_e,:t,1))
+            # printlines()
             
-            show(test_e,[:full,:expand,:str])
-            printlines()
+            # show(test_e,[:full,:expand,:str])
+            # printlines()
 
-            show(Transition!(test_e,:tau))
-            printlines()
+            # show(Transition!(test_e,:tau))
+            # printlines()
             
-            show(test_e,[:full,:expand,:str])
-            printlines()
+            # show(test_e,[:full,:expand,:str])
+            # printlines()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
             # time_c_a = δ(:not, δ(:and,
@@ -1213,31 +1237,33 @@ module TOAST
 
         # end
 
-        # ~ 
-        # ~ user demos
-        # ~
-        # export Num, Clock, λ, ν, ValueOf!, ResetClocks!, TimeStep!, δ, δExpr, supported_constraints
-
-        # export End
-        # export μ
-        # export α
-        # export Direction, type_direction
-        # export Msg, Payload, None, SpecialPayload
-        # export Interact
-        # export Choice
-        # export Action
-        # export Actions
-        # export Msgs
-        # export Del
-        # export Duality, dual
-        # export S
-
-        # export Configuration, Local, Social, System
-        # export Queue, head!
-        # export Eval, δEval
-        # export IsEnabled
-
-        # export Tick!
 
     end
+
+    # ~ 
+    # ~ user demos
+    # ~
+    export Num, Clock, λ, ν, ValueOf!, ResetClocks!, TimeStep!, δ, δExpr, supported_constraints
+
+    export End
+    export μ
+    export α
+    export Direction, type_direction
+    export Msg, Payload, None, SpecialPayload
+    export Interact
+    export Choice
+    export Action
+    export Actions
+    export Msgs
+    export Del
+    export Duality, dual
+    export S
+
+    export Configuration, Local, Social, System
+    export Queue, head!
+    export Eval, δEval
+    export IsEnabled
+
+    export Tick!
+
 end

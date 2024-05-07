@@ -20,6 +20,7 @@ module ClockValuations
         ν(child::T,offset::Num = 0) where {T<:Tuple{String,Num}} = ν(Array{Clock}([Clock(child...)]), offset)
         # anonymous clocks
         ν(children::Array{T},offset::Num = 0) where {T<:Tuple{String,Num}} = ν(Array{Clock}([Clock(c...) for c in children]), offset)
+
     end
 
     Base.show(t::ν, io::Core.IO = stdout) = print(io, string(t))
@@ -157,6 +158,16 @@ module ClockValuations
         ResetClocks!(v::ν,label::String) = ResetClocks!(v,Array{String}([label]))
         #
         ResetClocks!(v::ν,resets::T) where {T<:Array{String}} = ResetClocks!(v,λ(resets))
+        
+        "Reset all clocks in ν."
+        function ResetClocks!(v::ν) 
+            clocks = v.clocks
+            for clock ∈ clocks
+                clock.value = 0
+            end
+            # ResetClocks!(v,clocks)
+        end
+
         #
         function ResetClocks!(v::ν,resets::λ)
             reset = Array{String}([])
@@ -174,6 +185,8 @@ module ClockValuations
             end
             new(resets)
         end
+        
+
     end
 
     Base.show(t::ResetClocks!, io::Core.IO = stdout) = print(io, string(t))
