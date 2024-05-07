@@ -181,7 +181,7 @@ module TOAST
     # printlines()
 
     show_all_tests=false
-    show_tests=false
+    show_tests=true
 
     #
     # clock tests
@@ -544,7 +544,7 @@ module TOAST
             local_a = Local(v_a, e)
             social_a = Social(v_a, e)
 
-            # sys = System(a,b)
+            sys_a = System(social_a)
 
             # configurations
             if show_local_configuration_tests || show_all_configuration_tests || show_all_tests 
@@ -634,7 +634,7 @@ module TOAST
 
             end
 
-            # println("operational semantic tests:")
+            println("operational semantic tests:")
 
             test_a = deepcopy(local_a)
             test_b = deepcopy(local_a)
@@ -656,46 +656,46 @@ module TOAST
 
 
 
-            println("\ntest b:")
-            show(test_b,[:full,:expand,:str])
-            printlines()
+            # println("\ntest b:")
+            # show(test_b,[:full,:expand,:str])
+            # printlines()
 
-            show(Transition!(test_b,:send,Msg("a")))
-            printlines()
+            # show(Transition!(test_b,:send,Msg("a")))
+            # printlines()
 
-            show(test_b,[:full,:expand,:str])
-            printlines()
+            # show(test_b,[:full,:expand,:str])
+            # printlines()
 
-            show(Transition!(test_b,:t,2))
-            printlines()
+            # show(Transition!(test_b,:t,2))
+            # printlines()
 
-            show(test_b,[:full,:expand,:str])
-            printlines()
+            # show(test_b,[:full,:expand,:str])
+            # printlines()
 
-            show(Transition!(test_b,:send,Msg("a")))
-            printlines()
+            # show(Transition!(test_b,:send,Msg("a")))
+            # printlines()
 
-            show(test_b,[:full,:expand,:str])
-            printlines()
+            # show(test_b,[:full,:expand,:str])
+            # printlines()
 
 
-            for i in range(1,4)
+            # for i in range(1,4)
 
-                show(Transition!(test_b,:send,Msg("b")))
-                printlines()
+            #     show(Transition!(test_b,:send,Msg("b")))
+            #     printlines()
 
-                show(test_b,[:full,:expand,:str])
-                printlines()
+            #     show(test_b,[:full,:expand,:str])
+            #     printlines()
 
-                show(Transition!(test_b,:send,Msg("q")))
-                printlines()
+            #     show(Transition!(test_b,:send,Msg("q")))
+            #     printlines()
 
-                show(test_b,[:full,:expand,:str])
-                printlines()
+            #     show(test_b,[:full,:expand,:str])
+            #     printlines()
 
-            end
+            # end
 
-            # temp for time step social
+            # # temp for time step social
             # TimeStep!(test_c.valuations, 2)
 
             # println("\ntest c:")
@@ -762,45 +762,51 @@ module TOAST
 
 
             # # TODO: que
-            # println("\ntest (que) e:")
-            # show(test_e,[:full,:expand,:str])
-            # printlines()
+            println("\ntest (que) e:")
+            show(test_e,[:full,:expand,:str])
+            printlines()
 
-            # show(Transition!(test_e,:recv,Msg("zero")))
-            # printlines()
+            show(Transition!(test_e,:recv,Msg("zero")))
+            printlines()
             
-            # show(test_e,[:full,:expand,:str])
-            # printlines()
+            show(test_e,[:full,:expand,:str])
+            printlines()
 
 
 
 
             # TODO: recv
-            # println("\ntest (recv) e:")
-            # show(test_e,[:full,:expand,:str])
-            # printlines()
+            println("\ntest (recv) e:")
+            show(test_e,[:full,:expand,:str])
+            printlines()
 
-            # show(Transition!(test_e,:tau))
-            # printlines()
+            show(Transition!(test_e,:tau))
+            printlines()
             
-            # show(test_e,[:full,:expand,:str])
-            # printlines()
+            show(test_e,[:full,:expand,:str])
+            printlines()
 
 
 
 
 
 
-            # # # TODO: time
-            # println("\ntest (time) e:")
-            # show(test_e,[:full,:expand,:str])
-            # printlines()
+            # # TODO: time
+            println("\ntest (time) e:")
+            show(test_e,[:full,:expand,:str])
+            printlines()
 
-            # show(Transition!(test_e,:t,2))
-            # printlines()
+            show(Transition!(test_e,:t,1))
+            printlines()
             
-            # show(test_e,[:full,:expand,:str])
-            # printlines()
+            show(test_e,[:full,:expand,:str])
+            printlines()
+
+            show(Transition!(test_e,:tau))
+            printlines()
+            
+            show(test_e,[:full,:expand,:str])
+            printlines()
 
 
             # time_c_a = δ(:not, δ(:and,

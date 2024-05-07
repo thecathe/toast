@@ -20,7 +20,7 @@ module ConstraintNormalisation
             # check inner
             inner = d.args[1]
             inner_head = inner.head
-
+            
             if inner_head==:tt
                 return c
 
@@ -41,16 +41,16 @@ module ConstraintNormalisation
                 return δ(:and, normaliseδ(δ(:not,lhs)),normaliseδ(δ(:not,rhs)))
 
             elseif inner_head==:geq
-                return δ(:les,inner.args[1].inner.args[2])
+                return δ(:les,inner.args[1],inner.args[2])
 
             elseif inner_head==:les
-                return δ(:geq,inner.args[1].inner.args[2])
+                return δ(:geq,inner.args[1],inner.args[2])
 
             elseif inner_head==:leq
-                return δ(:gtr,inner.args[1].inner.args[2])
+                return δ(:gtr,inner.args[1],inner.args[2])
 
             elseif inner_head==:gtr
-                return δ(:leq,inner.args[1].inner.args[2])
+                return δ(:leq,inner.args[1],inner.args[2])
 
             elseif inner_head==:eq
                 return δ(:or,δ(:les,inner.args[1],inner.args[2]),δ(:gtr,inner.args[1],inner.args[2]))

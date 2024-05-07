@@ -32,6 +32,9 @@ module WeakPast
             if head==:tt
                 return d
 
+            elseif head ∈ [:les]
+                return d
+                
             elseif head==:not
                 return δ(:not,pastOf(d.args[1]))
 
@@ -48,7 +51,7 @@ module WeakPast
                 return d
 
             else
-                @warn "δ↓ pastOf(), unexpected head: $(string(head))."
+                @warn "δ↓ pastOf(), unexpected head: '$(string(head))', returning '$(string(d))'."
                 return d
             end
 

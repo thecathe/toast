@@ -24,7 +24,8 @@ module SocialTransitionRecv
         "Pop! head of Queue, then elevate to Act!"
         function Recv!(c::Social)
 
-            head = head!(c.queue;pop=true)
+            "Get head of message queue."
+            head = head!(c.queue;pop=false)
 
             "Check if message in queue."
             if !head[2]
@@ -32,6 +33,7 @@ module SocialTransitionRecv
                 return new(false,Nothing(),λ(),false,"")
             end
 
+            "Get Action label (:recv, head_of_queue)."
             action = Action(:recv,head[1])
 
             "Make Local Configuration."
@@ -39,6 +41,11 @@ module SocialTransitionRecv
 
             "Elevate to Act!"
             transition = TransitionLocal!(localised,action)
+            
+            "If success, then pop message from top of queue."
+            if transition.success
+                head!(c.queue;pop=true)
+            end
 
             act = transition.transition
             unfolded = transition.unfolded
