@@ -14,7 +14,7 @@ module Transitions
     abstract type SocialTransition <: Transition end
     abstract type SystemTransition <: Transition end
 
-    const transition_labels = [:send,:recv,:ell,:tau,:t] 
+    const transition_labels = [:send,:recv,:ell,:tau,:t,:unfold] 
 
     export Transition!
 

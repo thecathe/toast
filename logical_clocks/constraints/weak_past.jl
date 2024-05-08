@@ -36,6 +36,16 @@ module WeakPast
                 return d
                 
             elseif head==:not
+                # check if child is single gtr, then treat as past of leq
+                if d.args[1].head ∈ [:gtr,:geq]
+                    c = deepcopy(d.args[1])
+                    if c.head==:gtr
+                        c.head = :leq
+                    elseif c.head==:geq
+                        c.head = :les
+                    end
+                    return pastOf(c)
+                end
                 return δ(:not,pastOf(d.args[1]))
 
             elseif head ∈ [:eq,:leq]

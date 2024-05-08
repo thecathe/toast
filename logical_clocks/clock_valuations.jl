@@ -133,8 +133,10 @@ module ClockValuations
             end
             
             # new clock
-            push!(v.clocks,Clock(label,0))
-            new(label,0)
+            
+            system_time=v.system.value
+            push!(v.clocks,Clock(label,system_time))
+            new(label,system_time)
         end
     end
 
@@ -154,21 +156,25 @@ module ClockValuations
     #
     struct ResetClocks!
         resets::λ
-        #
-        ResetClocks!(v::ν,label::String) = ResetClocks!(v,Array{String}([label]))
-        #
-        ResetClocks!(v::ν,resets::T) where {T<:Array{String}} = ResetClocks!(v,λ(resets))
         
-        "Reset all clocks in ν."
+        "Reset all clocks in v."
         function ResetClocks!(v::ν) 
+            "Get all clock labels within v."
             clocks = v.clocks
+            labels = Array{String}([])
             for clock ∈ clocks
-                clock.value = 0
+                push!(labels,clock.label)
             end
-            # ResetClocks!(v,clocks)
+            ResetClocks!(v,labels)
         end
 
-        #
+        "Reset single clock."
+        ResetClocks!(v::ν,label::String) = ResetClocks!(v,Array{String}([label]))
+        
+        "Reset all clocks in array of labels."
+        ResetClocks!(v::ν,labels::T) where {T<:Array{String}} = ResetClocks!(v,λ(labels))
+        
+        "Reset clocks within λ."
         function ResetClocks!(v::ν,resets::λ)
             reset = Array{String}([])
             for c ∈ v.clocks

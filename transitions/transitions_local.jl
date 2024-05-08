@@ -38,6 +38,10 @@ module TransitionsLocal
             origin = keep ? c : nothing
             label = ""
 
+            if kind==:unfold
+                @assert c.type isa μ "TransitionLocal! ($(string(kind))) expects: kind==:unfold."
+            end
+
             "TransitionLocal!, if recursion, then unfold first."
             if c.type isa μ
                 unfold = Unfold!(c)
@@ -71,6 +75,11 @@ module TransitionsLocal
 
                 success = transition.success
                 label = "$(label)[act] $(string(action)) [$(string(transition.resets)) ↦ 0]"
+
+            elseif kind==:unfold
+                @assert unfolded "TransitionLocal! (unfolded==false) even though kind==:unfold."
+                transition = unfold
+                success = true
 
             else
                 label = "$(label)ERROR"

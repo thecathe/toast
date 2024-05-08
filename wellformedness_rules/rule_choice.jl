@@ -1,3 +1,0 @@
-module WellFormednessRuleChoice
-
-end

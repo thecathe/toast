@@ -9,6 +9,9 @@ module TypeChoice
     import Base.getindex
     import Base.iterate
 
+    import Base.get
+    import Base.findall
+
     using ..SessionTypes
     using ..TypeInteract
 
@@ -240,5 +243,30 @@ module TypeChoice
 
     Base.iterate(s::Choice) = isempty(s) ? nothing : (s[1], Int(1))
     Base.iterate(s::Choice, i::Int) = (i >= length(s)) ? nothing : (s[i+1], i+1)
+
+    "Get interaction with matching label."
+    function Base.get(choice::Choice,label::String,default=nothing)
+        for interact in choice
+            if interact.msg.label==label 
+                return interact
+            end
+        end
+        return default
+    end
+
+    Base.get(choice::Choice,msg::Msg,default=nothing) = Base.get(choice,msg.label,default)
+    
+    Base.get(choice::Choice,interact::Interact,default=nothing) = Base.get(choice,interact.msg.label,default)
+
+    "Findall interactions with matching direction."
+    function Base.findall(choice::Choice,dir::Direction)
+        collection = Array{Interact}([])
+        for interact in choice
+            if interact.direction==dir
+                push!(collection,interact)
+            end
+        end
+        return collection
+    end
 
 end

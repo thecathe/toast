@@ -6,6 +6,7 @@ module TypeDuality
     using ..SessionTypes
 
     export Duality
+    export dual
 
     struct Duality <: SessionType
         type::T where {T<:SessionType}

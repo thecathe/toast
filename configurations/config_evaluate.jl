@@ -35,9 +35,19 @@ module ConfigurationEvaluations
         interact_fe::Array{Interact}
         #
         # local evaluation
-        Evaluate!(c::Local) = Evaluate!(c.valuations,c.type)
+        function Evaluate!(c::Local) 
+            # update valuations from Evaluate!
+            evaluation = Evaluate!(c.valuations,c.type)
+            c.valuations = evaluation.valuations
+            return evaluation
+        end
         # social evaluation
-        Evaluate!(c::Social) = Evaluate!(c.valuations,c.type)
+        function Evaluate!(c::Social) 
+            # update valuations from Evaluate!
+            evaluation = Evaluate!(c.valuations,c.type)
+            c.valuations = evaluation.valuations
+            return evaluation
+        end
         # 
         function Evaluate!(v::ν,t::T) where {T<:SessionType}
             
@@ -72,11 +82,11 @@ module ConfigurationEvaluations
 
                 _actionable=true
 
-                @debug "Evaluate!, en: $(string(t.constraints))."
+                # @debug "Evaluate!, en: $(string(t.constraints))."
 
                 # ? is enabled
                 _eval_en = δEvaluation!(v,t.constraints)
-                @debug "Evaluate!, en eval: $(string(_eval_en))."
+                # @debug "Evaluate!, en eval: $(string(_eval_en))."
                 _result_en = eval(_eval_en.expr)
                 
                 _en = string(_result_en)=="true"
@@ -86,10 +96,10 @@ module ConfigurationEvaluations
                 # ? is future enabled
                 past = δ⬇(t.constraints;normalise=true)
 
-                @debug "Evaluate!, past: $(string(past))."
+                # @debug "Evaluate!, past: $(string(past))."
 
                 _eval_fe = δEvaluation!(v, past.past)
-                @debug "Evaluate!, past eval: $(string(_eval_fe))."
+                # @debug "Evaluate!, past eval: $(string(_eval_fe))."
                 _result_fe = eval(_eval_fe.expr)
                 
                 _fe = string(_result_fe)=="true"

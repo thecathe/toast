@@ -55,6 +55,9 @@ module SessionTypes
     using .TypeMsgs
     export Msgs
 
+    include("session_types/type_interactions.jl")
+    using .TypeInteractions
+    
 
     #
     # delegation

@@ -39,8 +39,8 @@ module LocalConfigurations
                 end
 
                 # initialise values
-                for l in _relevant_clocks
-                    ValueOf!(val,l)
+                for label in _relevant_clocks
+                    ValueOf!(val,label)
                 end
 
                 new(val,_t,_relevant_clocks)

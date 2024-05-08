@@ -28,7 +28,7 @@ module LocalTransitionAct
             _c = deepcopy(c)
             "Search for corresponding Interact in Choice."
             for interact in choice
-                @debug "[act] choice, testing: $(string(interact))."
+                # @debug "[act] choice, testing: $(string(interact))."
                 act = Act!(_c,interact,action)
                 "Interact successful?"
                 if act.success
@@ -53,7 +53,7 @@ module LocalTransitionAct
                 resets = interact.resets
                 "Check if constraints satisfied."
                 evaluation = Evaluate!(c.valuations,interact)
-                @debug "[act] ($(string(interact_action))), evaluate: $(string(evaluation,:full,:expand))."
+                # @debug "[act] ($(string(interact_action))), evaluate: $(string(evaluation,:full,:expand))."
                 if evaluation.enabled
                     "Reset Clocks."
                     ResetClocks!(c.valuations,resets)
@@ -63,11 +63,11 @@ module LocalTransitionAct
                     
                     "Constraints satisfied, clocks reset, and type progressed."
                     # return new(old_config,true,action,resets)
-                    @debug "[act] ($(string(action))) success!"
+                    # @debug "[act] ($(string(action))) success!"
                     return new(true,action,resets)
                 else
                     "Constraints not satisfied, do nothing."
-                    @debug "[act] ($(string(interact_action))), constraints not satisfied: $(string(evaluation,:full,:expand))."
+                    # @debug "[act] ($(string(interact_action))), constraints not satisfied: $(string(evaluation,:full,:expand))."
                     # return new(old_config,false,action,resets)
                     return new(false,action,resets)
                 end

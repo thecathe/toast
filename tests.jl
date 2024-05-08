@@ -1,78 +1,658 @@
 ### A Pluto.jl notebook ###
 # v0.19.41
 
+## show or hide debug?
+ENV["JULIA_DEBUG"] = "all"
+
+
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ 94454d67-ebc8-4e0c-9108-a343b4688d27
 using Test
 
-# ╔═╡ 92116900-375d-4182-ae95-2a2024af7c36
 include("toast.jl")
-
-# ╔═╡ ed31fe6d-b481-45f9-bc22-de4277ad48a5
 using .TOAST
 
-# ╔═╡ 30df22d6-f325-44ab-933f-4658cb330e0f
-@info show(ν([("a",2)]))
-@info show(ResetClocks!(ν([("a",2)]),"a"))
-@info show(ResetClocks!(ν([("a",2)]),"a"))
-reset_a_to_0 = ν([("a",2)])
-ResetClocks!(reset_a_to_0)
-@info show(ValueOf!(reset_a_to_0,"a"))
 
-# ╔═╡ 58e08598-f500-4ebe-857b-0e59790a4266
-# @test ValueOf!(TimeStep!(ν([("a",2)]),1),"a")==3
+@info "beginning tests..."
 
-# ╔═╡ 00000000-0000-0000-0000-000000000001
-PLUTO_PROJECT_TOML_CONTENTS = """
-[deps]
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-"""
+# clock valuation tests
+begin
+    # init with a=2
+    clock_valuations_a_2 = ν([("a",2)])
+    @debug string(clock_valuations_a_2)
+    @test ValueOf!(clock_valuations_a_2, "a").value==2
+    @test ValueOf!(clock_valuations_a_2, "b").value==0
 
-# ╔═╡ 00000000-0000-0000-0000-000000000002
-PLUTO_MANIFEST_TOML_CONTENTS = """
-# This file is machine-generated - editing it directly is not advised
+    # reset a->0
+    ResetClocks!(clock_valuations_a_2,"a")
+    @debug string(clock_valuations_a_2)
+    @test ValueOf!(clock_valuations_a_2, "a").value==0
+    @test ValueOf!(clock_valuations_a_2, "b").value==0
 
-julia_version = "1.10.3"
-manifest_format = "2.0"
-project_hash = "71d91126b5a1fb1020e1098d9d492de2a4438fd2"
+    # time step 1
+    TimeStep!(clock_valuations_a_2,1)
+    @debug string(clock_valuations_a_2)
+    @test ValueOf!(clock_valuations_a_2, "a").value==1
+    @test ValueOf!(clock_valuations_a_2, "b").value==1
+    @test ValueOf!(clock_valuations_a_2, "c").value==1
 
-[[deps.Base64]]
-uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
+    # reset a->0
+    ResetClocks!(clock_valuations_a_2,"a")
+    @debug string(clock_valuations_a_2)
+    @test ValueOf!(clock_valuations_a_2, "a").value==0
+    @test ValueOf!(clock_valuations_a_2, "b").value==1
+    @test ValueOf!(clock_valuations_a_2, "c").value==1
 
-[[deps.InteractiveUtils]]
-deps = ["Markdown"]
-uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
+    # time step 2
+    TimeStep!(clock_valuations_a_2,2)
+    @debug string(clock_valuations_a_2)
+    @test ValueOf!(clock_valuations_a_2, "a").value==2
+    @test ValueOf!(clock_valuations_a_2, "b").value==3
+    @test ValueOf!(clock_valuations_a_2, "c").value==3
+    @test ValueOf!(clock_valuations_a_2, "d").value==3
+        
+    # reset {a,c}->0
+    ResetClocks!(clock_valuations_a_2,["a","c"])
+    @debug string(clock_valuations_a_2)
+    @test ValueOf!(clock_valuations_a_2, "a").value==0
+    @test ValueOf!(clock_valuations_a_2, "b").value==3
+    @test ValueOf!(clock_valuations_a_2, "c").value==0
+    @test ValueOf!(clock_valuations_a_2, "d").value==3
 
-[[deps.Logging]]
-uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
+    # time step 3
+    TimeStep!(clock_valuations_a_2,3)
+    @debug string(clock_valuations_a_2)
+    @test ValueOf!(clock_valuations_a_2, "a").value==3
+    @test ValueOf!(clock_valuations_a_2, "b").value==6
+    @test ValueOf!(clock_valuations_a_2, "c").value==3
+    @test ValueOf!(clock_valuations_a_2, "d").value==6
+        
+    # reset all
+    ResetClocks!(clock_valuations_a_2)
+    @debug string(clock_valuations_a_2)
+    @test ValueOf!(clock_valuations_a_2, "a").value==0
+    @test ValueOf!(clock_valuations_a_2, "b").value==0
+    @test ValueOf!(clock_valuations_a_2, "c").value==0
+    @test ValueOf!(clock_valuations_a_2, "d").value==0
+    @test ValueOf!(clock_valuations_a_2, "e").value==6
 
-[[deps.Markdown]]
-deps = ["Base64"]
-uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 
-[[deps.Random]]
-deps = ["SHA"]
-uuid = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+    @info "all clock valuation tests passed."
+end
 
-[[deps.SHA]]
-uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
-version = "0.7.0"
 
-[[deps.Serialization]]
-uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
+# constraint evaluation tests
+begin
+    function debug_test(clock_valuations,clock_constraints,expected)
+        evaluation = eval(δEvaluation!(clock_valuations,clock_constraints).expr)
+        @debug string("($(string(clock_valuations)) ⊧ $(string(clock_constraints))) == $(string(evaluation))")
+        @test evaluation==expected
+    end
 
-[[deps.Test]]
-deps = ["InteractiveUtils", "Logging", "Random", "Serialization"]
-uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-"""
+    # equality constraints
+    begin
+        clock_constraints = δ(:eq, "x", 3)
+        # simple tests
+        begin
+            # fresh valuations
+            clock_valuations = ν([("x",2)])
+            @debug string("evaluating $(string(clock_constraints))")
 
-# ╔═╡ Cell order:
-# ╠═94454d67-ebc8-4e0c-9108-a343b4688d27
-# ╠═92116900-375d-4182-ae95-2a2024af7c36
-# ╠═ed31fe6d-b481-45f9-bc22-de4277ad48a5
-# ╠═30df22d6-f325-44ab-933f-4658cb330e0f
-# ╠═58e08598-f500-4ebe-857b-0e59790a4266
-# ╟─00000000-0000-0000-0000-000000000001
-# ╟─00000000-0000-0000-0000-000000000002
+            # base test
+            debug_test(clock_valuations,clock_constraints,false)
+
+            # time step 2
+            TimeStep!(clock_valuations,2)
+            debug_test(clock_valuations,clock_constraints,false)
+
+            # reset
+            ResetClocks!(clock_valuations)
+            debug_test(clock_valuations,clock_constraints,false)
+
+            # time step 3
+            TimeStep!(clock_valuations,3)
+            debug_test(clock_valuations,clock_constraints,true)
+
+            # time step 1
+            TimeStep!(clock_valuations,1)
+            debug_test(clock_valuations,clock_constraints,false)
+
+            @info "simple equality constraint tests passed."
+        end
+        # weak-past tests
+        begin
+            # fresh valuations
+            clock_valuations = ν([("x",2)])
+            # get past
+            weak_past = δ⬇(clock_constraints;normalise=true).past
+            @debug string("↓($(string(clock_constraints))) = $(string(weak_past))")
+
+            # base test
+            debug_test(clock_valuations,weak_past,true)
+
+            # time step 2
+            TimeStep!(clock_valuations,2)
+            debug_test(clock_valuations,weak_past,false)
+
+            # reset
+            ResetClocks!(clock_valuations)
+            debug_test(clock_valuations,weak_past,true)
+
+            # time step 3
+            TimeStep!(clock_valuations,3)
+            debug_test(clock_valuations,weak_past,true)
+
+            @info "weak-past equality constraint tests passed."
+        end
+    end
+    # diagonal constraints
+    begin
+        clock_constraints = δ(:deq, "x", "y", 3)
+        # simple tests
+        begin
+            # fresh valuations
+            clock_valuations = ν([("x",2),("y",4)])
+            @debug string("evaluating $(string(clock_constraints))")
+
+            # base test
+            debug_test(clock_valuations,clock_constraints,false)
+
+            # time step 2
+            TimeStep!(clock_valuations,1)
+            debug_test(clock_valuations,clock_constraints,false)
+
+            # reset
+            ResetClocks!(clock_valuations,"y")
+            debug_test(clock_valuations,clock_constraints,true)
+
+            # time step 3
+            TimeStep!(clock_valuations,3)
+            debug_test(clock_valuations,clock_constraints,true)
+
+            @info "diagonal constraint tests passed."
+        end
+        # weak-past tests
+        begin
+            # fresh valuations
+            clock_valuations = ν([("x",2),("y",4)])
+            # get past
+            weak_past = δ⬇(clock_constraints;normalise=true).past
+            @debug string("↓($(string(clock_constraints))) = $(string(weak_past))")
+
+            # base test
+            debug_test(clock_valuations,weak_past,false)
+
+
+            # time step 2
+            TimeStep!(clock_valuations,1)
+            debug_test(clock_valuations,weak_past,false)
+
+            # reset
+            ResetClocks!(clock_valuations,"y")
+            debug_test(clock_valuations,weak_past,true)
+
+            # time step 3
+            TimeStep!(clock_valuations,3)
+            debug_test(clock_valuations,weak_past,true)
+
+            @info "weak-past diagonal constraint tests passed."
+        end
+    end
+    # greater-than constraints
+    begin
+        clock_constraints = δ(:gtr, "x", 3)
+        # simple tests
+        begin
+            # fresh valuations
+            clock_valuations = ν([("x",2)])
+            @debug string("evaluating $(string(clock_constraints))")
+
+            # base test
+            debug_test(clock_valuations,clock_constraints,false)
+
+            # time step 2
+            TimeStep!(clock_valuations,2)
+            debug_test(clock_valuations,clock_constraints,true)
+
+
+            # reset
+            ResetClocks!(clock_valuations)
+            debug_test(clock_valuations,clock_constraints,false)
+
+            # time step 3
+            TimeStep!(clock_valuations,3)
+            debug_test(clock_valuations,clock_constraints,false)
+
+            # time step 1
+            TimeStep!(clock_valuations,1)
+            debug_test(clock_valuations,clock_constraints,true)
+
+            @info "simple greater-than constraint tests passed."
+        end
+        # weak-past tests
+        begin
+            # fresh valuations
+            clock_valuations = ν([("x",2)])
+            # get past
+            weak_past = δ⬇(clock_constraints;normalise=true).past
+            @debug string("↓($(string(clock_constraints))) = $(string(weak_past))")
+
+            # base test
+            debug_test(clock_valuations,weak_past,true)
+
+            # time step 2
+            TimeStep!(clock_valuations,2)
+            debug_test(clock_valuations,weak_past,true)
+
+            # reset
+            ResetClocks!(clock_valuations)
+            debug_test(clock_valuations,weak_past,true)
+
+            # time step 3
+            TimeStep!(clock_valuations,3)
+            debug_test(clock_valuations,weak_past,true)
+
+            @info "weak-past greater-than constraint tests passed."
+        end
+    end
+    # conjunctive constraints
+    begin
+        a = δ(:eq, "x", 3)
+        b = δ(:deq, "y", "z", 3)
+        clock_constraints = δ(:and, a, b)
+        # simple tests
+        begin
+            # fresh valuations
+            clock_valuations = ν([("x",2),("y",2),("z",4)])
+            @debug string("evaluating $(string(clock_constraints))")
+
+            # base test
+            debug_test(clock_valuations,clock_constraints,false)
+
+            # time step 2
+            TimeStep!(clock_valuations,1)
+            debug_test(clock_valuations,clock_constraints,false)
+
+            # reset {x,z}
+            ResetClocks!(clock_valuations,["x","z"])
+            debug_test(clock_valuations,clock_constraints,false)
+
+            # time step 3
+            TimeStep!(clock_valuations,3)
+            debug_test(clock_valuations,clock_constraints,true)
+
+            @info "conjunctive constraint tests passed."
+        end
+        # weak-past tests
+        begin
+            # fresh valuations
+            clock_valuations = ν([("x",2),("y",2),("z",4)])
+            # get past
+            weak_past = δ⬇(clock_constraints;normalise=true).past
+            @debug string("↓($(string(clock_constraints))) = $(string(weak_past))")
+
+            # base test
+            debug_test(clock_valuations,weak_past,false)
+
+            # time step 2
+            TimeStep!(clock_valuations,1)
+            debug_test(clock_valuations,weak_past,false)
+
+            # reset {x,z}
+            ResetClocks!(clock_valuations,["x","z"])
+            debug_test(clock_valuations,weak_past,true)
+
+            # time step 3
+            TimeStep!(clock_valuations,3)
+            debug_test(clock_valuations,weak_past,true)
+
+            @info "weak-past conjunctive constraint tests passed."
+        end
+    end
+    # disjunctive constraints
+    begin
+        a = δ(:eq, "x", 3)
+        b = δ(:deq, "y", "z", 3)
+        clock_constraints = δ(:or, a, b)
+        # simple tests
+        begin
+            # fresh valuations
+            clock_valuations = ν([("x",2),("y",2),("z",4)])
+            @debug string("evaluating $(string(clock_constraints))")
+
+            # base test
+            debug_test(clock_valuations,clock_constraints,false)
+
+            # time step 2
+            TimeStep!(clock_valuations,1)
+            debug_test(clock_valuations,clock_constraints,true)
+
+            # reset {x,z}
+            ResetClocks!(clock_valuations,["x","z"])
+            debug_test(clock_valuations,clock_constraints,true)
+
+            # time step 3
+            TimeStep!(clock_valuations,3)
+            debug_test(clock_valuations,clock_constraints,true)
+
+            @info "disjunctive constraint tests passed."
+        end
+        # weak-past tests
+        begin
+            # fresh valuations
+            clock_valuations = ν([("x",2),("y",2),("z",4)])
+            # get past
+            weak_past = δ⬇(clock_constraints;normalise=true).past
+            @debug string("↓($(string(clock_constraints))) = $(string(weak_past))")
+
+            # base test
+            debug_test(clock_valuations,weak_past,true)
+
+            # time step 2
+            TimeStep!(clock_valuations,1)
+            debug_test(clock_valuations,weak_past,true)
+
+            # reset
+            ResetClocks!(clock_valuations,["x","z"])
+            debug_test(clock_valuations,weak_past,true)
+
+            # time step 3
+            TimeStep!(clock_valuations,3)
+            debug_test(clock_valuations,weak_past,true)
+
+            # reset
+            ResetClocks!(clock_valuations,"y")
+            debug_test(clock_valuations,weak_past,true)
+
+            # time step 3
+            TimeStep!(clock_valuations,3)
+            debug_test(clock_valuations,weak_past,false)
+
+            @info "weak-past disjunctive constraint tests passed."
+        end
+    end
+    # bounded constraints
+    begin
+        clock_constraints = δ(:and, δ(:geq, "x", 3), δ(:not, δ(:geq, "x", 5)))
+        # simple tests
+        begin
+            # fresh valuations
+            clock_valuations = ν([("x",2)])
+            @debug string("evaluating $(string(clock_constraints))")
+
+            # base test
+            debug_test(clock_valuations,clock_constraints,false)
+
+            # time step 2
+            TimeStep!(clock_valuations,2)
+            debug_test(clock_valuations,clock_constraints,true)
+
+            # time step 3
+            TimeStep!(clock_valuations,2)
+            debug_test(clock_valuations,clock_constraints,false)
+
+            @info "simple bounded constraint tests passed."
+        end
+        # weak-past tests
+        begin
+            # fresh valuations
+            clock_valuations = ν([("x",2)])
+            # get past
+            weak_past = δ⬇(clock_constraints;normalise=true).past
+            @debug string("↓($(string(clock_constraints))) = $(string(weak_past))")
+
+            # base test
+            debug_test(clock_valuations,weak_past,true)
+
+            # time step 2
+            TimeStep!(clock_valuations,2)
+            debug_test(clock_valuations,weak_past,true)
+
+            # time step 3
+            TimeStep!(clock_valuations,3)
+            debug_test(clock_valuations,weak_past,false)
+
+            @info "weak-past bounded constraint tests passed."
+        end
+    end
+    @info "all clock constraint tests passed."
+end
+
+# session-type tests
+begin
+    # simple types
+    simple_send = Interact(:send, ("a"), δ(:eq, "x", 2), λ(), End())
+    simple_recv = Interact(:recv, ("b"), δ(:gtr, "x", 2), λ(), End())
+    simple_choice = Choice([simple_send,simple_recv])
+
+    simple_recursion = μ("r",Interact(simple_send,α("r")))
+
+    # duality
+    begin
+        # interact 
+        begin
+            function debug_test(interact) 
+                @debug "$(string(interact.type)) =(dual)= $(string(interact.dual))"
+                @test dual(interact.type.direction)==interact.dual.direction
+            end
+
+            # send
+            debug_test(Duality(simple_send))
+            
+            # recv
+            debug_test(Duality(simple_recv))
+            
+            @info "interaction type duality tests passed."
+        end
+        # choice
+        begin
+            choice = Duality(simple_choice)
+            @debug "$(string(choice.type)) =(dual)= $(string(choice.dual))"
+
+            # for each interaction in choice, there must be an aciton with the opposite direction but same label in dual
+            for interact in choice.type
+                dual_interact = get(choice.dual,interact,false)
+                # something must have been returned
+                @test !(dual_interact isa Bool)
+                @test !(dual_interact==false)
+                # check direction are dual
+                @test dual(interact.direction)==dual_interact.direction
+            end
+
+            @info "choice type duality tests passed."
+        end
+        @info "all type duality tests passed."
+    end
+end
+
+# configuration transitions
+begin
+    # simple types
+    send_a = Interact(:send, ("a"), δ(:eq, "x", 2), λ(["x"]), End())
+    recv_b = Interact(:recv, ("b"), δ(:gtr, "x", 2), λ(), End())
+    recv_c = Interact(:recv, ("c"), δ(:and, δ(:geq, "y", 3), δ(:not, δ(:geq, "y", 5))), λ(), End())
+
+    # recursive types
+    recursive_choice = Choice([Interact(send_a,α("r")),recv_b,recv_c])
+    recursive_type = μ("r",recursive_choice)
+
+    # clock valuations
+    valuations = ν([("y",1)])
+
+    # configurations
+    local_configuration = Local(valuations, recursive_type)
+
+    # function to print out
+    show_debug(context,config) = @debug "$(context):\n$(string(config,:full,:expand,:str))."
+
+    # evaluate tests
+    begin
+        function evaluation_tests(configuration,actionable)
+            evaluation = Evaluate!(configuration)
+            show_debug("configuration evaluation",configuration)
+            @debug "$(string(evaluation))."
+            @test evaluation.actionable==actionable
+            return evaluation
+        end
+        
+        # single interaction
+        begin
+            # base case (clocks=0)
+            begin
+                evaluation = evaluation_tests(Local(ν([("x",0)]),send_a),true)
+                @test evaluation.enabled==false
+                @test evaluation.future_en==true
+            end
+
+            # x=2
+            begin
+                evaluation = evaluation_tests(Local(ν([("x",2)]),send_a),true)
+                @test evaluation.enabled==true
+                @test evaluation.future_en==true
+            end
+
+            # x=3
+            begin
+                evaluation = evaluation_tests(Local(ν([("x",3)]),send_a),true)
+                @test evaluation.enabled==false
+                @test evaluation.future_en==false
+            end
+
+            @info "single interaction evaluation tests passed."
+        end
+        # recursive choice
+        begin
+            # fresh copy 
+            config = deepcopy(local_configuration)
+
+            # base case
+            begin
+                evaluation = evaluation_tests(config,true)
+                @test evaluation.enabled===nothing
+                @test evaluation.future_en===nothing
+            end
+
+            # unfold
+            Transition!(config,:unfold)
+            begin
+                evaluation = evaluation_tests(config,true)
+                @test evaluation.enabled==false
+                @test evaluation.future_en==true
+                @debug "enabled: $(string(evaluation.interact_en))"
+                @debug "future enabled: $(string(evaluation.interact_fe))"
+
+                @test in(Action(:send, Msg("a")), evaluation.interact_fe)
+                @test in(Action(:recv, Msg("b")), evaluation.interact_fe)
+                @test in(Action(:recv, Msg("c")), evaluation.interact_fe)
+            end
+            
+            # initial step, time step 2
+            Transition!(config,:t,2)
+            begin
+                evaluation = evaluation_tests(config,true)
+                @test evaluation.enabled==true
+                @test evaluation.future_en==true
+                @debug "enabled: $(string(evaluation.interact_en))"
+                @debug "future enabled: $(string(evaluation.interact_fe))"
+                
+                @test in(Action(:send, Msg("a")), evaluation.interact_en)
+                @test !in(Action(:recv, Msg("b")), evaluation.interact_en)
+                @test in(Action(:recv, Msg("c")), evaluation.interact_en)
+
+                @test in(Action(:send, Msg("a")), evaluation.interact_fe)
+                @test in(Action(:recv, Msg("b")), evaluation.interact_fe)
+                @test in(Action(:recv, Msg("c")), evaluation.interact_fe)
+            end
+
+            # take action a
+            Transition!(config,:send,"a")
+
+            # unfold
+            Transition!(config,:unfold)
+            begin
+                evaluation = evaluation_tests(config,true)
+                @test evaluation.enabled==true
+                @test evaluation.future_en==true
+                @debug "enabled: $(string(evaluation.interact_en))"
+                @debug "future enabled: $(string(evaluation.interact_fe))"
+
+                @test !in(Action(:send, Msg("a")), evaluation.interact_en)
+                @test !in(Action(:recv, Msg("b")), evaluation.interact_en)
+                @test in(Action(:recv, Msg("c")), evaluation.interact_en)
+
+                @test in(Action(:send, Msg("a")), evaluation.interact_fe)
+                @test in(Action(:recv, Msg("b")), evaluation.interact_fe)
+                @test in(Action(:recv, Msg("c")), evaluation.interact_fe)
+            end
+            
+            # initial step, time step 2
+            Transition!(config,:t,2)
+            begin
+                evaluation = evaluation_tests(config,true)
+                @test evaluation.enabled==true
+                @test evaluation.future_en==true
+                @debug "enabled: $(string(evaluation.interact_en))"
+                @debug "future enabled: $(string(evaluation.interact_fe))"
+                
+                @test in(Action(:send, Msg("a")), evaluation.interact_en)
+                @test !in(Action(:recv, Msg("b")), evaluation.interact_en)
+                @test !in(Action(:recv, Msg("c")), evaluation.interact_en)
+
+                @test in(Action(:send, Msg("a")), evaluation.interact_fe)
+                @test in(Action(:recv, Msg("b")), evaluation.interact_fe)
+                @test !in(Action(:recv, Msg("c")), evaluation.interact_fe)
+            end
+
+            # disable a, time step 1
+            Transition!(config,:t,1)
+            begin
+                evaluation = evaluation_tests(config,true)
+                @test evaluation.enabled==true
+                @test evaluation.future_en==true
+                @debug "enabled: $(string(evaluation.interact_en))"
+                @debug "future enabled: $(string(evaluation.interact_fe))"
+
+                @test !in(Action(:send, Msg("a")), evaluation.interact_en)
+                @test in(Action(:recv, Msg("b")), evaluation.interact_en)
+                @test !in(Action(:recv, Msg("c")), evaluation.interact_en)
+
+                @test !in(Action(:send, Msg("a")), evaluation.interact_fe)
+                @test in(Action(:recv, Msg("b")), evaluation.interact_fe)
+                @test !in(Action(:recv, Msg("c")), evaluation.interact_fe)
+            end
+            
+            
+            @info "recursive choice evaluation tests passed."
+        end
+
+        @info "evaluation tests passed."
+    end
+    # local tests
+    begin
+        config = deepcopy(local_configuration)
+        @debug "local:\n$(string(config,:full,:expand,:str))."
+
+        @info "local configuration transition tests passed."
+    end
+    # # social tests
+    begin
+        config = Social(deepcopy(local_configuration))
+        @debug "social:\n$(string(config,:full,:expand,:str))."
+
+        @info "social configuration transition tests passed."
+    end
+    # # system tests
+    begin
+        config = System(deepcopy(local_configuration))
+        @debug "system:\n$(string(config,:full,:expand,:str))."
+
+        @info "system configuration transition tests passed."
+    end
+    @info "all configuration transition tests passed."
+end
+
+# well-formedness rules
+begin
+    
+end

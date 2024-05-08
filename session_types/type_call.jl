@@ -14,6 +14,8 @@ module TypeCall
         α(iteration::UInt8=UInt8(0)) = new("",iteration)
         #
         α(identity::String,iteration::UInt8=UInt8(0)) = new(identity,iteration)
+        # get from definition
+        α(def::μ) = new(def.identity,def.iteration)
     end
 
     Base.show(s::α, io::Core.IO = stdout) = print(io, string(s))

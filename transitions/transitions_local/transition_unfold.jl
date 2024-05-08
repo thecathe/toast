@@ -19,9 +19,9 @@ module LocalTransitionUnfold
         # unfolding::S
         # initate unfold
         function Unfold!(c::Local) 
-            config = c
+            # config = c
             # config = deepcopy(c)
-            Unfold!(config,config.type)
+            Unfold!(c,c.type)
         end
         #
         function Unfold!(c::Local,type::μ)
