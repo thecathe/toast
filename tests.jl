@@ -631,21 +631,25 @@ begin
     # local tests
     begin
         config = deepcopy(local_configuration)
-        @debug "local:\n$(string(config,:full,:expand,:str))."
+        show_debug("local",config)
+
 
         @info "local configuration transition tests passed."
     end
     # # social tests
     begin
-        config = Social(deepcopy(local_configuration))
-        @debug "social:\n$(string(config,:full,:expand,:str))."
+        config = Social(deepcopy(valuations),Choice([send_a,recv_c]),Queue(("c")))
+        show_debug("social",config)
+
+        show_debug("local",Transition!(config,:t,5))
+        show_debug("local",config)
 
         @info "social configuration transition tests passed."
     end
     # # system tests
     begin
         config = System(deepcopy(local_configuration))
-        @debug "system:\n$(string(config,:full,:expand,:str))."
+        show_debug("system",config)
 
         @info "system configuration transition tests passed."
     end

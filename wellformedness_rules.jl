@@ -40,10 +40,9 @@ module WellformednessRules
     using .WellformednessRuleRec
     export WfRuleRec
 
-
-
-
-
+    include("rules/wellformedness/rule_choice.jl")
+    using .WellformednessRuleChoice
+    export WfRuleChoice
 
     #
     # handles checking well-formedness of any types
@@ -70,6 +69,12 @@ module WellformednessRules
         # rec type
         function IsWellformed(type::μ,constraints::δ,vars::RecEnv;rec_flags::Array{α}=Array{α}([])) 
             rule = WfRuleRec(type,constraints,vars;rec_flags)
+            new(rule.judgement,rule.premises,rule.evaluation,rule.label)
+        end
+
+        # interact/choice type
+        function IsWellformed(type::T,constraints::δ,vars::RecEnv;rec_flags::Array{α}=Array{α}([])) where {T<:Union{Interact,Choice}}
+            rule = WfRuleChoice(type,constraints,vars;rec_flags)
             new(rule.judgement,rule.premises,rule.evaluation,rule.label)
         end
 

@@ -20,6 +20,10 @@ module ConfigurationQueues
     mutable struct Queue
         children::Msgs
         Queue() = Queue(Msgs())
+        Queue(msg::Msg) = Queue(Msgs(msg))
+        Queue(label::String) = Queue(Msg(label))
+        Queue(msg::Tuple{String}) = Queue(Msg(msg[1]))
+        Queue(msg::Tuple{String,T}) where {T<:Payload} = Queue(Msg(msg[1],msg[2]))
         Queue(tail::Msgs) = new(tail)
     end
 

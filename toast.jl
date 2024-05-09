@@ -6,6 +6,7 @@ module TOAST
         println()
         println()
     end
+    printlines()
 
     #
     # clocks and constraints
@@ -58,28 +59,47 @@ module TOAST
     export IsWellformed
     # export WfRuleEnd
 
-    a = End()
-    b = Interact(:recv,"b",δ(:eq,"x",3),λ(),a)
-    c = α("r")
-    # d = μ("r",c)
-    d = μ("r",a)
+    begin
+        a = End()
+        b = Interact(:recv,"b",δ(:eq,"x",3),λ(),a)
+        c = α("r")
+        # d = μ("r",c)
+        d = μ("r",a)
 
-    type = d
+        type = d
 
-    # env = RecEnv([("r",δ(:eq,"x",1))])
-    env = RecEnv([("a",δ(:eq,"x",1))])
+        # env = RecEnv([("r",δ(:eq,"x",1))])
+        env = RecEnv([("a",δ(:eq,"x",1))])
 
-    constraints = δ(:ff)
+        constraints = δ(:ff)
 
-    is_wf = IsWellformed(type,constraints,env)
+        # is_wf = IsWellformed(type,constraints,env)
 
-    show(is_wf)
+        # show(is_wf)
+    end
+
+    begin
+        a = δ(:eq, "x", 2)
+        b = δ(:gtr, "x", 2)
+        c = δ(:and, δ(:geq, "y", 3), δ(:not, δ(:geq, "y", 5)))
+
+        # bounds = δBounds(a;normalise=true)
+        
+        @info string("a: $(string(a))\nnormalised: $(string(normaliseδ(a)))\nbounds: $(string(δBounds(a;normalise=true)))")
+        printlines()
+        @info string("b: $(string(b))\nnormalised: $(string(normaliseδ(b)))\nbounds: $(string(δBounds(b;normalise=true)))")
+        printlines()
+        @info string("c: $(string(c))\nnormalised: $(string(normaliseδ(c)))\nbounds: $(string(δBounds(c;normalise=true)))")
+
+        
+
+    end
 
 
 
 
 
 
-
+    printlines()
 
 end

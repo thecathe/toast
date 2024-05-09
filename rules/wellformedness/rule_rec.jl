@@ -22,10 +22,15 @@ module WellformednessRuleRec
             push!(rec_flags,rec_call)
 
             # evaluate premise with current constraints
-            premise = IsWellformed(type.child,constraints,vars;rec_flags)
-            premises = Premises(Premise(premise))
+            # premise = IsWellformed(type.child,constraints,vars;rec_flags)
+            # premises = Premises(Premise(premise))
+            premises = Premises(:wf,:rec;vars=vars,constraints=constraints,type=type)
+            @assert length(premises)==1 "WfRuleRec, expects 1 premise, not $(string(length(premises)))."
+            premise = premises[1]
 
-            new_constraints = deepcopy(premise.judgement.constraints)
+            # must have nested eval
+            @assert premise.has_nested_eval "WfRuleRec, expects premise to have nested eval."
+            new_constraints = deepcopy(premise.nested_eval.judgement.constraints)
             @assert new_constraints isa δ "WfRuleRec, premise isa $(typeof(new_constraints)), when expected δ."
 
             judgement = WfJudgement(vars,new_constraints,type)

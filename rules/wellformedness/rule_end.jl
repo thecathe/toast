@@ -24,8 +24,8 @@ module WellformednessRuleEnd
             end
             # constraints always hold (==true)
             judgement = WfJudgement(new_vars,constraints,type)
-            premises = Premises()
-            success = type isa End
+            premises = Premises(:wf,:end)
+            success = type isa End && premises.hold
             new("End",judgement,premises,success)
         end
 

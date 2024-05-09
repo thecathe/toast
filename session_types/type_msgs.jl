@@ -20,6 +20,7 @@ module TypeMsgs
         children::Array{Msg}
         # empty
         Msgs() = Msgs(Array{Msg}([]))
+        Msgs(msg::Msg) = Msgs(Array{Msg}([msg]))
         # extract from actions
         Msgs(actions::T) where {T<:Actions} = Msgs(Array{Msg}([a.msg for a in actions.children]))
         # extract from choice
