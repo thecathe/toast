@@ -28,7 +28,7 @@ module BoundsOfConstraints
             # skip if empty
             clocks = Array{String}([string(x) for x in keys(raw_bounds) if !isempty(raw_bounds[x])])
             
-            @info "δBounds, raw: $(string(join([string(join([string(r) for r in raw_bounds[x]])) for x in clocks], ", ")))."
+            @debug "δBounds, raw: $(string(join([string(join([string(r) for r in raw_bounds[x]])) for x in clocks], ", ")))."
 
 
             # pair up bounds
@@ -62,9 +62,9 @@ module BoundsOfConstraints
                 unique!(upper_bounds)
                 unique!(eq_bounds)
 
-                @info "δBounds (of $(string(x))), lb: $(string(join([string(l) for l in lower_bounds], ", ")))."
-                @info "δBounds (of $(string(x))), ub: $(string(join([string(u) for u in upper_bounds], ", ")))."
-                @info "δBounds (of $(string(x))), eq: $(string(join([string(e) for e in eq_bounds], ", ")))."
+                @debug "δBounds (of $(string(x))), lb: $(string(join([string(l) for l in lower_bounds], ", ")))."
+                @debug "δBounds (of $(string(x))), ub: $(string(join([string(u) for u in upper_bounds], ", ")))."
+                @debug "δBounds (of $(string(x))), eq: $(string(join([string(e) for e in eq_bounds], ", ")))."
 
                 # add :eq to bounds
                 foreach(z -> push!(bounds[x], (z.constant,z.constant)), eq_bounds)
@@ -77,7 +77,7 @@ module BoundsOfConstraints
                 for l in lower_bounds
                     # no possible ub, just add greatest ub
                     if length(upper_bounds)==0
-                        @info "δBounds (of $(string(x))), lb, no possible ub: $(string(l))"
+                        @debug "δBounds (of $(string(x))), lb, no possible ub: $(string(l))"
                         push!(bounds[x], (l.constant,true))
                         continue
                     end
@@ -91,18 +91,18 @@ module BoundsOfConstraints
                         if (ub===nothing || ub < u) && l.constant <= u.constant
                             ub = u
                             ub_index = i
-                            @info "δBounds (of $(string(x))), lb, searching ub ($(string(i))/$(string(length(upper_bounds)))), assigned: $(string(ub))"
+                            @debug "δBounds (of $(string(x))), lb, searching ub ($(string(i))/$(string(length(upper_bounds)))), assigned: $(string(ub))"
                         end
                     end
 
                     # no ub found
                     if ub===nothing
                         push!(bounds[x], (l.constant,true))
-                        @info "δBounds (of $(string(x))), no ub found: $(string(l))."
+                        @debug "δBounds (of $(string(x))), no ub found: $(string(l))."
                         continue
                     end
 
-                    @info "δBounds (of $(string(x))), pair found: $(string(l)) and $(string(ub))."
+                    @debug "δBounds (of $(string(x))), pair found: $(string(l)) and $(string(ub))."
                     push!(bounds[x], (l.constant,ub.constant))
                     deleteat!(upper_bounds, ub_index)
 
@@ -111,7 +111,7 @@ module BoundsOfConstraints
                 # pair any remaining ub with 0
                 for u in upper_bounds
                     push!(bounds[x], (0,u.constant))
-                    @info "δBounds (of $(string(x))), remaining ub: $(string(u))."
+                    @debug "δBounds (of $(string(x))), remaining ub: $(string(u))."
                 end
             end
             

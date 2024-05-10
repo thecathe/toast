@@ -40,6 +40,10 @@ module LogicalClocks
     using .BoundsOfConstraints
     export δBounds
 
+    include("logical_clocks/constraints/constraint_intersection.jl")
+    using .ConstraintsIntersection
+    export δIntersection
+
     #
     # weak past of constraints
     #

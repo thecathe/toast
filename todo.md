@@ -1,0 +1,2 @@
+- [ ] in "logical_clocks/constraints/constraint_intersection.jl", check how diagonal constraints should be dealt with. (i think "logical_clocks/constraints/bounds_of_constraints.jl" does not deal with them)
+- [ ]

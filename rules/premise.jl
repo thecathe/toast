@@ -107,29 +107,11 @@ module RulePremise
                             # check if deltas overlap
                             i_delta = type[i].constraints
                             j_delta = type[j].constraints
-                            constraints_overlap = false
-
-                            # get bounds of each
-                            i_bounds = δBounds(i_delta;normalise=true)
-                            j_bounds = δBounds(j_delta;normalise=true)
-                            # only want clocks that are in both
-                            all_clocks = unique([i_bounds.clocks...,j_bounds.clocks...])
-                            relavent_clocks = [c for c in all_clocks if c∈i_bounds.clocks && c∈j_bounds.clocks ]
-                            # go through each, check if any of the bounds overlap
-                            overlapping_constraints = Dict{String,Array{Tuple{δ,δ}}}([])
-                            for c in relavent_clocks
-                                i_c = i_bounds.bounds[c]
-                                j_c = j_bounds.bounds[c]
-                                # for each bound on clock c in i
-                                for i_b in i_c
-                                    # for each bound on clock c in j
-                                    for j_b in j_c
-                                        # TODO :: check if their bounds overlap
-                                    end
-                                end
-                            end
-
-
+                            # using Base.intersect(δᵢ,δⱼ)
+                            # constraints_overlap = i_delta ∩ j_delta
+                            constraints_intersection = δIntersection(i_delta,j_delta)
+                            constraints_overlap = constraints_intersection.value
+                            overlapping_constraints = constraints_intersection.intersection
 
                             # check if directions are the same
                             i_comm = type[i].direction.dir

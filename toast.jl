@@ -61,12 +61,12 @@ module TOAST
 
     begin
         a = End()
-        b = Interact(:recv,"b",δ(:eq,"x",3),λ(),a)
+        b = Interact(:recv,"b",δ(:eq,"x",3),λ())
         c = α("r")
-        # d = μ("r",c)
-        d = μ("r",a)
+        d = Interact(b,c)
+        e = μ("r",d)
 
-        type = d
+        type = e
 
         # env = RecEnv([("r",δ(:eq,"x",1))])
         env = RecEnv([("a",δ(:eq,"x",1))])
@@ -78,22 +78,28 @@ module TOAST
         # show(is_wf)
     end
 
-    begin
-        a = δ(:eq, "x", 2)
-        b = δ(:gtr, "x", 2)
-        c = δ(:and, δ(:geq, "y", 3), δ(:not, δ(:geq, "y", 5)))
+    # begin
+    #     a = δ(:eq, "x", 4)
+    #     b = δ(:gtr, "x", 2)
+    #     c = δ(:and, δ(:geq, "x", 3), δ(:not, δ(:geq, "x", 5)))
 
-        # bounds = δBounds(a;normalise=true)
+    #     # bounds = δBounds(a;normalise=true)
         
-        @info string("a: $(string(a))\nnormalised: $(string(normaliseδ(a)))\nbounds: $(string(δBounds(a;normalise=true)))")
-        printlines()
-        @info string("b: $(string(b))\nnormalised: $(string(normaliseδ(b)))\nbounds: $(string(δBounds(b;normalise=true)))")
-        printlines()
-        @info string("c: $(string(c))\nnormalised: $(string(normaliseδ(c)))\nbounds: $(string(δBounds(c;normalise=true)))")
+    #     @info string("a: $(string(a))\nnormalised: $(string(normaliseδ(a)))\nbounds: $(string(δBounds(a;normalise=true)))")
+    #     printlines()
+    #     @info string("b: $(string(b))\nnormalised: $(string(normaliseδ(b)))\nbounds: $(string(δBounds(b;normalise=true)))")
+    #     printlines()
+    #     @info string("c: $(string(c))\nnormalised: $(string(normaliseδ(c)))\nbounds: $(string(δBounds(c;normalise=true)))")
+    #     printlines()
 
-        
+    #     @info string("a ∩ b ≡ $(string(δIntersection(a,b)))")
+    #     printlines()
+    #     @info string("a ∩ c ≡ $(string(δIntersection(a,c)))")
+    #     printlines()
+    #     @info string("b ∩ c ≡ $(string(δIntersection(b,c)))")
+    #     printlines()
 
-    end
+    # end
 
 
 
