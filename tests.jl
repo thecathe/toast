@@ -472,10 +472,14 @@ begin
     send_a = Interact(:send, ("a"), δ(:eq, "x", 2), λ(["x"]), End())
     recv_b = Interact(:recv, ("b"), δ(:gtr, "x", 2), λ(), End())
     recv_c = Interact(:recv, ("c"), δ(:and, δ(:geq, "y", 3), δ(:not, δ(:geq, "y", 5))), λ(), End())
+    recv_d = Interact(:recv, ("d"), δ(:gtr, "x", 5), λ(), End())
+    recv_e = Interact(:recv, ("e"), δ(:or, δ(:geq, "y", 3), δ(:not, δ(:geq, "y", 5))), λ(), End())
 
     # recursive types
     recursive_choice = Choice([Interact(send_a,α("r")),recv_b,recv_c])
     recursive_type = μ("r",recursive_choice)
+
+    # @info string(Choice([send_a,recv_e,recv_d]),:expanded,:str)
 
     # clock valuations
     valuations = ν([("y",1)])
@@ -638,10 +642,13 @@ begin
     end
     # # social tests
     begin
-        config = Social(deepcopy(valuations),Choice([send_a,recv_c]),Queue(("c")))
+        config = Social(deepcopy(valuations),Choice([send_a,recv_c,recv_e,recv_d]),Queue(("d")))
         show_debug("social",config)
 
         show_debug("local",Transition!(config,:t,5))
+        show_debug("local",config)
+
+        show_debug("local",Transition!(config,:t,0.1))
         show_debug("local",config)
 
         @info "social configuration transition tests passed."

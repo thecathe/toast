@@ -10,12 +10,20 @@ module ConstraintsIntersection
     export δIntersection
     struct δIntersection
         value::Bool
-        intersection::Dict{String,Array{Tuple{δ,δ}}}
+        intersection::Union{Dict{String,Array{Tuple{δ,δ}}},Nothing}
 
-        function δIntersection(i_delta::δ,j_delta::δ)
+        function δIntersection(_i_delta::δ,_j_delta::δ)
+            i_delta = normaliseδ(_i_delta)
+            j_delta = normaliseδ(_j_delta)
             # get bounds of each
-            i_bounds = δBounds(i_delta;normalise=true)
-            j_bounds = δBounds(j_delta;normalise=true)
+            i_bounds = δBounds(_i_delta;normalise=true)
+            j_bounds = δBounds(_j_delta;normalise=true)
+            @info "i_bounds: $(string(i_bounds))"
+            @info "j_bounds: $(string(j_bounds))"
+            # check if either always interesects with anything
+            if i_bounds.universal || j_bounds.universal
+                return new(true,nothing)
+            end
             # only want clocks that are in both
             all_clocks = unique([i_bounds.clocks...,j_bounds.clocks...])
             relavent_clocks = [c for c in all_clocks if c∈i_bounds.clocks && c∈j_bounds.clocks ]
@@ -35,6 +43,11 @@ module ConstraintsIntersection
                         i_ub = i_b[2]
                         j_lb = j_b[1]
                         j_ub = j_b[2]
+
+                        @debug "i_lb: $(string(i_lb))"
+                        @debug "i_ub: $(string(i_ub))"
+                        @debug "j_lb: $(string(j_lb))"
+                        @debug "j_ub: $(string(j_ub))"
 
                         # i:(3, 5) j:(4,_)
                         if i_lb < j_lb && i_ub > j_lb
@@ -82,11 +95,16 @@ module ConstraintsIntersection
 
     function Base.string(d::δIntersection, mode::Symbol = :default) 
 
-        arr = Array{String}([string("$(string(c[1])) ∩ $(string(c[2]))") for k in keys(d.intersection) for c in d.intersection[k]])
+        if d.intersection isa Nothing
+            return "intersect = $(d.value) (universal)"
+        else
 
-        str = "$(join(arr,"\n"))\nintersect = $(string(d.value))"
+            arr = Array{String}([string("$(string(c[1])) ∩ $(string(c[2]))") for k in keys(d.intersection) for c in d.intersection[k]])
 
-        return str
+            str = "intersect = $(string(d.value))$(d.intersection isa Nothing ? " (universal)" : "\n$(join(arr,"\n"))")"
+            return str
+
+        end
 
     end
 end

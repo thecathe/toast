@@ -16,7 +16,11 @@ module TypeInteract
         child::T where {T<:SessionType}
 
         #
-        Interact(direction::Direction,msg::Msg,constraints::δ,resets::λ,child::T=End()) where {T<:SessionType} = new(direction,msg,constraints,resets,child)
+        function Interact(direction::Direction,msg::Msg,constraints::δ,resets::λ,child::T=End()) where {T<:SessionType} 
+            normalised_constraints = normaliseδ(constraints)
+            @debug "interact normalised constraints: $(string(constraints)) => $(string(normalised_constraints))"
+            new(direction,msg,normalised_constraints,resets,child)
+        end
 
         # anonymous direction
         Interact(d::Symbol,msg::Msg,constraints::δ,resets::λ,child::T=End()) where {T<:SessionType} = Interact(Direction(d),msg,constraints,resets,child)

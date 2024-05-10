@@ -24,7 +24,7 @@ module TypeChoice
         # # anonymous interactions
         # Choice(children::T) where {T<:Array{Tuple}} = Choice([Interact(c...) for c in children])
         # single interact
-        Choice(child::T) where {T<:Interact} = Choice([child])
+        Choice(child::Interact) = Choice([child])
         #
         Choice(children::T) where {T<:Array{Interact}} = new(children)
     end

@@ -103,20 +103,16 @@ module SocialTransitionTime
             else
                 msg = head!(c.queue; pop=false)[1]
                 # check against all future-enabled actions, find if match
-                is_expected = false
                 relevant_interact = nothing
                 # @debug "[time] (urgency), $(string(localised_evaluate,:full,:expand))."
                 for i in localised_evaluate.interact_fe
                     # if found relevant interact with matching message, note and break
                     if i.msg == msg
-                        is_expected = true
                         relevant_interact = i
                         break
                     end
                 end
-                # if is_expected == false
                 if relevant_interact === nothing
-                # if relevant_interact === nothing && is_expected == false
                     @warn "[time] (urgency), no future-enabled action found for message ($(string(msg))) in:\n$(string(c.type,:full))"
                     met_premise_urgency = true
                 else
@@ -139,17 +135,23 @@ module SocialTransitionTime
                     # @info "[time], bounds: $(string(bounds))."
                     @debug "[time], bounds: $(string(bounds))."
 
-                    # for x in b
+                    # for each clock relevant to this constraint
+                    # check after_clock is greater than lb (if this is true for all clocks and their relative constraints, then we must check that this is the lowest possible time step)
+                    passes_lb_check = Array{Bool}([])
                     for x in bounds.clocks
-                        before_clock = nothing
-                        for y in before_clocks
-                            if y.label == x
-                                before_clock = y
-                                break
-                            end
-                        end
-                        @assert before_clock isa Clock "[time] (urgency) before_clock \"$(x)\" is expected to be a Clock, not $(typeof(before_clock))...:\n$(string(before_clocks))"
-                        
+                        @debug "[time] (urgency), clock: $(string(x))."
+
+                        # before_clock = nothing
+                        # for y in before_clocks
+                        #     if y.label == x
+                        #         before_clock = y
+                        #         break
+                        #     end
+                        # end
+                        # @assert before_clock isa Clock "[time] (urgency) before_clock \"$(x)\" is expected to be a Clock, not $(typeof(before_clock))...:\n$(string(before_clocks))"
+
+
+                        # get the value of the clock after time step
                         after_clock = nothing
                         for y in after_clocks
                             if y.label == x
@@ -159,128 +161,180 @@ module SocialTransitionTime
                         end
                         @assert after_clock isa Clock "[time] (urgency) after_clock \"$(x)\" is expected to be a Clock, not $(typeof(after_clock))...:\n$(string(after_clocks))"
                         
-
-                        # get upper and lower bounds for each clock given the relevant constraint
-                        # TODO without using flattened
-                        # flattened = δ(:flatten, relevant_constraints)
-                        # flat = Array{δ}([flattened.args...])
-                        # check if clock lb or ub falls inbetween ANY pair of bounds
-                        # for x in bounds.clocks
-                        clock_intersections = Array{Bool}([])
-                        clock_lb = before_clock.value
-                        clock_ub = after_clock.value
+                        # check after_clock is greater than lb (if this is true for all clocks and their relative constraints, then we must check that this is the lowest possible time step)
                         for b in bounds.bounds[x]
                             lb = b[1]
-                            ub = b[2]
-                            if ub isa Bool
-                                @debug "[time] (urgency), bounds($(x)): $(lb < clock_ub) = ($(lb) < $(clock_ub))."
-                                @debug "[time] (urgency), bounds($(x)): $(lb < clock_lb) = ($(lb) < $(clock_lb))."
-                                
-                                push!(clock_intersections, (lb < clock_ub))
-                                push!(clock_intersections, (lb < clock_lb))
+                            @debug "[time] (urgency, lb <= after_clock.value) $(string(lb)) <= $(string(after_clock.value)) = $(string(lb <= after_clock.value))"
+                            if lb <= after_clock.value
+                                push!(passes_lb_check,true)
                             else
-                                @debug "[time] (urgency), bounds($(x)): $(lb < clock_ub && clock_ub < ub) = ($(lb) < $(clock_ub) && $(clock_ub) < $(ub))."
-                                @debug "[time] (urgency), bounds($(x)): $(lb < clock_lb && clock_lb < ub) = ($(lb) < $(clock_lb) && $(clock_lb) < $(ub))."
-                                
-                                push!(clock_intersections, (lb < clock_ub && clock_ub < ub))
-                                push!(clock_intersections, (lb < clock_lb && clock_lb < ub))
+                                push!(passes_lb_check,false)
                             end
                         end
-
-                        push!(intersections, clock_intersections...)
-
-                        # if looks viable, check harsher constraints
-                        if !(true ∈ intersections)
-                            clocks_to_check = [clock_lb,clock_ub]
-                            before_region = nothing
-                            after_region = nothing
-                            for c_index in range(1,length(clocks_to_check))
-                                if c_index==1
-                                    @debug "[time] (urgency), before region..."
-                                else
-                                    @debug "[time] (urgency), after region..."
-                                end
-                                _clock = clocks_to_check[c_index]
-                                # check if "jumped over" viable zone  
-                                for b_lb_index in range(1,length(bounds.bounds[x]))
-                                    b_lb_lb = bounds.bounds[x][b_lb_index][1]
-                                    b_lb_ub = bounds.bounds[x][b_lb_index][2]
-
-                                    # skip true
-                                    if b_lb_ub isa Bool
-                                        @assert b_lb_ub==true "[time] (urgency), b_lb_ub isa Bool but not true: $(string(b_lb_ub))."
-                                        continue
-                                    end
-
-                                    # check if clock is greater than the ub
-                                    if _clock > b_lb_ub
-                                        # find the closest range that is after this
-                                        b_ub_lb = nothing
-                                        for b_ub_index in range(1,length(bounds.bounds[x]))
-                                            # skip the same one                                    
-                                            if b_lb_index==b_ub_index
-                                                continue
-                                            end
-                                            
-                                            cur_b_ub_lb = bounds.bounds[x][b_ub_index][1]
-                                            cur_b_ub_ub = bounds.bounds[x][b_ub_index][2]
-
-                                            # must be later than b_lb
-                                            if cur_b_ub_lb > b_lb_ub && (b_ub_lb===nothing || b_ub_lb > cur_b_ub_lb)
-                                                # @info "[time] (urgency), "
-                                                b_ub_lb = cur_b_ub_lb
-                                                @debug "[time] (urgency), new lb/ub: ($(string(b_lb_ub)), $(string(b_ub_lb)))."
-                                            end
-                                        end
-
-                                        # if no ub found, use this region
-                                        if b_ub_lb===nothing
-                                            if c_index==1
-                                                before_region = (b_lb_ub,true)
-                                            else
-                                                after_region = (b_lb_ub,true)
-                                            end
-                                        else
-                                            # if clock falls between intermediate lb and ub
-                                            if _clock < b_ub_lb
-                                                if c_index==1
-                                                    before_region = (b_lb_ub,b_ub_lb)
-                                                else
-                                                    after_region = (b_lb_ub,b_ub_lb)
-                                                end
-                                                break
-                                            else
-                                                @debug "[time] (urgency), skipped $(c_index==1 ? "lb" : "ub"): ($(string(b_lb_ub)), $(string(b_ub_lb)))."
-                                            end
-                                        end
-                                    end
-                                end
-
-                            end
-
-                            if before_region===nothing
-                                @debug "[time] (urgency), before_region is nothing. Likely within existing region."
-                            else
-                                @debug "[time] (urgency), before_region: ($(before_region[1]), $(before_region[2]))."
-
-                                if after_region===nothing
-                                    @debug "[time] (urgency), after_region is nothing. Delay likely yields same intermediate region."
-                                else
-                                    @debug "[time] (urgency), after_region: ($(after_region[1]), $(after_region[2]))."
-
-                                    jumped_over_enabled_region = !(before_region[1]==after_region[1] && before_region[2]==after_region[2])
-                                    met_premise_urgency_jump = jumped_over_enabled_region
-
-                                    push!(intersections,jumped_over_enabled_region)
-
-                                end
-                            end
-                        end
-
-
                     end
 
-                    met_premise_urgency = !(true ∈ intersections)
+                    if !false∈passes_lb_check
+                        # check that at least one of the relevant clocks is equal to the respective lb
+                        is_lb = Array{Bool}([])
+                        for x in bounds.clocks
+                            # get the value of the clock after time step
+                            after_clock = nothing
+                            for y in after_clocks
+                                if y.label == x
+                                    after_clock = y
+                                    break
+                                end
+                            end
+                            @assert after_clock isa Clock "[time] (urgency) after_clock \"$(x)\" is expected to be a Clock, not $(typeof(after_clock))...:\n$(string(after_clocks))"
+                        
+                            clock_is_lb = Array{Bool}([])
+                            for b in bounds.bounds[x]
+                                lb=b[1]
+                                if lb==after_clock.value
+                                    @debug "[time] (urgency, lb == after_clock.value) after_clock $(string(x)) $(string(lb)) == $(string(after_clock.value)) = $(string(lb == after_clock.value))"
+                                    push!(clock_is_lb,true)
+                                else
+                                    @debug "[time] (urgency, lb == after_clock.value) after_clock $(string(x)) NOT $(string(lb)) == $(string(after_clock.value)) = $(string(lb == after_clock.value))"
+                                    push!(clock_is_lb,false)
+                                end
+                            end
+                            @debug "[time] (urgency) after_clock $(string(x)) is lb ?= $(string(true∈clock_is_lb))"
+                            push!(is_lb,true∈clock_is_lb)
+                        end
+                        if true∈is_lb
+                            met_premise_urgency=true
+                        else
+                            # fail if none of the clocks are lb
+                            met_premise_urgency=false
+                        end
+                    else
+                        # automatically pass if not even enabling recv
+                        met_premise_urgency=true
+                    end
+
+
+                    #     # get upper and lower bounds for each clock given the relevant constraint
+                    #     # TODO without using flattened
+                    #     # flattened = δ(:flatten, relevant_constraints)
+                    #     # flat = Array{δ}([flattened.args...])
+                    #     # check if clock lb or ub falls inbetween ANY pair of bounds
+                    #     # for x in bounds.clocks
+                    #     clock_intersections = Array{Bool}([])
+                    #     clock_lb = before_clock.value
+                    #     clock_ub = after_clock.value
+                    #     for b in bounds.bounds[x]
+                    #         lb = b[1]
+                    #         ub = b[2]
+                    #         if ub isa Bool
+                    #             @debug "[time] (urgency), * bounds($(x)): $(lb < clock_ub) = ($(lb) < $(clock_ub))."
+                    #             @debug "[time] (urgency), * bounds($(x)): $(lb < clock_lb) = ($(lb) < $(clock_lb))."
+                                
+                    #             push!(clock_intersections, (lb < clock_ub))
+                    #             push!(clock_intersections, (lb < clock_lb))
+                    #         else
+
+                    #             @debug "[time] (urgency), bounds($(x)): $(lb < clock_ub && clock_ub < ub) = ($(lb) < $(clock_ub) && $(clock_ub) < $(ub))."
+                    #             @debug "[time] (urgency), bounds($(x)): $(lb < clock_lb && clock_lb < ub) = ($(lb) < $(clock_lb) && $(clock_lb) < $(ub))."
+                                
+                    #             push!(clock_intersections, (lb < clock_ub && clock_ub < ub))
+                    #             push!(clock_intersections, (lb < clock_lb && clock_lb < ub))
+                    #         end
+                    #     end
+                    #     @debug "[time] (urgency), clock $(string(x)) intersections: $(string(clock_intersections))"
+                    #     push!(intersections, clock_intersections...)
+
+                    #     # if looks viable, check harsher constraints
+                    #     if !(true ∈ intersections)
+                    #         clocks_to_check = [clock_lb,clock_ub]
+                    #         before_region = nothing
+                    #         after_region = nothing
+                    #         for c_index in range(1,length(clocks_to_check))
+                    #             if c_index==1
+                    #                 @debug "[time] (urgency), before region..."
+                    #             else
+                    #                 @debug "[time] (urgency), after region..."
+                    #             end
+                    #             _clock = clocks_to_check[c_index]
+                    #             # check if "jumped over" viable zone  
+                    #             for b_lb_index in range(1,length(bounds.bounds[x]))
+                    #                 b_lb_lb = bounds.bounds[x][b_lb_index][1]
+                    #                 b_lb_ub = bounds.bounds[x][b_lb_index][2]
+
+                    #                 # skip true
+                    #                 if b_lb_ub isa Bool
+                    #                     @assert b_lb_ub==true "[time] (urgency), b_lb_ub isa Bool but not true: $(string(b_lb_ub))."
+                    #                     continue
+                    #                 end
+
+                    #                 # check if clock is greater than the ub
+                    #                 if _clock > b_lb_ub
+                    #                     # find the closest range that is after this
+                    #                     b_ub_lb = nothing
+                    #                     for b_ub_index in range(1,length(bounds.bounds[x]))
+                    #                         # skip the same one                                    
+                    #                         if b_lb_index==b_ub_index
+                    #                             continue
+                    #                         end
+                                            
+                    #                         cur_b_ub_lb = bounds.bounds[x][b_ub_index][1]
+                    #                         cur_b_ub_ub = bounds.bounds[x][b_ub_index][2]
+
+                    #                         # must be later than b_lb
+                    #                         if cur_b_ub_lb > b_lb_ub && (b_ub_lb===nothing || b_ub_lb > cur_b_ub_lb)
+                    #                             # @info "[time] (urgency), "
+                    #                             b_ub_lb = cur_b_ub_lb
+                    #                             @debug "[time] (urgency), new lb/ub: ($(string(b_lb_ub)), $(string(b_ub_lb)))."
+                    #                         end
+                    #                     end
+
+                    #                     # if no ub found, use this region
+                    #                     if b_ub_lb===nothing
+                    #                         if c_index==1
+                    #                             before_region = (b_lb_ub,true)
+                    #                         else
+                    #                             after_region = (b_lb_ub,true)
+                    #                         end
+                    #                     else
+                    #                         # if clock falls between intermediate lb and ub
+                    #                         if _clock < b_ub_lb
+                    #                             if c_index==1
+                    #                                 before_region = (b_lb_ub,b_ub_lb)
+                    #                             else
+                    #                                 after_region = (b_lb_ub,b_ub_lb)
+                    #                             end
+                    #                             break
+                    #                         else
+                    #                             @debug "[time] (urgency), skipped $(c_index==1 ? "lb" : "ub"): ($(string(b_lb_ub)), $(string(b_ub_lb)))."
+                    #                         end
+                    #                     end
+                    #                 end
+                    #             end
+
+                    #         end
+
+                    #         if before_region===nothing
+                    #             @debug "[time] (urgency), before_region is nothing. Likely within existing region."
+                    #         else
+                    #             @debug "[time] (urgency), before_region: ($(before_region[1]), $(before_region[2]))."
+
+                    #             if after_region===nothing
+                    #                 @debug "[time] (urgency), after_region is nothing. Delay likely yields same intermediate region."
+                    #             else
+                    #                 @debug "[time] (urgency), after_region: ($(after_region[1]), $(after_region[2]))."
+
+                    #                 jumped_over_enabled_region = !(before_region[1]==after_region[1] && before_region[2]==after_region[2])
+                    #                 met_premise_urgency_jump = jumped_over_enabled_region
+
+                    #                 push!(intersections,jumped_over_enabled_region)
+
+                    #             end
+                    #         end
+                    #     end
+
+
+                    # end
+
+                    # met_premise_urgency = !(true ∈ intersections)
                 end
             end
 

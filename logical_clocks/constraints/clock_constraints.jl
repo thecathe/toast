@@ -325,6 +325,8 @@ module ClockConstraints
             else
                 @error "δ.string, unexpected head: $(string(d.head))."
             end
+        elseif mode==:norm
+            string(normaliseδ(d))
         else
             @error "δ.string, unexpected mode: $(string(mode))."
         end

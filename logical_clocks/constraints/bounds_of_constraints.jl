@@ -11,9 +11,10 @@ module BoundsOfConstraints
     """
     struct δBounds
         clocks::Array{String}
-        bounds::Dict{String,Array{Tuple{Num,Union{Num,Bool}}}}
+        bounds::Union{Dict{String,Array{Tuple{Num,Union{Num,Bool}}}},Nothing}
 
         normalised::Bool
+        universal::Bool
 
         function δBounds(d::δ;normalise::Bool = true)
             if normalise
@@ -23,7 +24,13 @@ module BoundsOfConstraints
                 @warn "δBounds, not normalised."
             end
 
-            raw_bounds = Dict{String,Array{DBC}}([(x, boundsOf(x,c)) for x in d.clocks])
+            # check if normalied is true
+            if c.head==:tt
+                @debug "δBounds, normalised it true (universal)"
+                return new([],nothing,normalise,true)
+            end
+
+            raw_bounds = Dict{String,Array{DBC}}([(x, boundsOf(x,c)) for x in c.clocks])
             
             # skip if empty
             clocks = Array{String}([string(x) for x in keys(raw_bounds) if !isempty(raw_bounds[x])])
@@ -116,7 +123,7 @@ module BoundsOfConstraints
             end
             
 
-            new(clocks, bounds, normalise)
+            new(clocks, bounds, normalise, false)
         end
 
         function boundsOf(x::String,d::δ)::Array{DBC}
@@ -219,10 +226,14 @@ module BoundsOfConstraints
     end
 
     function Base.string(b::δBounds)
-        return string(join([
-            string("[$(x): $(string(join([string("($(y[1]), $(y[2]))") for y in b.bounds[x]], ", ")))]")
-            for x in keys(b.bounds)
-        ], ", "))
+        if b.universal && b.bounds isa Nothing
+            return "(universal, no bounds)"
+        else
+            return string(join([
+                string("[$(x): $(string(join([string("($(y[1]), $(y[2]))") for y in b.bounds[x]], ", ")))]")
+                for x in keys(b.bounds)
+            ], ", "))
+        end
     end
     
     #

@@ -78,28 +78,40 @@ module TOAST
         # show(is_wf)
     end
 
-    # begin
-    #     a = δ(:eq, "x", 4)
-    #     b = δ(:gtr, "x", 2)
-    #     c = δ(:and, δ(:geq, "x", 3), δ(:not, δ(:geq, "x", 5)))
+    begin
+        a = δ(:eq, "x", 4)
+        b = δ(:gtr, "x", 2)
+        c = δ(:and, δ(:geq, "x", 3), δ(:not, δ(:gtr, "x", 5)))
+        g = δ(:or, δ(:geq, "x", 3), δ(:not, δ(:gtr, "x", 5)))
+        d = δ(:or, δ(:les, "x", 3), δ(:gtr, "x", 5))
 
-    #     # bounds = δBounds(a;normalise=true)
+        e = δ(:eq, "x", 5)
+        f = δ(:or, δ(:les, "x", 3), δ(:geq, "x", 5))
         
-    #     @info string("a: $(string(a))\nnormalised: $(string(normaliseδ(a)))\nbounds: $(string(δBounds(a;normalise=true)))")
-    #     printlines()
-    #     @info string("b: $(string(b))\nnormalised: $(string(normaliseδ(b)))\nbounds: $(string(δBounds(b;normalise=true)))")
-    #     printlines()
-    #     @info string("c: $(string(c))\nnormalised: $(string(normaliseδ(c)))\nbounds: $(string(δBounds(c;normalise=true)))")
-    #     printlines()
 
-    #     @info string("a ∩ b ≡ $(string(δIntersection(a,b)))")
-    #     printlines()
-    #     @info string("a ∩ c ≡ $(string(δIntersection(a,c)))")
-    #     printlines()
-    #     @info string("b ∩ c ≡ $(string(δIntersection(b,c)))")
-    #     printlines()
+        # bounds = δBounds(a;normalise=true)
+        
+        # @info string("a: $(string(a))\nnormalised: $(string(normaliseδ(a)))\nbounds: $(string(δBounds(a;normalise=true)))")
+        # printlines()
+        # @info string("b: $(string(b))\nnormalised: $(string(normaliseδ(b)))\nbounds: $(string(δBounds(b;normalise=true)))")
+        # printlines()
+        # @info string("c: $(string(c))\nnormalised: $(string(normaliseδ(c)))\nbounds: $(string(δBounds(c;normalise=true)))")
+        # printlines()
 
-    # end
+        @info string("a ∩ b ≡ ($(string(a)) ∩ $(string(b))) ≡ ($(string(a,:norm)) ∩ $(string(b,:norm))) ≡ $(string(δIntersection(a,b)))")
+        printlines()
+        @info string("a ∩ c ≡ ($(string(a)) ∩ $(string(c))) ≡ ($(string(a,:norm)) ∩ $(string(c,:norm))) ≡ $(string(δIntersection(a,c)))")
+        printlines()
+        @info string("a ∩ g ≡ ($(string(a)) ∩ $(string(g))) ≡ ($(string(a,:norm)) ∩ $(string(g,:norm))) ≡ $(string(δIntersection(a,g)))")
+        printlines()
+        @info string("b ∩ c ≡ ($(string(b)) ∩ $(string(c))) ≡ ($(string(b,:norm)) ∩ $(string(c,:norm))) ≡ $(string(δIntersection(b,c)))")
+        printlines()
+        @info string("a ∩ d ≡ ($(string(a)) ∩ $(string(d))) ≡ ($(string(a,:norm)) ∩ $(string(d,:norm))) ≡ $(string(δIntersection(a,d)))")
+        printlines()
+        @info string("e ∩ f ≡ ($(string(e)) ∩ $(string(f))) ≡ ($(string(e,:norm)) ∩ $(string(f,:norm))) ≡ $(string(δIntersection(e,f)))")
+        printlines()
+
+    end
 
 
 
